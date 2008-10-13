@@ -17,11 +17,12 @@ class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
 def open_url(url, filename, last_crawl=None):
   request = urllib2.Request(url)
   if last_crawl:
-    last_crawl = last_crawl.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    last_crawl = last_crawl.strftime("%a, %d %b %Y %H:%M:%S PST")
     #                                                     Thu, 15 Apr 2004 19:45:21 GMT
     request.add_header('If-Modified-Since', last_crawl)
   opener = urllib2.build_opener(DefaultErrorHandler())
   datastream = opener.open(request)
+  
   if datastream.status == 404:
     print datastream.status,#url,
     return None

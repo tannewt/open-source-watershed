@@ -82,8 +82,8 @@ def crawl_repo(repo):
   name, branch, codename, comp, arch, last_crawl, new = repo
   #print "downloading"
   this_time = time.time()
-  url = "http://" + MIRROR + "/" + HTTP_START_DIR + codename + "/" + comp + "/binary-" + arch + "/Packages.bz2"
-  filename = "files/ubuntu/Packages-" + codename + "-" + comp + "-" + arch + "-" + str(this_time) + ".bz2"
+  url = "http://" + MIRROR + "/" + HTTP_START_DIR + branch + "/" + comp + "/binary-" + arch + "/Packages.bz2"
+  filename = "files/ubuntu/Packages-" + branch + "-" + comp + "-" + arch + "-" + str(this_time) + ".bz2"
   #print url
   info = helper.open_url(url, filename, last_crawl)
   #print "downloaded", filename
