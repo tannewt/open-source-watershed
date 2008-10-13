@@ -22,7 +22,10 @@ def open_url(url, filename, last_crawl=None):
     request.add_header('If-Modified-Since', last_crawl)
   opener = urllib2.build_opener(DefaultErrorHandler())
   datastream = opener.open(request)
-  if datastream.status:
+  if datastream.status == 404:
+    print datastream.status,#url,
+    return None
+  elif datastream.status:
     print datastream.status,
     return None
   else:

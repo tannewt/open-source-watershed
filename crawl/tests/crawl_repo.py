@@ -1,3 +1,7 @@
-import .distros.ubuntu
+import distros.fedora
 
-distros.ubuntu.crawl_repo(['ubuntu', 'intrepid', 'intrepid', 'universe', 'amd64', None, True])
+repos = distros.fedora.get_repos()
+
+for r in repos[-2:]:
+  print r
+  print map(lambda x: x[:-1],distros.fedora.crawl_repo(r))[:5]

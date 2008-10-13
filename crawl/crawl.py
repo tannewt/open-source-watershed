@@ -1,10 +1,12 @@
 import distros.debian
 import distros.slackware
 import distros.ubuntu
+import distros.fedora
 import upstream.subversion
 import MySQLdb as mysql
 import datetime
 import time
+import random
 
 TEST = False
 EXTRA = True
@@ -12,9 +14,9 @@ EXTRA = True
 def crawl_distro(target):
   print "running",target.__name__
   repos = target.get_repos()
-  
+  release_count = 0
   if TEST:
-    repos = repos[:1]
+    repos = [random.choice(repos)]
 
   con = mysql.connect(host='localhost', user='root', passwd='hello', db='test')
 
@@ -100,6 +102,7 @@ def crawl_distro(target):
             cur.execute("select last_insert_id();")
             rel_id = cur.fetchone()[0]
             cur.execute("insert into extra (release_id, content) values (%s, %s)", (rel_id,rel[-1]))
+          release_count += 1
         except mysql.IntegrityError:
           pass
     
@@ -107,11 +110,11 @@ def crawl_distro(target):
     if duration < 0.001:
       print "skipped"
     else:
-      print duration,"secs"
+      print "~",int(duration),"secs"
     #print "committing"
     con.commit()
   con.close()
-  print "done"
+  print release_count,"releases"
   print
 
 def crawl_upstream(target):
@@ -150,5 +153,6 @@ def crawl_upstream(target):
 crawl_distro(distros.slackware)
 crawl_distro(distros.debian)
 crawl_distro(distros.ubuntu)
+crawl_distro(distros.fedora)
 
 crawl_upstream(upstream.subversion)
