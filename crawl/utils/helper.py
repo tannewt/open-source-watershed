@@ -1,5 +1,8 @@
 import urllib2
+import ftplib
 import datetime
+import time
+import re
 
 class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
     def http_error_default(self, req, fp, code, msg, headers):
@@ -33,4 +36,41 @@ def open_url(url, filename, last_crawl=None):
     out = open(filename, "w")
     out.write(datastream.read())
     out.close()
-    return datetime.datetime.strptime(datastream.headers.dict['last-modified'],"%a, %d %b %Y %H:%M:%S %Z")
+    try:
+      date = datastream.headers.dict['last-modified']
+    except:
+      date = datastream.headers.dict['date']
+    return datetime.datetime.strptime(date,"%a, %d %b %Y %H:%M:%S %Z")
+
+def open_dir(url):
+  filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))
+  if open_url(url, filename)==None:
+    return []
+  
+  pattern = '<[^>]*ALT="(?P<dir>[^"])*"> <A[^>]*>(?P<name>[^<]*)</A> *(?P<modified>.* [0-9][0-9]:[0-9][0-9])'
+  pattern = re.compile(pattern)
+
+  f = open(filename)
+  files = []
+  for line in f:
+    match = pattern.match(line)
+    if match:
+      d = match.groupdict()
+      files.append((d["dir"]=="[DIR]",d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
+  f.close()
+  return files
+
+def find_match(s, res):
+  i = 1
+  for r in res:
+    m = r.match(s)
+    if m:
+      return (i,m)
+    i += 1
+  return (None, None)
+
+def mysql_settings():
+  f = open("mysql_settings.txt")
+  settings = map(lambda x: x.strip(),f.readlines())
+  f.close()
+  return settings

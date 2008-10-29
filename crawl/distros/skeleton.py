@@ -6,6 +6,6 @@ FTP_START_DIR = None
 def get_repos():
   pass
 
-# return a list of [name, version, revision, time, extra]
+# return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
   pass

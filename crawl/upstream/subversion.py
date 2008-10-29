@@ -4,15 +4,6 @@ import time
 
 NAME = "subversion"
 
-def find_match(s, res):
-  i = 1
-  for r in res:
-    m = r.match(s)
-    if m:
-      return (i,m)
-    i += 1
-  return (None, None)
-
 def get_date(m_d):
   if m_d.has_key("day") and m_d["day"]:
     if m_d.has_key("smonth") and m_d["smonth"]:
@@ -66,7 +57,7 @@ def get_releases(last_crawl=None):
   versions = 0
 
   empty = 2
-  rel = [None, None, None]
+  rel = ["subversion",0, None, None, None]
   pkg = []
   second = False
   for line in changes:
@@ -76,30 +67,30 @@ def get_releases(last_crawl=None):
       continue
     
     if empty>=2:
-      form,m = find_match(line, first_line)
+      form,m = helper.find_match(line, first_line)
       if m:
         versions += 1
-        if rel[0] and rel[1]:
+        if rel[-3] and rel[-2]:
           rel[-1] = "".join(pkg)
           pkgs.append(rel)
         else:
-          print "skipped",rel[0]
-        rel = [None, None, None]
+          print "skipped",rel[-3]
+        rel = ["subversion",0, None, None, None]
         pkg = [line]
         empty = 0
         m_d = m.groupdict()
         if m_d.has_key("version"):
-          rel[0] = m_d["version"]
+          rel[-3] = m_d["version"]
         
-        rel[1] = get_date(m_d)
+        rel[-2] = get_date(m_d)
         second = True
     else:
       pkg.append(line)
-      if rel[1]==None and second:
+      if rel[-2]==None and second:
         second = False
-        form,m = find_match(line, second_line)
+        form,m = helper.find_match(line, second_line)
         if m:
           m_d = m.groupdict()
-          rel[1] = get_date(m_d)
+          rel[-2] = get_date(m_d)
   print versions,"=",len(pkgs)
   return pkgs

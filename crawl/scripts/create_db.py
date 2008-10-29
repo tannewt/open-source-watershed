@@ -2,13 +2,15 @@ import MySQLdb as mysql
 import datetime
 
 #open the file
+from .utils import helper
 
-con = mysql.connect(host='localhost', user='root', passwd='hello')
+HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
+con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD)
 cur = con.cursor()
 
-cur.execute('drop database if exists test')
-cur.execute('create database test')
-cur.execute('use test');
+cur.execute('drop database if exists '+DATABASE)
+cur.execute('create database '+DATABASE)
+cur.execute('use '+DATABASE);
 
 # every distro
 cur.execute("""CREATE TABLE distros (
@@ -26,9 +28,18 @@ branch VARCHAR(255) NOT NULL,
 codename VARCHAR(255) NOT NULL,
 component VARCHAR(255) NOT NULL,
 architecture VARCHAR(16),
-discovered TIMESTAMP NOT NULL,
-last_crawl TIMESTAMP NOT NULL,
+discovered DATETIME NOT NULL,
 FOREIGN KEY (distro_id) REFERENCES distros(id) ON DELETE CASCADE
+) ENGINE=INNODB""")
+
+# every crawl
+cur.execute("""CREATE TABLE crawls (
+id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+repo_id INT UNSIGNED,
+package_id INT UNSIGNED,
+time DATETIME NOT NULL,
+release_count INT UNSIGNED,
+FOREIGN KEY (repo_id) REFERENCES repos(id) ON DELETE CASCADE
 ) ENGINE=INNODB""")
 
 # every package
@@ -36,7 +47,6 @@ cur.execute("""CREATE TABLE packages (
 id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(255) NOT NULL UNIQUE,
 source_id INT UNSIGNED,
-last_crawl TIMESTAMP,
 FOREIGN KEY (source_id) REFERENCES packages(id) ON DELETE SET NULL
 ) ENGINE=INNODB""")
 
@@ -46,8 +56,9 @@ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 package_id INT UNSIGNED,
 version VARCHAR(64) NOT NULL,
 revision VARCHAR(64),
+epoch VARCHAR(64) NOT NULL,
 repo_id INT UNSIGNED,
-released TIMESTAMP NOT NULL,
+released DATETIME NOT NULL,
 FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL,
 FOREIGN KEY (repo_id) REFERENCES repos(id) ON DELETE CASCADE
 ) ENGINE=INNODB""")

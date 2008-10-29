@@ -10,6 +10,7 @@ HTTP_START_DIR = "fedora"
 FTP_START_DIR = HTTP_START_DIR
 
 NAMESPACE = "{http://linux.duke.edu/metadata/common}"
+REPO_NAMESPACE = "{http://linux.duke.edu/metadata/repo}"
 
 ARCHES = ["i386", "ppc", "ppc64", "x86_64"]
 
@@ -29,12 +30,16 @@ def get_repos():
       releases.append(int(f))
   
   for rel in releases:
+    if rel==max(releases):
+      branch="current"
+    else:
+      branch="past"
     for arch in ARCHES:
-      repos.append(["fedora", "released", str(rel), "Everything", arch, None, None])
-      repos.append(["fedora", "released", str(rel), "Testing", arch, None, None])
+      repos.append(["fedora", branch, str(rel), "Everything", arch, None, None])
+      repos.append(["fedora", branch, str(rel), "Testing", arch, None, None])
   
   for arch in ARCHES:
-    repos.append(["fedora", "development", str(max(releases)+1), "Everything", arch, None, None])
+    repos.append(["fedora", "future", str(max(releases)+1), "Everything", arch, None, None])
   
   ftp.quit()
   return repos
@@ -49,8 +54,22 @@ def crawl_repo(repo):
   this_time =  str(time.mktime(datetime.datetime.now().timetuple()))
   file_end = "primary.xml.gz"
   file_start = "files/fedora/"
-  if branch=="development":
-    primaries.append(("/".join([url_start,"development",arch,"os",url_tail]),file_start+"-".join([this_time,"devel",file_end])))
+  if branch=="future":
+    filename = file_start+"-".join([this_time,"devel","repomd.xml"])
+    repomd = helper.open_url("/".join([url_start,"development",arch,"os/repodata/repomd.xml",]),filename,last_crawl)
+    if repomd:
+      f = open(filename)
+      repomd_tree = xml.parse(f)
+      datas = repomd_tree.findall(REPO_NAMESPACE+"data")
+      fn = None
+      for data in datas:
+        if data.attrib["type"]=="primary":
+          loc = data.find(REPO_NAMESPACE+"location")
+          if loc!=None:
+            fn = loc.attrib["href"]
+          break
+      if fn:
+        primaries.append(("/".join([url_start,"development",arch,"os",fn]),file_start+"-".join([this_time,"devel",file_end])))
   else:
     if comp == "Everything":
       primaries.append(("/".join([url_start,"releases",codename,"Everything",arch,"os",url_tail]),file_start+"-".join([this_time,"devel",file_end])))
@@ -74,8 +93,9 @@ def crawl_repo(repo):
       rel_time = e.find(NAMESPACE + "time").attrib["file"]
       version = v["ver"]
       revision = v["rel"]
+      epoch = v["epoch"]
       rel_time = datetime.datetime.fromtimestamp(float(rel_time))
       
-      pkgs.append([name, version, revision, rel_time, xml.tostring(e)])
+      pkgs.append([name, version, revision, epoch, rel_time, xml.tostring(e)])
   return pkgs
   

@@ -21,13 +21,22 @@ def get_repos():
   
   comps = []
   releases.remove("slackware-3.3")
+  rs = []
   for r in releases:
     #print r
     r = r.split("-")[1]
+    if r!="current":
+      rs.append(float(r))
+  
+  for r in ["current"]+rs:
     if r=="current":
-      branch = "unreleased"
+      branch = "future"
+    elif r==max(rs):
+      branch = "current"
+      r = "%2.1f"%r
     else:
-      branch = "released"
+      r = "%2.1f"%r
+      branch = "past"
     for comp in ["extra","pasture","patches","slackware"]:
       comps.append([branch,r,comp])
     
@@ -61,7 +70,7 @@ def crawl_repo(repo):
     kernel = kernel.split()
     kernel = kernel[kernel.index('version')+1].strip(".").strip(",")
     # name, version, revision, time, additional
-    pkgs.append(["linux", kernel, None, this_time, None])
+    pkgs.append(["linux", kernel, None, 0, this_time, None])
   
   pkg_file = open(filename)
   header = True
@@ -85,7 +94,7 @@ def crawl_repo(repo):
       if line=="":
         if len(pkg.keys())>0:
           pkg["description"] = "".join(pkg["description"])
-          pkgs.append([pkg["name"],pkg["version"],pkg["revision"],this_time,str(pkg)])
+          pkgs.append([pkg["name"],pkg["version"],pkg["revision"],0,this_time,str(pkg)])
           pkg = {}
         continue
       else:

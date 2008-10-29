@@ -3,6 +3,8 @@ import distros.slackware
 import distros.ubuntu
 import distros.fedora
 import upstream.subversion
+import upstream.postfix
+import utils.helper
 import MySQLdb as mysql
 import datetime
 import time
@@ -11,6 +13,8 @@ import random
 TEST = False
 EXTRA = True
 
+HOST, USER, PASSWORD, DATABASE = utils.helper.mysql_settings()
+
 def crawl_distro(target):
   print "running",target.__name__
   repos = target.get_repos()
@@ -18,7 +22,7 @@ def crawl_distro(target):
   if TEST:
     repos = [random.choice(repos)]
 
-  con = mysql.connect(host='localhost', user='root', passwd='hello', db='test')
+  con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD, db=DATABASE)
 
   cur = con.cursor()
 
@@ -40,7 +44,7 @@ def crawl_distro(target):
   # find unknown repos and mark them as new
   #print "gathering repo data"
   for repo in repos:
-    cur.execute("select last_crawl from repos where distro_id=%s and branch=%s and codename=%s and component=%s and architecture=%s", [distro_id] + repo[1:-2])
+    cur.execute("SELECT crawls.time FROM crawls,repos WHERE repos.distro_id=%s AND repos.branch=%s AND repos.codename=%s AND repos.component=%s AND repos.architecture=%s AND crawls.repo_id=repos.id ORDER BY crawls.time DESC LIMIT 1", [distro_id] + repo[1:-2])
     row = cur.fetchone()
     repo[-1] = row==None
     if row:
@@ -65,16 +69,22 @@ def crawl_distro(target):
     if rels==None:
       print "ERROR: failed to crawl",repo
       continue
-    #check to see if we have this repo
-    #print "updating repo data"
+    
+    #check to see if we have this repo"
     if repo[-1]:
-      cur.execute("insert into repos (distro_id, branch, codename, component, architecture, discovered, last_crawl) values (%s,%s,%s,%s,%s,NOW(),NOW())", [distro_id] + repo[1:-2])
+      cur.execute("insert into repos (distro_id, branch, codename, component, architecture, discovered) values (%s,%s,%s,%s,%s,NOW())", [distro_id] + repo[1:-2])
       cur.execute("select last_insert_id();")
       repo_id = cur.fetchone()[0]
     else:
       cur.execute("select id from repos where distro_id=%s and branch=%s and codename=%s and component=%s and architecture=%s", [distro_id] + repo[1:-2])
       repo_id = cur.fetchone()[0]
-      cur.execute("update repos set last_crawl=NOW() where id=%s",(repo_id,))
+    
+    #add the crawl
+    count = len(rels)
+    if count>0:
+      cur.execute("insert into crawls (repo_id, release_count, time) values (%s,%s,NOW())", [repo_id,count])
+    else:
+      cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
     
     #print "processing repo releases"
     start_time = time.time()
@@ -97,7 +107,7 @@ def crawl_distro(target):
       #check to see if we have this release
       if not repo[-1] or cur.fetchone()==None:
         try:
-          cur.execute("insert into releases (package_id, version, revision, repo_id, released) values (%s,%s,%s,%s,%s)",(pkg_id,rel[1],rel[2],repo_id,rel[-2]))
+          cur.execute("insert into releases (package_id, version, revision, epoch, repo_id, released) values (%s,%s,%s,%s,%s,%s)",(pkg_id,rel[1],rel[2],rel[3],repo_id,rel[-2]))
           if EXTRA:
             cur.execute("select last_insert_id();")
             rel_id = cur.fetchone()[0]
@@ -120,39 +130,59 @@ def crawl_distro(target):
 def crawl_upstream(target):
   print "running",target.__name__,
 
-  con = mysql.connect(host='localhost', user='root', passwd='hello', db='test')
+  con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD, db=DATABASE)
 
   cur = con.cursor()
-  
-  cur.execute("select id,last_crawl from packages where name=%s",(target.NAME,))
+  cur.execute("SELECT packages.id,crawls.time FROM crawls,packages WHERE packages.name=%s AND packages.id=crawls.package_id ORDER BY crawls.time DESC LIMIT 1",(target.NAME,))
   row = cur.fetchone()
   pkg_id = None
   last_crawl = None
   if row:
     pkg_id = row[0]
     last_crawl = row[1]
-  else:
-    cur.execute("insert into packages (name) values (%s)",(target.NAME,))
-    cur.execute("select last_insert_id();");
-    pkg_id = cur.fetchone()[0]
-  
-  for rel in target.get_releases(last_crawl):
+  rels = target.get_releases(last_crawl)
+  for rel in rels:
+    name, epoch, version, date, extra = rel
+    
+    cur.execute("SELECT packages.id FROM packages WHERE name=%s",(name,))
+    row = cur.fetchone()
+    if row:
+      pkg_id = row[0]
+    else:
+      cur.execute("insert into packages (name) values (%s)",(name,))
+      cur.execute("select last_insert_id();");
+      pkg_id = cur.fetchone()[0]
+    
     try:
-      cur.execute("insert into releases (package_id, version, released) values (%s,%s,%s)",(pkg_id,rel[0],time.strftime("%Y-%m-%d %H:%M:%S",rel[1])))
-      if EXTRA:
+      cur.execute("select id from releases where package_id=%s and epoch=%s and version=%s and repo_id is null",(pkg_id,epoch,version))
+      if cur.fetchone()!=None:
+        continue
+      cur.execute("insert into releases (package_id, epoch, version, released) values (%s,%s,%s,%s)",(pkg_id,epoch,version,date))
+      if EXTRA and extra:
         cur.execute("select last_insert_id();")
         rel_id = cur.fetchone()[0]
-        cur.execute("insert into extra (release_id, content) values (%s, %s)", (rel_id,rel[-1]))
+        cur.execute("insert into extra (release_id, content) values (%s, %s)", (rel_id,extra))
     except mysql.IntegrityError:
       pass
-  cur.execute("update packages set last_crawl=NOW() where id=%s",(pkg_id,))
+  cur.execute("insert into crawls (package_id, time) values (%s,NOW())", (pkg_id,))
+  
+  # update crawls
+  count = len(rels)
+  if count>0:
+    cur.execute("insert into crawls (package_id, release_count, time) values (%s,%s,NOW())", [pkg_id,count])
+  else:
+    cur.execute("insert into crawls (package_id, time) values (%s,NOW())", [pkg_id])
+  
   con.commit()
   con.close()
   print "done"
 
+print "Using %s/%s."%(HOST,DATABASE)
 crawl_distro(distros.slackware)
 crawl_distro(distros.debian)
 crawl_distro(distros.ubuntu)
 crawl_distro(distros.fedora)
 
 crawl_upstream(upstream.subversion)
+crawl_upstream(upstream.postfix)
+print "Done using %s/%s."%(HOST,DATABASE)

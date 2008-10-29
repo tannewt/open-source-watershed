@@ -1,6 +1,9 @@
 import MySQLdb as mysql
+from .utils import helper
 
-con = mysql.connect(host='localhost', user='root', passwd='hello', db='test')
+HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
+
+con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD, db=DATABASE)
 
 cur = con.cursor()
 
