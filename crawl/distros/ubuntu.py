@@ -26,7 +26,8 @@ ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
   CN_FEISTY : ["amd64", "i386", "powerpc", "sparc"],
   CN_GUTSY : ["amd64", "i386", "powerpc", "sparc"],
   CN_HARDY : ["amd64", "i386"],
-  CN_INTREPID : ["amd64", "i386"]}
+  CN_INTREPID : ["amd64", "i386"],
+  CN_JAUNTY : ["amd64", "i386"]}
 
 MIRROR = "ubuntu.osuosl.org"
 
@@ -36,16 +37,25 @@ HTTP_START_DIR = "ubuntu/dists/"
 
 def get_repos():
   repos = []
-  for codename in CODENAMES:
+  # find the codenames
+  u = "".join(("http://",MIRROR,"/",HTTP_START_DIR))
+  print u
+  files = helper.open_dir(u)
+  codenames = []
+  for d,name,mod in files:
+    if "-" not in name:
+      codenames.append(name.strip("/"))
+  
+  for codename in codenames:
     for repo in [None,"backports","proposed","security","updates"]:
       for arch in ARCHES[codename]:
         for component in ["main","multiverse","universe","restricted"]:
           if repo!=None:
             component += "|" + repo
           
-          if codename == CODENAMES[-1]:
+          if codename == codenames[-1]:
             branch = "future"
-          elif codename == CODENAMES[-2]:
+          elif codename == codenames[-2]:
             branch = "current"
           elif codename in LTS:
             branch = "lts"

@@ -47,7 +47,7 @@ def open_dir(url):
   if open_url(url, filename)==None:
     return []
   
-  pattern = '<[^>]*ALT="(?P<dir>[^"])*"> <A[^>]*>(?P<name>[^<]*)</A> *(?P<modified>.* [0-9][0-9]:[0-9][0-9])'
+  pattern = '<[^>]*(ALT|alt)="(?P<dir>[^"])*"> <(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(?P<modified>.* [0-9][0-9]:[0-9][0-9])'
   pattern = re.compile(pattern)
 
   f = open(filename)
