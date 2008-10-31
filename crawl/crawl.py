@@ -2,6 +2,8 @@ import distros.debian
 import distros.slackware
 import distros.ubuntu
 import distros.fedora
+import distros.gentoo
+
 import upstream.subversion
 import upstream.postfix
 import utils.helper
@@ -59,7 +61,8 @@ def crawl_distro(target):
   #print "processing releases"
   for repo in repos:
     # pass in name, branch, codename, component, architecture, last_crawl and new
-    print "crawling repo:"," ".join(repo[1:5]),
+    print "crawling:"," ".join(repo[1:5]),
+    start_time = time.time()
     try:
       rels = target.crawl_repo(repo)
     except IOError, e:
@@ -79,15 +82,9 @@ def crawl_distro(target):
       cur.execute("select id from repos where distro_id=%s and branch=%s and codename=%s and component=%s and architecture=%s", [distro_id] + repo[1:-2])
       repo_id = cur.fetchone()[0]
     
-    #add the crawl
-    count = len(rels)
-    if count>0:
-      cur.execute("insert into crawls (repo_id, release_count, time) values (%s,%s,NOW())", [repo_id,count])
-    else:
-      cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
+    release_count = 0
     
     #print "processing repo releases"
-    start_time = time.time()
     for rel in rels:
       #check to see if we have this package
       #pkg_id = cur.execute("select id from packages where name=%s",rel[0:1]).fetchone()
@@ -107,6 +104,7 @@ def crawl_distro(target):
       #check to see if we have this release
       if not repo[-1] or cur.fetchone()==None:
         try:
+          #print (pkg_id,rel[1],rel[2],rel[3],repo_id,rel[-2])
           cur.execute("insert into releases (package_id, version, revision, epoch, repo_id, released) values (%s,%s,%s,%s,%s,%s)",(pkg_id,rel[1],rel[2],rel[3],repo_id,rel[-2]))
           if EXTRA:
             cur.execute("select last_insert_id();")
@@ -117,14 +115,18 @@ def crawl_distro(target):
           pass
     
     duration = time.time()-start_time
-    if duration < 0.001:
-      print "skipped"
-    else:
-      print "~",int(duration),"secs"
+    print "~"+str(int(duration)),"secs",
     #print "committing"
     con.commit()
+    
+    #add the crawl
+    if release_count>0:
+      cur.execute("insert into crawls (repo_id, release_count, time) values (%s,%s,NOW())", [repo_id,release_count])
+    else:
+      cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
+    con.commit()
+    print release_count,"releases"
   con.close()
-  print release_count,"releases"
   print
 
 def crawl_upstream(target):
@@ -178,11 +180,12 @@ def crawl_upstream(target):
   print "done"
 
 print "Using %s/%s."%(HOST,DATABASE)
-crawl_distro(distros.slackware)
-crawl_distro(distros.debian)
-crawl_distro(distros.ubuntu)
-crawl_distro(distros.fedora)
+#crawl_distro(distros.slackware)
+#crawl_distro(distros.debian)
+#crawl_distro(distros.ubuntu)
+#crawl_distro(distros.fedora)
+crawl_distro(distros.gentoo)
 
-crawl_upstream(upstream.subversion)
-crawl_upstream(upstream.postfix)
+#crawl_upstream(upstream.subversion)
+#crawl_upstream(upstream.postfix)
 print "Done using %s/%s."%(HOST,DATABASE)

@@ -30,7 +30,7 @@ def open_url(url, filename, last_crawl=None):
     print datastream.status,#url,
     return None
   elif datastream.status:
-    print datastream.status,
+    print datastream.status,#last_crawl,
     return None
   else:
     out = open(filename, "w")

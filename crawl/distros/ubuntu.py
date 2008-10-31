@@ -18,7 +18,8 @@ CODENAMES = [
   CN_FEISTY,
   CN_GUTSY,
   CN_HARDY,
-  CN_INTREPID]
+  CN_INTREPID,
+  CN_JAUNTY]
 
 LTS = [CN_DAPPER, CN_HARDY]
 
@@ -46,18 +47,18 @@ def get_repos():
     if "-" not in name:
       codenames.append(name.strip("/"))
   
-  for codename in codenames:
+  for codename in CODENAMES:
     for repo in [None,"backports","proposed","security","updates"]:
       for arch in ARCHES[codename]:
         for component in ["main","multiverse","universe","restricted"]:
           if repo!=None:
             component += "|" + repo
           
-          if codename == codenames[-1]:
+          if codename == CODENAMES[-1]:
             branch = "future"
-          elif codename == codenames[-2]:
+          elif codename == CODENAMES[-2]:
             branch = "current"
-          elif codename in LTS:
+          elif codename == filter(lambda x: x!=CODENAMES[-1] and x!=CODENAMES[-2],LTS)[-1]:
             branch = "lts"
           else:
             branch = "past"
