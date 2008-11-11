@@ -180,12 +180,12 @@ def crawl_upstream(target):
   print "done"
 
 print "Using %s/%s."%(HOST,DATABASE)
-#crawl_distro(distros.slackware)
-#crawl_distro(distros.debian)
-#crawl_distro(distros.ubuntu)
-#crawl_distro(distros.fedora)
+crawl_distro(distros.slackware)
+crawl_distro(distros.debian)
+crawl_distro(distros.ubuntu)
+crawl_distro(distros.fedora)
 crawl_distro(distros.gentoo)
 
-#crawl_upstream(upstream.subversion)
-#crawl_upstream(upstream.postfix)
+crawl_upstream(upstream.subversion)
+crawl_upstream(upstream.postfix)
 print "Done using %s/%s."%(HOST,DATABASE)

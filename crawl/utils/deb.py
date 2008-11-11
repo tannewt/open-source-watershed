@@ -2,7 +2,7 @@ import bz2
 import gzip
 import helper
 
-def parse_packages(parse_version, filename, url, last_crawl):
+def parse_packages(parse_version, filename, url, last_crawl=None):
   pkgs = []
 
   last_modified = helper.open_url(url, filename, last_crawl)
