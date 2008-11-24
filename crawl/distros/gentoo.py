@@ -20,6 +20,7 @@ def get_repos():
   for c,b in [("stable","current"),("unstable","future")]:
     for a in arches:
       repos.append(["gentoo",b,"",c,a,None,None])
+  repos.append(["gentoo","past","","unknown","unknown",None,None])
   return repos
 
 def parse(f):
@@ -76,6 +77,38 @@ def parse(f):
         pkg[this_key] = []
       pkg[this_key].append(line.strip())
   return pkg
+
+def crawl_changelog(category,package,last_crawl=None):
+  fn = STORAGE+category+"/"+package+"/ChangeLog"
+  last = os.stat(fn).st_mtime
+  last = datetime.datetime.fromtimestamp(last)
+  pkgs = []
+  # check last crawl
+  if last_crawl==None or last > last_crawl:
+    try:
+      f = open(fn)
+    except:
+      print "ERROR: opening %s"%fn
+      return []
+    
+    for line in f:
+      if line.startswith("*"+package) and " " in line:
+        try :
+          version,d,m,y  = line.strip().split()
+          version = version.strip("*"+package+"-")
+          d = d[1:]
+          y = y[:-1]
+          revision = 0
+          if "-" in version:
+            version, revision = version.rsplit("-",1)
+            revision = int(revision[1:])
+          released = datetime.datetime.strptime(" ".join((d,m,y)),"%d %b %Y")
+          if last_crawl==None or released > last_crawl:
+            pkgs.append([package, version, revision, 0, released, ""])
+        except:
+          print "ERROR: parsing '%s' in %s"%(line,fn)
+    f.close()
+  return pkgs
       
 # return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
@@ -117,7 +150,7 @@ def crawl_repo(repo):
     print "ERROR: rsync failed: %s"%x
     return []
   
-  pkgs = {}
+  pkgs = {"unknown":{"unknown":[]}}
   dirs = os.listdir(STORAGE)
   f = open(STORAGE+"profiles/categories")
   dirs = map(lambda s: s.strip(),f.readlines())
@@ -125,6 +158,8 @@ def crawl_repo(repo):
   for d in dirs:
     packages = os.listdir(STORAGE+d+"/")
     for p in filter(lambda x: x!="metadata.xml",packages):
+      # crawl change log
+      pkgs["unknown"]["unknown"] += crawl_changelog(d,p,last_crawl)
       for v in filter(lambda x: x.startswith(p+"-"), os.listdir(STORAGE+d+"/"+p+"/")):
         fn = STORAGE+d+"/"+p+"/"+v
         last = os.stat(fn).st_mtime

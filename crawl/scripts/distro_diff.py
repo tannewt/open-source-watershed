@@ -31,14 +31,14 @@ con.close()
 
 print len(set1-set2),len(set1 & set2),len(set2 - set1)
 
-cruft = {}
-for p in set1 ^ set2:
-  if p in set1:
-    cruft[p] = name1
-  else:
-    cruft[p] = name2
+#cruft = {}
+#for p in set1 ^ set2:
+#  if p in set1:
+#    cruft[p] = name1
+#  else:
+#    cruft[p] = name2
 
-keys = cruft.keys()
-keys.sort()
-for k in keys[-100:]:
-  print k,cruft[k]
+#keys = cruft.keys()
+#keys.sort()
+#for k in keys[-100:]:
+#  print k,cruft[k]

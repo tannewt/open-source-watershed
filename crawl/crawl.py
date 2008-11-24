@@ -6,11 +6,23 @@ import distros.gentoo
 
 import upstream.subversion
 import upstream.postfix
+
+DISTROS = {"slackware" : distros.slackware,
+           "debian"    : distros.debian,
+           "ubuntu"    : distros.ubuntu,
+           "fedora"    : distros.fedora,
+           "gentoo"    : distros.gentoo}
+
+UPSTREAM = {"subversion" : upstream.subversion,
+            "postfix"    : upstream.postfix}
+
 import utils.helper
+
 import MySQLdb as mysql
 import datetime
 import time
 import random
+import sys
 
 TEST = False
 EXTRA = True
@@ -180,12 +192,19 @@ def crawl_upstream(target):
   print "done"
 
 print "Using %s/%s."%(HOST,DATABASE)
-crawl_distro(distros.slackware)
-crawl_distro(distros.debian)
-crawl_distro(distros.ubuntu)
-crawl_distro(distros.fedora)
-crawl_distro(distros.gentoo)
-
-crawl_upstream(upstream.subversion)
-crawl_upstream(upstream.postfix)
+if len(sys.argv)>1:
+  for crawl in sys.argv[1:]:
+    if DISTROS.has_key(crawl):
+      crawl_distro(DISTROS[crawl])
+      continue
+    if UPSTREAM.has_key(crawl):
+      crawl_upstream(UPSTREAM[crawl])
+      continue
+    print "unknown",crawl
+else:
+  print "no args - running all"
+  for d in DISTROS.keys():
+    crawl_distro(DISTROS[d])
+  for u in UPSTREAM.keys():
+    crawl_upstream(UPSTREAM[u])
 print "Done using %s/%s."%(HOST,DATABASE)
