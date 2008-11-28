@@ -11,6 +11,20 @@ CACHE_FN = "cache.pickle"
 FUNCTION_PATTERN = re.compile("^[a-z_]+[ \t]*\(\)")
 VARIABLE_PATTERN = re.compile("^[A-Z]+=")
 
+MONTHS = {"Jan":"Jan",
+          "Feb":"Feb",
+          "Mar":"Mar",
+          "Apr":"Apr",
+          "May":"May",
+          "Jun":"Jun",
+          "Jul":"Jul",
+          "Aug":"Aug",
+          "Sep":"Sep",
+          "Oct":"Oct",
+          "Okt":"Oct",
+          "Nov":"Nov",
+          "Dec":"Dec"}
+
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos():
   repos = []
@@ -80,7 +94,11 @@ def parse(f):
 
 def crawl_changelog(category,package,last_crawl=None):
   fn = STORAGE+category+"/"+package+"/ChangeLog"
-  last = os.stat(fn).st_mtime
+  try:
+    last = os.stat(fn).st_mtime
+  except:
+    print "ERROR: missing %s"%fn
+    return []
   last = datetime.datetime.fromtimestamp(last)
   pkgs = []
   # check last crawl
@@ -95,14 +113,21 @@ def crawl_changelog(category,package,last_crawl=None):
       if line.startswith("*"+package) and " " in line:
         try :
           version,d,m,y  = line.strip().split()
-          version = version.strip("*"+package+"-")
+          version = version.replace("*"+package+"-","").replace(".ebuild","")
           d = d[1:]
           y = y[:-1]
           revision = 0
           if "-" in version:
             version, revision = version.rsplit("-",1)
-            revision = int(revision[1:])
-          released = datetime.datetime.strptime(" ".join((d,m,y)),"%d %b %Y")
+            try:
+              revision = int(revision[1:])
+            except:
+              version = version+"_"+revision
+              revision = 0
+          if len(m)>3:
+            released = datetime.datetime.strptime(" ".join((d,m,y)),"%d %B %Y")
+          else:
+            released = datetime.datetime.strptime(" ".join((d,MONTHS[m],y)),"%d %b %Y")
           if last_crawl==None or released > last_crawl:
             pkgs.append([package, version, revision, 0, released, ""])
         except:
@@ -126,7 +151,7 @@ def crawl_repo(repo):
     # check to make sure the cache is reasonably new
     if datetime.datetime.now()-last<datetime.timedelta(hours=1):
       # only load the cache if we have not crawled it already
-      if last_crawl and last_crawl<last:
+      if last_crawl==None or last_crawl<last:
         #load the cache and return the desired subset
         f = open(STORAGE+CACHE_FN)
         cache = pickle.load(f)
