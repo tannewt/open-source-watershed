@@ -5,6 +5,7 @@ import distros.fedora
 import distros.gentoo
 import distros.opensuse
 import distros.arch
+import distros.sabayon
 
 import upstream.subversion
 import upstream.postfix
@@ -15,7 +16,8 @@ DISTROS = {"slackware" : distros.slackware,
            "fedora"    : distros.fedora,
            "gentoo"    : distros.gentoo,
            "opensuse"  : distros.opensuse,
-           "arch"      : distros.arch}
+           "arch"      : distros.arch,
+           "sabayon"   : distros.sabayon}
 
 UPSTREAM = {"subversion" : upstream.subversion,
             "postfix"    : upstream.postfix}
