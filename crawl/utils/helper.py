@@ -47,13 +47,14 @@ def open_dir(url):
   if open_url(url, filename)==None:
     return []
   
-  pattern = '<img [^>]*(ALT|alt)="(?P<dir>[^"]*)"> <(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
+  pattern = '<img [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*> <(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
   pattern = re.compile(pattern)
 
   f = open(filename)
   files = []
   for line in f:
     match = pattern.match(line)
+    #print line,match
     if match:
       d = match.groupdict()
       files.append((d["dir"]=="[DIR]",d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
