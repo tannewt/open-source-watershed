@@ -44,14 +44,18 @@ class Axis (Group):
       print "error: no start or end values"
     elif self._type!=type(value):
       print value,"(",type(value),"is not of type",self._type
-    elif type(value)==datetime.datetime:
+    elif type(value)==datetime.datetime or type(value)==datetime.timedelta:
       return self._orientation*self.time_div((value-self._start),(self._end-self._start))*self._length
     else:
       return self._orientation*(value-self._start)/float(self._end-self._start)*self._length
     return -1
   
   def time_div(self,top,bottom):
-    return float(self.td_to_microsec(top))/self.td_to_microsec(bottom)
+    t = self.td_to_microsec(top)
+    b = self.td_to_microsec(bottom)
+    if b==0:
+      return 0
+    return float(t)/b
     
   def td_to_microsec(self,t):
     return t.microseconds+1000000*t.seconds+1000000*3600*24*t.days
@@ -75,8 +79,9 @@ class LineChart(Canvas):
     self.root.add_child(self._y_axis)
     self.root.add_child(self._x_axis)
   
-  def add(self,title, data):
+  def add(self,title, data, color="#ffffffffffff"):
     line = polyline_new_line(self.root,0,0,0,0)
+    line.props.stroke_color = color
     line.translate(50,self.get_bounds()[3]-50)
     xs = map(lambda x: x[0], data)
     ys = map(lambda y: y[1], data)
@@ -106,8 +111,8 @@ class LineChart(Canvas):
     self._x_axis.set_simple_transform(50,h-50,1,0)
     self._x_axis.set_size(w-75)
     
-    map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines)
-    map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines)
+    map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
+    map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines.keys())
   
   def mousemove(self, target, event):
     print event.get_coords()

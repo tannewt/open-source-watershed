@@ -39,8 +39,8 @@ for name,branch,y,m,d,c in cur:
     data[k] = []
   if c==None:
     c=0
-  elif c>300:
-    c = 300
+  elif c>1000:
+    c = 1000
   else:
     c=int(c)
   data[k].append((datetime.datetime(y,m,d),c))

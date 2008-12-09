@@ -30,7 +30,6 @@ def get_repos():
 # return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
   distro,branch,codename,component,arch,last_crawl,new = repo
-  last_crawl = None
   pkgs = []
   fn = "".join(("files/arch/",component,"-",str(time.time()),".db.tar.gz"))
   url = "".join(("http://",MIRROR,"/",component,"/os/",arch,"/",component,".db.tar.gz"))

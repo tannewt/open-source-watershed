@@ -37,6 +37,9 @@ def crawl_repo(repo):
   #print "open url"
   t = helper.open_url(url,fn+".bz2",last_crawl)
   
+  if t==None:
+    return []
+  
   #print "extract"
   try:
     p = subprocess.Popen(("/bin/bunzip2",fn+".bz2"),stdout=None)
@@ -46,16 +49,18 @@ def crawl_repo(repo):
     x=-1
   
   #print "sql stuff"
-  if t:
-    conn = sqlite3.connect(fn)
-    c = conn.cursor()
-    #print "go sql"
-    c.execute("SELECT baseinfo.name, baseinfo.version, baseinfo.revision, baseinfo.branch, extrainfo.datecreation FROM baseinfo, extrainfo WHERE baseinfo.idpackage = extrainfo.idpackage;")
-    #print "sql done"
-    
-    pkgs = []
-    for name, version, revision, branch, date in c:
-      dt = datetime.datetime.fromtimestamp(float(date))
-      if last_crawl==None or last_crawl<dt:
-        pkgs.append([name, version, revision, 0, dt, ""])
+  conn = sqlite3.connect(fn)
+  c = conn.cursor()
+  #print "go sql"
+  c.execute("SELECT baseinfo.name, baseinfo.version, baseinfo.revision, baseinfo.branch, extrainfo.datecreation FROM baseinfo, extrainfo WHERE baseinfo.idpackage = extrainfo.idpackage;")
+  #print "sql done"
+  
+  pkgs = []
+  for name, version, revision, branch, date in c:
+    dt = datetime.datetime.fromtimestamp(float(date))
+    if last_crawl==None or last_crawl<dt:
+      if "-" == version[-3]:
+        version, gentoo_revision = version.rsplit("-")
+        revision = gentoo_revision[1:] + "." + revision
+      pkgs.append([name, version, revision, 0, dt, ""])
   return pkgs

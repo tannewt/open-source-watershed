@@ -29,6 +29,7 @@ import datetime
 import time
 import random
 import sys
+import cPickle as pickle
 
 TEST = False
 EXTRA = True
@@ -76,6 +77,7 @@ def crawl_distro(target):
   for id, name in cur:
     cache_pkgs[name] = id
 
+  total_releases = 0
   #print "processing releases"
   for repo in repos:
     # pass in name, branch, codename, component, architecture, last_crawl and new
@@ -143,9 +145,11 @@ def crawl_distro(target):
     else:
       cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
     con.commit()
+    total_releases += release_count
     print release_count,"releases"
   con.close()
   print
+  return total_releases
 
 def crawl_upstream(target):
   print "running",target.__name__,
@@ -198,10 +202,11 @@ def crawl_upstream(target):
   print "done"
 
 print "Using %s/%s."%(HOST,DATABASE)
+stats = []
 if len(sys.argv)>1:
   for crawl in sys.argv[1:]:
     if DISTROS.has_key(crawl):
-      crawl_distro(DISTROS[crawl])
+      stats.append((crawl,crawl_distro(DISTROS[crawl])))
       continue
     if UPSTREAM.has_key(crawl):
       crawl_upstream(UPSTREAM[crawl])
@@ -210,7 +215,12 @@ if len(sys.argv)>1:
 else:
   print "no args - running all"
   for d in DISTROS.keys():
-    crawl_distro(DISTROS[d])
+    stats.append((d,crawl_distro(DISTROS[d])))
   for u in UPSTREAM.keys():
     crawl_upstream(UPSTREAM[u])
+
+save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
+pickle.dump(stats,save_to)
+save_to.close()
+
 print "Done using %s/%s."%(HOST,DATABASE)

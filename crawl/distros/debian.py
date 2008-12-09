@@ -73,16 +73,26 @@ def get_repos():
 def version_parser(version):
   #[epoch:]upstream_version[-debian_revision] 
   if ":" in version:
-    epoch, rest = version.split(":",1)
+    epoch, ver = version.split(":",1)
   else:
-    rest = version
+    ver = version
     epoch = 0
 
-  if "-" in rest:
-    rest, debv = rest.rsplit("-",1)
+  if "-" in ver:
+    ver, rev = ver.rsplit("-",1)
   else:
-    debv = 0
-  return epoch, rest, debv
+    rev = "0"
+  
+  # get rid of dfsg
+  if "dfsg" in ver:
+    ver, g_rev = ver.rsplit("dfsg",1)
+    rev = g_rev + "." + rev
+    if not (ver[-1].isdigit() or ver[-1].isalpha()):
+      ver = ver[:-1]
+    if not (rev[0].isdigit() or rev[0].isalpha()):
+      rev = rev[1:]
+  
+  return epoch, ver, rev
 
 def crawl_repo(repo):
   name, branch, codename, comp, arch, last_crawl, new = repo
