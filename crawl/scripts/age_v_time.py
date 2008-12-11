@@ -4,15 +4,23 @@ import os
 import datetime
 
 sys.path.append(os.getcwd())
-
 from utils import helper
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+import age
 
 import gtk,gobject
 from utils import chart
+
+DISTRO_COLORS = {"gentoo":   gtk.gdk.Color( 70*256,  53*256, 124*256),
+                 "sabayon":  gtk.gdk.Color(  1*256, 112*256, 202*256),
+                 "debian":   gtk.gdk.Color(199*256,   0*256,  54*256),
+                 "ubuntu":   gtk.gdk.Color(247*256, 128*256,  38*256),
+                 "slackware":gtk.gdk.Color( 80*256, 104*256, 178*256),
+                 "fedora":   gtk.gdk.Color(  7*256,  42*256,  96*256),
+                 "opensuse": gtk.gdk.Color( 36*256, 168*256,   1*256),
+                 "arch":     gtk.gdk.Color( 23*256, 147*256, 209*256)}
 
 class AgeView:
   def __init__(self):
@@ -27,6 +35,7 @@ class AgeView:
     vbox.show()
     self.distro_store = gtk.ListStore(gobject.TYPE_STRING,gtk.gdk.Color)
     l = gtk.TreeView(self.distro_store)
+    l.set_headers_visible(False)
     renderer = gtk.CellRendererText()
     l.append_column(gtk.TreeViewColumn("",renderer,text=0,foreground_gdk=1))
     l.show()
@@ -35,8 +44,10 @@ class AgeView:
     # add distro stuff
     h = gtk.HBox()
     self.distro = gtk.combo_box_new_text()
+    self.distro.connect("changed",self.distro_changed)
     h.add(self.distro)
     self.branch = gtk.combo_box_new_text()
+    self.branch.connect("changed",self.branch_changed)
     h.add(self.branch)
     self.arch = gtk.combo_box_new_text()
     h.add(self.arch)
@@ -52,6 +63,7 @@ class AgeView:
     self.pkg_store = gtk.ListStore(gobject.TYPE_STRING)
     self.packages = []
     l = gtk.TreeView(self.pkg_store)
+    l.set_headers_visible(False)
     renderer = gtk.CellRendererText()
     l.append_column(gtk.TreeViewColumn("",renderer,text=0))
     l.show()
@@ -60,6 +72,7 @@ class AgeView:
     # add distro stuff
     h = gtk.HBox()
     self.pkg = gtk.Entry()
+    self.pkg.connect("activate",self.add_pkg)
     h.add(self.pkg)
     self.add = gtk.Button(stock=gtk.STOCK_ADD)
     self.add.connect("clicked",self.add_pkg)
@@ -78,10 +91,10 @@ class AgeView:
     
     HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-    self.con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+    con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
     
     self.distros = {}
-    cur = self.con.cursor()
+    cur = con.cursor()
     cur.execute("SELECT DISTINCT distros.name, repos.branch, repos.architecture FROM distros, repos WHERE distros.id = repos.distro_id;")
     for name, branch, arch in cur:
       if name not in self.distros:
@@ -90,186 +103,45 @@ class AgeView:
         self.distros[name][branch] = []
       if arch not in self.distros[name][branch]:
         self.distros[name][branch].append(arch)
+    con.close()
     
     for d in self.distros.keys():
       self.distro.append_text(d)
   
   def add_distro(self, button):
     d = self.distro.get_active_text()
+    b = self.branch.get_active_text()
+    a = self.arch.get_active_text()
     c = self.color.get_color()
-    ages = self.get_combined_age(d,self.packages)
+    ages = age.get_combined_age(d,self.packages)
     if len(ages)>0:
-      self.distro_store.append([d,c])
-      self.graph.add(" ".join([d]+self.packages),ages,c.to_string())
+      self.distro_store.append([" ".join(map(str,(d,b,a))),c])
+      self.graph.add(" ".join(map(str,[d,b,a])+self.packages),ages,c.to_string())
     else:
       print "none"
   
-  def add_pkg(self, button):
+  def add_pkg(self, widget):
     p = self.pkg.get_text()
     self.packages.append(p)
     self.pkg_store.append([p])
+    self.pkg.set_text("")
+  
+  def distro_changed(self, widget):
+    distro = self.distro.get_active_text()
+    self.color.set_color(DISTRO_COLORS[distro])
+    self.branch.props.model.clear()
+    for d in self.distros[distro].keys():
+      self.branch.append_text(d)
+  
+  def branch_changed(self, widget):
+    distro = self.distro.get_active_text()
+    branch = self.branch.get_active_text()
+    self.arch.props.model.clear()
+    for a in self.distros[distro][branch]:
+      self.arch.append_text(a)
 
   def run(self):
     gtk.main()
-  
-  def get_combined_age(self, distro, packages):
-    combined = None
-    now = datetime.datetime.now()
-    for pkg in packages:
-      points = self.get_age(distro, pkg, now)
-      point = map(lambda x: (x[0], x[1]//len(packages)),points)
-      if combined==None:
-        combined = points
-      else:
-        combined = self.sum_ages(combined, points)
-    return combined
-  
-  def sum_ages(self, aA, aB):
-    a = 0
-    b = 0
-    last_aA = None
-    last_aB = None
-    result = []
-    while a+b<len(aA)+len(aB)-2:
-      # the next is in list A
-      if a<len(aA)-1 and (len(aB)-1==b or aA[a][0]<aB[b][0]):
-        # special case for start
-        if a==0 and last_aB==None:
-          a+=1
-        elif a==0 and last_aB!=None:
-          result.append((aA[0][0], aA[0][1]+last_aB[1]))
-          a+=1
-        elif last_aB!=None:
-          result.append((aA[a][0], aA[a][1]+last_aB[1]))
-          result.append((aA[a+1][0], aA[a+1][1]+last_aB[1]))
-          a+=2
-        else:
-          a+=1
-        last_aA = aA[a-1]
-      #equal time start
-      elif a==0 and b==0 and aA[a][0]==aB[b][0]:
-        result.append((aA[a][0], aA[a][1]+aB[b][1]))
-        last_aA = aA[a]
-        last_aB = aB[b]
-        a+=1
-        b+=1
-      # equal time non-start
-      elif a>0 and b>0 and a<len(aA)-1 and b<len(aB)-1 and aA[a][0]==aB[b][0]:
-        result.append((aA[a][0], aA[a][1]+aB[b][1]))
-        result.append((aA[a][0], aA[a+1][1]+aB[b+1][1]))
-        last_aA = aA[a+1]
-        last_aB = aB[b+1]
-        a+=2
-        b+=2
-      elif b<len(aB)-1 and (len(aA)-1==a or aA[a][0]>aB[b][0]):
-        # special case for start
-        if b==0 and last_aA==None:
-          b+=1
-        elif b==0 and last_aA!=None:
-          result.append((aB[0][0], aB[0][1]+last_aA[1]))
-          b+=1
-        elif last_aA!=None:
-          result.append((aB[b][0], aB[b][1]+last_aA[1]))
-          result.append((aB[b+1][0], aB[b+1][1]+last_aA[1]))
-          b+=2
-        else:
-          b+=1
-        last_aB = aB[b-1]
-      else:
-        print "unseen case",a,b
-        print aA[a]
-        print aB[b]
-        break
-    result.append((aA[-1][0],aA[-1][1]+aB[-1][1]))
-    print "combined"
-    for a in result:
-      print a
-    print
-    return result
-      
-  def get_age(self, distro, package, now=None):
-    cur = self.con.cursor()
-    #print "query upstream"
-    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s GROUP BY releases.version ORDER BY MIN(releases.released)"
-    cur.execute(q,(package,))
-
-    upstream = []
-    for row in cur:
-      #print row
-      upstream.append(row)
-
-    #print
-    #print "query downstream"
-    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND packages.name=%s AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s GROUP BY releases.version ORDER BY MIN(releases.released)"
-    cur.execute(q,(package,distro))
-
-    downstream = []
-    for row in cur:
-      #print row
-      downstream.append(row)
-
-    upstreams = {}
-    latest = []
-    ages = []
-    last_downstream = None
-    ds = False
-    u = 0
-    d = 0
-    #print
-    #print "interleave"
-    #interleave the dates
-    while u+d < len(upstream)+len(downstream):
-      is_u = False
-      version = None
-      date = None
-      append = False
-      if u<len(upstream) and (len(downstream)==d or upstream[u][1]<=downstream[d][1]):
-        #print "upstream",upstream[u]
-        version, date = upstream[u]
-        upstreams[version] = date
-        is_u = True
-        append = len(downstream)==d or upstream[u][1]!=downstream[d][1]
-        u+=1
-      else:
-        #print "downstream",downstream[d]
-        version, date = downstream[d]
-        last_downstream = version
-        append = True
-        d+=1
-      if ds and append:
-        if len(latest)==0:
-          ages.append((date, date-date))
-        else:
-          ages.append((date, date-upstreams[latest[0]]))
-      #print latest
-      if is_u:
-        latest.append(version)
-        #print latest
-      else:
-        while len(latest)>0 and latest[0]<=version and latest.pop(0)!=version:
-          pass
-        #print latest
-      if last_downstream!=None and append:
-        ds=True
-        if len(latest)==0:
-          ages.append((date, date-date))
-        else:
-          ages.append((date, date-upstreams[latest[0]]))
-    #print
-    #print "age"
-    if now==None:
-      now = datetime.datetime.now()
-    if last_downstream!=None:
-      if len(latest)==0:
-        ages.append((now, now-now))
-      else:
-        ages.append((now,now-upstreams[latest[0]]))
-    
-    print "age of",package
-    for a in ages:
-      print a
-    print
-    return ages
 
 av = AgeView()
 av.run()

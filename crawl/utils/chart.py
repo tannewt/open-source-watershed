@@ -3,12 +3,6 @@ import gtk
 import datetime
 
 class Axis (Group):
-  _start = None
-  _end = None
-  _orientation = None
-  _length = 100
-  _type = None
-  
   VERTICAL = -1
   HORIZONTAL = 1
   
@@ -16,6 +10,11 @@ class Axis (Group):
     Group.__init__(self)
     self._orientation=orientation
     self.p = polyline_new_line(self,0,0,0,0)
+    self._start = None
+    self._end = None
+    self._length = 100
+    self._type = None
+    self._grid = []
   
   def set_range(self, start, end):
     if type(start)!=type(end):
@@ -32,7 +31,104 @@ class Axis (Group):
     self._length = length
     self._redraw()
   
+  def _draw_grid(self):
+    for i in range(len(self._grid)):
+      item = self._grid.pop()
+      p = item.get_parent()
+      #print item, p, self
+      index = p.find_child(item)
+      p.remove_child(index)
+    
+    if type(self._start)==datetime.datetime:
+      # draw lines per year
+      year = datetime.datetime(self._start.year+1,1,1)
+      while year<self._end:
+        #print "draw year",year
+        line = polyline_new_line(self,0,0,0,0)
+        c = self.coord(year)
+        text = Text(text=str(year.year))
+        self.add_child(text,-1)
+        if self._orientation==self.HORIZONTAL:
+          points= Points([(c,-5), (c,5)])
+          text.props.anchor = gtk.ANCHOR_NORTH
+          text.props.x = c
+          text.props.y = 6
+        else:
+          points = Points([(-5,c), (5,c)])
+          text.props.anchor = gtk.ANCHOR_EAST
+          text.props.x = -6
+          text.props.y = c
+        line.props.points = points
+        self._grid.append(line)
+        self._grid.append(text)
+        year = year.replace(year=year.year+1)
+    elif type(self._start)==datetime.timedelta:
+      spread = self._end - self._start
+      if spread<datetime.timedelta(weeks=4):
+        one_day = datetime.timedelta(days=1)
+        # draw lines per day
+        day = datetime.timedelta(days=self._start.days+1)
+        while day<self._end:
+          #print "draw day",day
+          line = polyline_new_line(self,0,0,0,0)
+          c = self.coord(day)
+          if self._orientation==self.HORIZONTAL:
+            points= Points([(c,-2), (c,2)])
+          else:
+            points = Points([(-2,c), (2,c)])
+          line.props.points = points
+          self._grid.append(line)
+          day += one_day
+      
+      # draw lines per week
+      if spread<datetime.timedelta(weeks=60):
+        one_week = datetime.timedelta(weeks=1)
+        # draw lines per day
+        week = datetime.timedelta(weeks=(self._start.days/7)+1)
+        while week<self._end:
+          #print "draw week",week
+          line = polyline_new_line(self,0,0,0,0)
+          c = self.coord(week)
+          if self._orientation==self.HORIZONTAL:
+            points= Points([(c,-3), (c,3)])
+            
+          else:
+            points = Points([(-3,c), (3,c)])
+            
+          line.props.points = points
+          self._grid.append(line)
+          week += one_week
+      one_month = datetime.timedelta(weeks=4)
+      # draw lines per day
+      month = datetime.timedelta(weeks=(self._start.days/(7*4))+1)
+      i = 0
+      while month<self._end:
+        #print "draw month",month
+        line = polyline_new_line(self,0,0,0,0)
+        c = self.coord(month)
+        
+        text = Text(text=str(i))
+        self.add_child(text,-1)
+        if self._orientation==self.HORIZONTAL:
+          points= Points([(c,5), (c,-5)])
+          text.props.anchor = gtk.ANCHOR_NORTH
+          text.props.x = c
+          text.props.y = 6
+        else:
+          points = Points([(-5,c), (5,c)])
+          text.props.anchor = gtk.ANCHOR_EAST
+          text.props.x = -6
+          text.props.y = c
+        line.props.points = points
+        self._grid.append(line)
+        self._grid.append(text)
+        i += 1
+        month += one_month
+    else:
+      pass
+  
   def _redraw(self):
+    self._draw_grid()
     if self._orientation==self.HORIZONTAL:
       points= Points([(0,0), (self._length,0)])
     else:
@@ -91,6 +187,7 @@ class LineChart(Canvas):
     else:
       self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
       self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
+    map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines.keys())
     self._adjust_points(line,data)
     self.lines[title] = [line,data]
   
