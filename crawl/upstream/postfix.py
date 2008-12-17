@@ -4,6 +4,7 @@ import re
 NAME = "postfix"
 
 def get_releases(last_crawl=None):
+  #last_crawl=None
   files = open_dir("http://www.tigertech.net/mirrors/postfix-release/official/")
   pattern_patch = re.compile("postfix-([0-9])\.([0-9])-patch([0-9][0-9]).gz")
   pattern_regular = re.compile("postfix-([0-9])\.([0-9]).([0-9][0-9]?).tar.gz")

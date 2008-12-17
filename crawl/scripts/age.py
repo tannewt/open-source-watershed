@@ -15,13 +15,23 @@ VERBOSE = False
 def get_age(distro, package, branch=None, arch=None, now=None):
   cur = con.cursor()
   #print "query upstream"
-  q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released)"
+  q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released)"
   cur.execute(q,(package,))
-
+  if cur.rowcount == 0:
+    print "falling back to approximate upstream"
+    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released)"
+    cur.execute(q,(package,))
+  
   upstream = []
+  if VERBOSE:
+    print "upstream"
   for row in cur:
-    #print row
+    if VERBOSE:
+      print row
     upstream.append(row)
+  
+  if VERBOSE:
+    print
 
   #print
   #print "query downstream"
@@ -39,10 +49,15 @@ def get_age(distro, package, branch=None, arch=None, now=None):
     cur.execute(q,(package,distro,arch,branch))
 
   downstream = []
+  if VERBOSE:
+    print "downstream"
   for row in cur:
-    #print row
+    if VERBOSE:
+      print row
     downstream.append(row)
 
+  if VERBOSE:
+    print
   upstreams = {}
   latest = []
   ages = []
@@ -84,7 +99,7 @@ def get_age(distro, package, branch=None, arch=None, now=None):
       latest.append(version)
       #print latest
     else:
-      while len(latest)>0 and latest[0]<=version and latest.pop(0)!=version:
+      while len(latest)>0  and latest.pop(0)!=version:
         pass
       #print latest
     if last_downstream!=None and append:

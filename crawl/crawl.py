@@ -124,7 +124,6 @@ def crawl_distro(target):
       #check to see if we have this release
       if not repo[-1] or cur.fetchone()==None:
         try:
-          #print (pkg_id,rel[1],rel[2],rel[3],repo_id,rel[-2])
           cur.execute("insert into releases (package_id, version, revision, epoch, repo_id, released) values (%s,%s,%s,%s,%s,%s)",(pkg_id,rel[1],rel[2],rel[3],repo_id,rel[-2]))
           if EXTRA:
             cur.execute("select last_insert_id();")
@@ -167,6 +166,7 @@ def crawl_upstream(target):
   rels = target.get_releases(last_crawl)
   for rel in rels:
     name, epoch, version, date, extra = rel
+    #print date
     
     cur.execute("SELECT packages.id FROM packages WHERE name=%s",(name,))
     row = cur.fetchone()

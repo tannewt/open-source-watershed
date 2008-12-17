@@ -1,6 +1,7 @@
 from .utils import helper
 import re
 import time
+import datetime
 
 NAME = "subversion"
 
@@ -8,7 +9,7 @@ def get_date(m_d):
   if m_d.has_key("day") and m_d["day"]:
     if m_d.has_key("smonth") and m_d["smonth"]:
       try:
-        return time.strptime(" ".join([m_d["day"],m_d["smonth"],m_d["year"]]),"%d %b %Y")
+        return datetime.datetime.strptime(" ".join([m_d["day"],m_d["smonth"],m_d["year"]]),"%d %b %Y")
       except e:
         print "ERROR: parsing date failed: %s"%e
     elif m_d.has_key("month"):
@@ -16,7 +17,7 @@ def get_date(m_d):
       if m_d["month"]=="Sept":
         m_d["month"]="September"
       try:
-        return time.strptime(" ".join([m_d["day"],m_d["month"],m_d["year"]]),"%d %B %Y")
+        return datetime.datetime.strptime(" ".join([m_d["day"],m_d["month"],m_d["year"]]),"%d %B %Y")
       except e:
         print "ERROR: parsing date failed: %s"%e
     else:
@@ -72,6 +73,7 @@ def get_releases(last_crawl=None):
         versions += 1
         if rel[-3] and rel[-2]:
           rel[-1] = "".join(pkg)
+          print rel[:-1]
           pkgs.append(rel)
         else:
           print "skipped",rel[-3]
@@ -82,7 +84,8 @@ def get_releases(last_crawl=None):
         if m_d.has_key("version"):
           rel[-3] = m_d["version"]
         
-        rel[-2] = get_date(m_d)
+        if m_d.has_key("year"):
+          rel[-2] = get_date(m_d)
         second = True
     else:
       pkg.append(line)
