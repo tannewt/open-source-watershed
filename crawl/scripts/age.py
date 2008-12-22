@@ -140,7 +140,8 @@ def sum_ages(aA, aB):
   result = []
   while a+b<len(aA)+len(aB)-2:
     # the next is in list A
-    if a<len(aA)-1 and (len(aB)-1==b or aA[a][0]<aB[b][0]):
+    #print a,len(aA),b,len(aB)
+    if a<len(aA)-1 and (len(aB)-1==b or len(aB)==b or aA[a][0]<aB[b][0]):
       # special case for start
       if a==0 and last_aB==None:
         a+=1
@@ -155,21 +156,28 @@ def sum_ages(aA, aB):
         a+=1
       last_aA = aA[a-1]
     #equal time start
-    elif a==0 and b==0 and aA[a][0]==aB[b][0]:
-      result.append((aA[a][0], aA[a][1]+aB[b][1]))
+    elif (a==0 or b==0) and aA[a][0]==aB[b][0]:
+      if a==0 and b==0:
+        result.append((aA[a][0], aA[a][1]+aB[b][1]))
+      elif a == 0:
+        b += 1
+        result.append((aA[a][0], aA[a][1]+aB[b][1]))
+      elif b == 0:
+        a += 1
+        result.append((aA[a][0], aA[a][1]+aB[b][1]))
       last_aA = aA[a]
       last_aB = aB[b]
       a+=1
       b+=1
     # equal time non-start
-    elif a>0 and b>0 and a<len(aA)-1 and b<len(aB)-1 and aA[a][0]==aB[b][0]:
+    elif a<len(aA)-1 and b<len(aB)-1 and aA[a][0]==aB[b][0]:
       result.append((aA[a][0], aA[a][1]+aB[b][1]))
       result.append((aA[a][0], aA[a+1][1]+aB[b+1][1]))
       last_aA = aA[a+1]
       last_aB = aB[b+1]
       a+=2
       b+=2
-    elif b<len(aB)-1 and (len(aA)-1==a or aA[a][0]>aB[b][0]):
+    elif b<len(aB)-1 and (len(aA)-1==a or len(aA)==a or aA[a][0]>aB[b][0]):
       # special case for start
       if b==0 and last_aA==None:
         b+=1
@@ -185,6 +193,12 @@ def sum_ages(aA, aB):
       last_aB = aB[b-1]
     else:
       print "unseen case",a,b
+      print "result"
+      print result
+      print "aA"
+      print aA
+      print "aB"
+      print aB
       print aA[a]
       print aB[b]
       break
@@ -201,7 +215,7 @@ def get_combined_age(distro, packages, branch=None, arch=None):
   now = datetime.datetime.now()
   for pkg in packages:
     points = get_age(distro, pkg, branch, arch, now)
-    point = map(lambda x: (x[0], x[1]//len(packages)),points)
+    points = map(lambda x: (x[0], x[1]//len(packages)),points)
     if combined==None:
       combined = points
     else:

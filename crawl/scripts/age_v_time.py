@@ -13,6 +13,8 @@ import age
 import gtk,gobject
 from utils import chart
 
+#age.VERBOSE=True
+
 DISTRO_COLORS = {"gentoo":   gtk.gdk.Color( 70*256,  53*256, 124*256),
                  "sabayon":  gtk.gdk.Color(  1*256, 112*256, 202*256),
                  "debian":   gtk.gdk.Color(199*256,   0*256,  54*256),
@@ -23,7 +25,7 @@ DISTRO_COLORS = {"gentoo":   gtk.gdk.Color( 70*256,  53*256, 124*256),
                  "arch":     gtk.gdk.Color( 23*256, 147*256, 209*256)}
 
 class AgeView:
-  def __init__(self):
+  def __init__(self, pkgs=[]):
     self.window = gtk.Window()
     self.window.set_default_size(500,300)
     self.window.show()
@@ -62,20 +64,24 @@ class AgeView:
     # package stuff
     self.pkg_store = gtk.ListStore(gobject.TYPE_STRING)
     self.packages = []
+    s = gtk.ScrolledWindow()
     l = gtk.TreeView(self.pkg_store)
     l.set_headers_visible(False)
     renderer = gtk.CellRendererText()
     l.append_column(gtk.TreeViewColumn("",renderer,text=0))
     l.show()
-    vbox.add(l)
+    s.add(l)
+    s.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
+    s.show()
+    vbox.add(s)
     
     # add distro stuff
     h = gtk.HBox()
     self.pkg = gtk.Entry()
-    self.pkg.connect("activate",self.add_pkg)
+    self.pkg.connect("activate",self.add_pkg_cb)
     h.add(self.pkg)
     self.add = gtk.Button(stock=gtk.STOCK_ADD)
-    self.add.connect("clicked",self.add_pkg)
+    self.add.connect("clicked",self.add_pkg_cb)
     h.add(self.add)
     h.show_all()
     vbox.pack_start(h,False,False)
@@ -107,6 +113,9 @@ class AgeView:
     
     for d in self.distros.keys():
       self.distro.append_text(d)
+    
+    for p in pkgs:
+      self.add_pkg(p)
   
   def add_distro(self, button):
     d = self.distro.get_active_text()
@@ -120,11 +129,14 @@ class AgeView:
     else:
       print "none"
   
-  def add_pkg(self, widget):
+  def add_pkg_cb(self, widget):
     p = self.pkg.get_text()
-    self.packages.append(p)
-    self.pkg_store.append([p])
+    self.add_pkg(p)
     self.pkg.set_text("")
+  
+  def add_pkg(self, pkg):
+    self.packages.append(pkg)
+    self.pkg_store.append([pkg])
   
   def distro_changed(self, widget):
     distro = self.distro.get_active_text()
@@ -143,5 +155,10 @@ class AgeView:
   def run(self):
     gtk.main()
 
-av = AgeView()
+pkgs = []
+if len(sys.argv)>1:
+  f = open(sys.argv[1])
+  pkgs = map(lambda x: x.strip(), f.readlines())
+  f.close()
+av = AgeView(pkgs)
 av.run()

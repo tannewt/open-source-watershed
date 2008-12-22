@@ -51,32 +51,42 @@ def to_row(id,p):
   s.append("</tr>")
   return "".join(s)
 
-for k in keys:
-  page = []
-  page.append("<html>")
-  page.append("<head>")
-  page.append("  <title>Package Names vs. Distro</title>")
-  page.append("  <style type=\"text/css\">")
-  page.append("    .True { background-color: green; }")
-  page.append("  </style>")
-  page.append("</head>")
-  page.append("")
+def to_int(x):
+  if x:
+    return 1
+  return 0
+    
+for k in pkgs.keys():
+  if sum(map(to_int, pkgs[k][3]))==len(pkgs[k][3]):
+    print pkgs[k][0]
+
+if "--html" in sys.argv:
+  for k in keys:
+    page = []
+    page.append("<html>")
+    page.append("<head>")
+    page.append("  <title>Package Names vs. Distro</title>")
+    page.append("  <style type=\"text/css\">")
+    page.append("    .True { background-color: green; }")
+    page.append("  </style>")
+    page.append("</head>")
+    page.append("")
 
 
-  page.append("<body>")
-  page.append(links())
-  page.append("<table>")
-  i = 0
-  for key in keys[k]:
-    if i%25==0:
-      page.append(d())
-    page.append(to_row(key,pkgs[key]))
-    i+=1
+    page.append("<body>")
+    page.append(links())
+    page.append("<table>")
+    i = 0
+    for key in keys[k]:
+      if i%25==0:
+        page.append(d())
+      page.append(to_row(key,pkgs[key]))
+      i+=1
 
-  page.append("</table>")
-  page.append("</body>")
-  page.append("</html>")
-  
-  f = open("pkg_names_%s.html"%k,"w")
-  f.writelines(map(lambda s: s+"\n",page))
-  f.close()
+    page.append("</table>")
+    page.append("</body>")
+    page.append("</html>")
+
+    f = open("pkg_names_%s.html"%k,"w")
+    f.writelines(map(lambda s: s+"\n",page))
+    f.close()
