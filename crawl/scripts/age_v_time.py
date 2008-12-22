@@ -13,7 +13,7 @@ import age
 import gtk,gobject
 from utils import chart
 
-#age.VERBOSE=True
+#age.VERBOSE_RESULT=True
 
 DISTRO_COLORS = {"gentoo":   gtk.gdk.Color( 70*256,  53*256, 124*256),
                  "sabayon":  gtk.gdk.Color(  1*256, 112*256, 202*256),
@@ -122,7 +122,7 @@ class AgeView:
     b = self.branch.get_active_text()
     a = self.arch.get_active_text()
     c = self.color.get_color()
-    ages = age.get_combined_age(d,self.packages)
+    ages = age.get_combined_age(d,self.packages,b,a)
     if len(ages)>0:
       self.distro_store.append([" ".join(map(str,(d,b,a))),c])
       self.graph.add(" ".join(map(str,[d,b,a])+self.packages),ages,c.to_string())
