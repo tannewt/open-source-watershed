@@ -90,9 +90,9 @@ def get_age(distro, package, branch=None, arch=None, now=None):
       d+=1
     if ds and append:
       if len(latest)==0:
-        ages.append((date, date-date))
+        ages.append((date, date-date, None))
       else:
-        ages.append((date, date-upstreams[latest[0]]))
+        ages.append((date, date-upstreams[latest[0]], None))
       if VERBOSE:
         print ages[-1][1],latest
     if is_u:
@@ -104,10 +104,15 @@ def get_age(distro, package, branch=None, arch=None, now=None):
       #print latest
     if last_downstream!=None and append:
       ds=True
-      if len(latest)==0:
-        ages.append((date, date-date))
+      note = None
+      if is_u:
+        note = "upstream: " + version
       else:
-        ages.append((date, date-upstreams[latest[0]]))
+        note = "downstream: " + version
+      if len(latest)==0:
+        ages.append((date, date-date, note))
+      else:
+        ages.append((date, date-upstreams[latest[0]], note))
       if VERBOSE:
         print ages[-1][1],latest
   #print

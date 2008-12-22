@@ -9,6 +9,7 @@ import distros.sabayon
 
 import upstream.subversion
 import upstream.postfix
+import upstream.gnome
 
 DISTROS = {"slackware" : distros.slackware,
            "debian"    : distros.debian,
@@ -20,7 +21,8 @@ DISTROS = {"slackware" : distros.slackware,
            "sabayon"   : distros.sabayon}
 
 UPSTREAM = {"subversion" : upstream.subversion,
-            "postfix"    : upstream.postfix}
+            "postfix"    : upstream.postfix,
+            "gnome"      : upstream.gnome}
 
 import utils.helper
 

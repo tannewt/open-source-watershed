@@ -73,7 +73,7 @@ def get_releases(last_crawl=None):
         versions += 1
         if rel[-3] and rel[-2]:
           rel[-1] = "".join(pkg)
-          print rel[:-1]
+          #print rel[:-1]
           pkgs.append(rel)
         else:
           print "skipped",rel[-3]
