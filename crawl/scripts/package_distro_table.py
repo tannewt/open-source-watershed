@@ -23,7 +23,7 @@ pkgs = {}
 cur.execute("SELECT id, name, source_id FROM packages ORDER BY name")
 keys = {}
 for id, name, src in cur:
-  pkgs[id] = [name, src, 0, [False]*len(distros)]
+  pkgs[id] = [name, src, 0, [False]*len(distros),False]
   if not keys.has_key(name[0].lower()):
     keys[name[0].lower()] = []
   keys[name[0].lower()].append(id)
@@ -32,6 +32,10 @@ cur.execute("SELECT DISTINCT releases.package_id, repos.distro_id FROM releases,
 for pkg, distro in cur:
   pkgs[pkg][3][distro-1] = True
   pkgs[pkg][2]+=1
+
+cur.execute("SELECT DISTINCT package_id FROM releases WHERE releases.repo_id IS NULL;")
+for row in cur:
+  pkgs[row[0]][4] = True
 
 def links():
   k = keys.keys()
@@ -42,7 +46,10 @@ def d():
   return "  <tr><td></td><td></td>" + "".join(map(lambda x: "<th>"+x+"</th>", distros)) + "</tr>"
 
 def to_row(id,p):
-  s = ["<tr><th><a name=\"%d\">%s</a></th>"%(id,p[0])]
+  if p[4]:
+    s = ["<tr><td><a name=\"%d\"><b>%s</b></a></td>"%(id,p[0])]
+  else:
+    s = ["<tr><td><a name=\"%d\">%s</a></td>"%(id,p[0])]
   if p[1]:
     s.append("<td class=\"%s\"><a href=\"#%d\">%d</a></td>"%(p[2],p[1],p[1]))
   else:

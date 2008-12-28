@@ -62,6 +62,38 @@ class Axis (Group):
         self._grid.append(line)
         self._grid.append(text)
         year = year.replace(year=year.year+1)
+        
+      month = datetime.datetime(self._start.year,self._start.month+1,1)
+      while month<self._end:
+        #print "draw year",year
+        if month.month==1:
+          if month.month==12:
+            month = month.replace(year=month.year+1,month=1)
+          else:
+            month = month.replace(month=month.month+1)
+          continue
+          
+        line = polyline_new_line(self,0,0,0,0)
+        c = self.coord(month)
+        text = Text(text=str(month.month))
+        self.add_child(text,-1)
+        if self._orientation==self.HORIZONTAL:
+          points= Points([(c,-3), (c,3)])
+          text.props.anchor = gtk.ANCHOR_NORTH
+          text.props.x = c
+          text.props.y = 4
+        else:
+          points = Points([(-3,c), (3,c)])
+          text.props.anchor = gtk.ANCHOR_EAST
+          text.props.x = -4
+          text.props.y = c
+        line.props.points = points
+        self._grid.append(line)
+        self._grid.append(text)
+        if month.month==12:
+          month = month.replace(year=month.year+1,month=1)
+        else:
+          month = month.replace(month=month.month+1)
     elif type(self._start)==datetime.timedelta:
       spread = self._end - self._start
       if spread<datetime.timedelta(weeks=4):

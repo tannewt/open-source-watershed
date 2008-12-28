@@ -45,9 +45,9 @@ def open_url(url, filename, last_crawl=None):
 def open_dir(url):
   filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))
   if open_url(url, filename)==None:
-    return []
+    return None
   
-  pattern = '<img [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*> <(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
+  pattern = '(<tr><td valign=\"top\">)?<img [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>( |</td><td>)<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
   pattern = re.compile(pattern)
 
   f = open(filename)

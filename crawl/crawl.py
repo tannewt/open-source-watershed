@@ -10,6 +10,8 @@ import distros.sabayon
 import upstream.subversion
 import upstream.postfix
 import upstream.gnome
+import upstream.gnu
+import upstream.x
 
 DISTROS = {"slackware" : distros.slackware,
            "debian"    : distros.debian,
@@ -22,7 +24,9 @@ DISTROS = {"slackware" : distros.slackware,
 
 UPSTREAM = {"subversion" : upstream.subversion,
             "postfix"    : upstream.postfix,
-            "gnome"      : upstream.gnome}
+            "gnome"      : upstream.gnome,
+            "gnu"        : upstream.gnu,
+            "x"          : upstream.x}
 
 import utils.helper
 
@@ -157,20 +161,36 @@ def crawl_upstream(target):
 
   con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD, db=DATABASE)
 
+  # get this upstream id
   cur = con.cursor()
-  cur.execute("SELECT packages.id,crawls.time FROM crawls,packages WHERE packages.name=%s AND packages.id=crawls.package_id ORDER BY crawls.time DESC LIMIT 1",(target.NAME,))
+  cur.execute("SELECT id FROM packages WHERE name=%s",(target.NAME,))
   row = cur.fetchone()
-  pkg_id = None
+  cpkg_id = None
+  if row:
+    cpkg_id = row[0]
+  else:
+    cur.execute("insert into packages (name) values (%s)",(target.NAME,))
+    cur.execute("select last_insert_id();");
+    cpkg_id = cur.fetchone()[0]
+  
+  # get the last crawl
+  cur.execute("SELECT time FROM crawls WHERE package_id=%s ORDER BY time DESC LIMIT 1",(cpkg_id,))
+  row = cur.fetchone()
   last_crawl = None
   if row:
-    pkg_id = row[0]
-    last_crawl = row[1]
+    last_crawl = row[0]
+    
+  #print last_crawl,cpkg_id
+  
+  # crawl
   rels = target.get_releases(last_crawl)
+  count = 0
+  # for all the found releases
   for rel in rels:
     name, epoch, version, date, extra = rel
-    #print date
     
-    cur.execute("SELECT packages.id FROM packages WHERE name=%s",(name,))
+    # get the package id
+    cur.execute("SELECT id FROM packages WHERE name=%s",(name,))
     row = cur.fetchone()
     if row:
       pkg_id = row[0]
@@ -179,29 +199,31 @@ def crawl_upstream(target):
       cur.execute("select last_insert_id();");
       pkg_id = cur.fetchone()[0]
     
+    # store the release
     try:
+      # make sure its not a duplicate
       cur.execute("select id from releases where package_id=%s and epoch=%s and version=%s and repo_id is null",(pkg_id,epoch,version))
       if cur.fetchone()!=None:
         continue
       cur.execute("insert into releases (package_id, epoch, version, released) values (%s,%s,%s,%s)",(pkg_id,epoch,version,date))
+      count += 1
       if EXTRA and extra:
         cur.execute("select last_insert_id();")
         rel_id = cur.fetchone()[0]
         cur.execute("insert into extra (release_id, content) values (%s, %s)", (rel_id,extra))
     except mysql.IntegrityError:
       pass
-  cur.execute("insert into crawls (package_id, time) values (%s,NOW())", (pkg_id,))
   
+  #print cpkg_i
   # update crawls
-  count = len(rels)
   if count>0:
-    cur.execute("insert into crawls (package_id, release_count, time) values (%s,%s,NOW())", [pkg_id,count])
+    cur.execute("insert into crawls (package_id, release_count, time) values (%s,%s,NOW())", [cpkg_id,count])
   else:
-    cur.execute("insert into crawls (package_id, time) values (%s,NOW())", [pkg_id])
+    cur.execute("insert into crawls (package_id, time) values (%s,NOW())", [cpkg_id])
   
   con.commit()
   con.close()
-  print "done"
+  print count,"releases done"
 
 print "Using %s/%s."%(HOST,DATABASE)
 stats = []

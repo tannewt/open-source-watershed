@@ -9,8 +9,8 @@ HTTP_START_DIR = "pub/SabayonLinux"
 FTP_START_DIR = None
 
 VERSIONS = ["3.5", "4"]
-CURRENT = "3.5"
-FUTURE = "4"
+CURRENT = "4"
+FUTURE = ""
 
 ARCHES = ["amd64", "x86"]
 
@@ -59,8 +59,9 @@ def crawl_repo(repo):
   for name, version, revision, branch, date in c:
     dt = datetime.datetime.fromtimestamp(float(date))
     if last_crawl==None or last_crawl<dt:
-      if "-" == version[-3]:
+      #print version
+      if "-" in version and "-" == version[-3]:
         version, gentoo_revision = version.rsplit("-")
-        revision = gentoo_revision[1:] + "." + revision
+        revision = str(gentoo_revision[1:]) + "." + str(revision)
       pkgs.append([name, version, revision, 0, dt, ""])
   return pkgs

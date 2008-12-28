@@ -6,13 +6,19 @@ MIRROR="http://ftp.gnome.org/pub/gnome/sources/"
 def get_releases(last_crawl=None):
   pkgs = []
   info = helper.open_dir(MIRROR)
+  if info==None:
+    return []
   for d,name,date in info:
-    if d:
+    if d and (last_crawl==None or date>last_crawl):
       print name
       p_info = helper.open_dir(MIRROR+name)
+      if p_info == None:
+        continue
       for d2,n2,date2 in p_info:
-        if d2:
+        if d2 and (last_crawl==None or date2>last_crawl):
           ver_info = helper.open_dir(MIRROR+name+n2)
+          if ver_info == None:
+            continue
           for di,fn,date3 in ver_info:
             if fn.endswith(".tar.bz2") and "-" in fn:
               pkg,ver = fn[:-8].rsplit("-",1)
