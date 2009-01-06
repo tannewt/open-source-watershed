@@ -148,9 +148,10 @@ class AgeView:
   def branch_changed(self, widget):
     distro = self.distro.get_active_text()
     branch = self.branch.get_active_text()
-    self.arch.props.model.clear()
-    for a in self.distros[distro][branch]:
-      self.arch.append_text(a)
+    if distro!=None and branch!=None:
+      self.arch.props.model.clear()
+      for a in self.distros[distro][branch]:
+        self.arch.append_text(a)
 
   def run(self):
     gtk.main()

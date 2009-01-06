@@ -223,7 +223,8 @@ def crawl_upstream(target):
   
   con.commit()
   con.close()
-  print count,"releases done"
+  print count,"releases"
+  return count
 
 print "Using %s/%s."%(HOST,DATABASE)
 stats = []
@@ -241,7 +242,7 @@ else:
   for d in DISTROS.keys():
     stats.append((d,crawl_distro(DISTROS[d])))
   for u in UPSTREAM.keys():
-    crawl_upstream(UPSTREAM[u])
+    stats.append((u,crawl_upstream(UPSTREAM[u])))
 
 save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)

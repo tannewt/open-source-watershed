@@ -299,9 +299,12 @@ def get_combined_age(distro, packages, branch=None, arch=None):
     points = get_age(distro, pkg, branch, arch, now)
     points = map(lambda x: (x[0], x[1]//len(packages), x[2]),points)
     if combined==None:
-      combined = points
+      if len(points)>0:
+        combined = points
     else:
-      combined = sum_ages_dest(combined, points)
+      result = sum_ages_dest(combined, points)
+      if len(result)>0:
+        combined = result
   return combined
 
 if __name__ == "__main__":
