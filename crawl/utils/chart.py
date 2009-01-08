@@ -63,7 +63,10 @@ class Axis (Group):
         self._grid.append(text)
         year = year.replace(year=year.year+1)
         
-      month = datetime.datetime(self._start.year,self._start.month+1,1)
+      if self._start.month==12:
+        month = datetime.datetime(self._start.year,1,1)
+      else:
+        month = datetime.datetime(self._start.year,self._start.month+1,1)
       while month<self._end:
         #print "draw year",year
         if month.month==1:
@@ -219,12 +222,56 @@ class LineChart(Canvas):
     else:
       self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
       self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
-    map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines.keys())
+    
+    self._move_points()
+    
     self._adjust_points(line,data)
-    self.lines[title] = [line,data]
+    notes = self._draw_notes(title,data,color)
+    self.lines[title] = [line,data,notes,color]
   
   def _adjust_points(self, line, data):
     line.props.points = Points(map(lambda d: (self._x_axis.coord(d[0]),self._y_axis.coord(d[1])),data))
+  
+  def _adjust_notes(self, notes, data,w,h):
+    i = 0
+    for i in range(len(notes)):
+      notes[i][0].props.center_x = self._x_axis.coord(data[notes[i][1]][0])
+      notes[i][0].props.center_y = self._y_axis.coord(data[notes[i][1]][1])
+      if w!=None and h!=None:
+        notes[i][0].set_simple_transform(50,h-50,1,0)
+    
+  def _draw_notes(self,line,data,color="#ffffffffffff"):
+    radius = 3
+    circles = []
+    i = 0
+    for point in data:
+      if point[2]!=None:
+        circle = Ellipse(parent=self.root,center_x=self._x_axis.coord(point[0]),center_y = self._y_axis.coord(point[1]),radius_x = radius,radius_y = radius,stroke_color = color,fill_color="#ffffffffffff",title="test")
+        circle.translate(50,self.get_bounds()[3]-50)
+        circle.connect("enter_notify_event",self.on_enter_notify,line,i)
+        circle.connect("leave_notify_event",self.on_leave_notify,line,i)
+        circle.connect("button_press_event", self.on_button_press,line,i)
+        circle.connect("button_release_event", self.on_button_release,line,i)
+        circles.append((circle,i))
+        #print circle
+      i += 1
+    return circles
+  
+  def on_enter_notify(self, item, target, event, line, index):
+    #print "enter",line[:12],index
+    item.props.fill_color = self.lines[line][3]
+  
+  def on_leave_notify(self, item, target, event, line, index):
+    #print "leave",line[:12],index
+    item.props.fill_color = "#ffffffffffff"
+  
+  def on_button_press(self, item, target, event, line, index):
+    #print "press",line[:12],index
+    print self.lines[line][1][index][2]
+  
+  def on_button_release(self, item, target, event, line, index):
+    #print "release",line[:12],index
+    pass
   
   def remove(self,title):
     pass
@@ -241,7 +288,11 @@ class LineChart(Canvas):
     self._x_axis.set_size(w-75)
     
     map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
+    self._move_points(w,h)
+  
+  def _move_points(self,w=None,h=None):
     map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines.keys())
+    map(lambda l: self._adjust_notes(self.lines[l][2],self.lines[l][1],w,h),self.lines.keys())
   
   def mousemove(self, target, event):
     print event.get_coords()

@@ -13,6 +13,8 @@ con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 VERBOSE = False
 VERBOSE_RESULT = False
 
+UPSTREAM_NOTES = False
+
 def get_age(distro, package, branch=None, arch=None, now=None):
   cur = con.cursor()
   #print "query upstream"
@@ -107,10 +109,14 @@ def get_age(distro, package, branch=None, arch=None, now=None):
     if last_downstream!=None and append:
       ds=True
       note = None
-      if is_u:
-        note = "upstream: " + version
-      else:
-        note = "downstream: " + version
+      if is_u and UPSTREAM_NOTES:
+        note = package+" upstream: " + version
+      elif not is_u:
+        if not UPSTREAM_NOTES:
+          note = package+": " + version
+        else:
+          note = package+" downstream: " + version
+        
       if len(latest)==0:
         ages.append((date, date-date, note))
       else:
@@ -123,9 +129,9 @@ def get_age(distro, package, branch=None, arch=None, now=None):
     now = datetime.datetime.now()
   if last_downstream!=None:
     if len(latest)==0:
-      ages.append((now, now-now, "now"))
+      ages.append((now, now-now, None))
     else:
-      ages.append((now,now-upstreams[latest[0]],"now"))
+      ages.append((now,now-upstreams[latest[0]],None))
   
   if VERBOSE or VERBOSE_RESULT:
     print "age of",package
@@ -145,6 +151,16 @@ def base_val(last, next, now):
   #print "now",now
   return last[1]+datetime.timedelta(microseconds=td_to_microsec(next[1]-last[1])*td_to_microsec(now-last[0])/float(td_to_microsec(next[0]-last[0])))
 
+def combine_notes(n1, n2):
+  note = None
+  if n1==None:
+    note = n2
+  elif n2==None:
+    note = n1
+  elif n1!=None and n2!=None:
+    note = "\n".join((n1,n2))
+  return note
+
 def sum_ages_dest(lA, lB):
   last = {'A':None, 'B':None}
   result = []
@@ -158,7 +174,7 @@ def sum_ages_dest(lA, lB):
         result.append((lA[0][0],lA[0][1]+lB[0][1],None))
         last['A']=lA.pop(0)
         last['B']=lB.pop(0)
-        result.append((lA[0][0],lA[0][1]+lB[0][1],"\n".join((lA[0][2],lB[0][2]))))
+        result.append((lA[0][0],lA[0][1]+lB[0][1],combine_notes(lA[0][2],lB[0][2])))
         last['A']=lA.pop(0)
         last['B']=lB.pop(0)
       else:
@@ -171,14 +187,7 @@ def sum_ages_dest(lA, lB):
         #else:
           #print "1+1"
         # 1+1
-        note = None
-        if lA[0][2]==None:
-          note = lB[0][2]
-        elif lB[0][2]==None:
-          note = lA[0][2]
-        else:
-          note = "\n".join((lA[0][2],lB[0][2]))
-        result.append((lA[0][0],lA[0][1]+lB[0][1],note))
+        result.append((lA[0][0],lA[0][1]+lB[0][1],combine_notes(lA[0][2],lB[0][2])))
         last['A']=lA.pop(0)
         last['B']=lB.pop(0)
     # first list next

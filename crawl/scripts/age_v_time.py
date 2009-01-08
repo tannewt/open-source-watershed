@@ -156,10 +156,15 @@ class AgeView:
   def run(self):
     gtk.main()
 
+if "--verbose" in sys.argv:
+  age.VERBOSE_RESULT = True
+  sys.argv.remove("--verbose")
+
 pkgs = []
 if len(sys.argv)>1:
   f = open(sys.argv[1])
   pkgs = map(lambda x: x.strip(), f.readlines())
+  pkgs = filter(lambda s: s[0]!="#", pkgs)
   f.close()
 av = AgeView(pkgs)
 av.run()
