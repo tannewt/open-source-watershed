@@ -190,7 +190,75 @@ class Axis (Group):
     
   def td_to_microsec(self,t):
     return t.microseconds+1000000*t.seconds+1000000*3600*24*t.days
+
+class Note(Group):
+  def __init__(self, parent, data, color="#000000000000"):
+    Group.__init__(self,parent=parent)
+    self.data = data
+    self.color = color
+    self.transform = (0,0)
+    self._x = 0
+    self._y = 0
+    self._toggled = False
+    radius = 3
+    self.circle = Ellipse(parent=self,center_x=0,center_y = 0,radius_x = radius,radius_y = radius,stroke_color = color,fill_color="#ffffffffffff",title="test")
+    circle = self.circle
+    circle.connect("enter_notify_event",self.on_enter_notify)
+    circle.connect("leave_notify_event",self.on_leave_notify)
+    circle.connect("button_press_event", self.on_button_press)
+    #circle.connect("button_release_event", self.on_button_release)
     
+    self.popup = Group(parent=self,visibility=ITEM_HIDDEN)
+    self.popup.connect("button_press_event", self.on_button_press)
+    text = Text(parent=self.popup,text=data[2],x=23,y=-10,fill_color="#000000000000")
+    ink,logical = text.get_natural_extents()
+    box = Rect(parent=self.popup,x=20,y=-10,width=logical[2]/1000.0+3,height=logical[3]/1000.0,fill_color="#ffffffffffff",stroke_color=color)
+    box.lower(text)
+    triangle = Polyline(parent=self.popup,close_path=True,points=Points([(20,-11),(0,0),(20,10)]),fill_color=color,stroke_pattern=None)
+  
+  def on_enter_notify(self, item, target, event):
+    #print "enter",line[:12],index
+    item.props.fill_color = self.color
+  
+  def on_leave_notify(self, item, target, event):
+    #print "leave",line[:12],index
+    self.circle.props.fill_color = "#ffffffffffff"
+  
+  def on_button_press(self, item, target, event):
+    #print "press",line[:12],index
+    self._toggled = not self._toggled
+    if self._toggled:
+      self.popup.props.visibility = ITEM_VISIBLE
+      self.popup.raise_(None)
+    else:
+      self.popup.props.visibility = ITEM_HIDDEN
+  
+  def on_button_release(self, item, target, event):
+    #print "release",line[:12],index
+    pass
+  
+  def set_simple_transform(self, x, y, a, b):
+    self.transform = (x,y)
+    Group.set_simple_transform(self, x+self._x, y+self._y,a,b)
+  
+  def set_x(self, x):
+    self._x = x
+    tx, ty = self.transform
+    Group.set_simple_transform(self, tx+x, ty+self._y,1,0)
+  
+  def get_x(self):
+    return self._x
+  
+  def set_y(self, y):
+    self._y = y
+    tx, ty = self.transform
+    Group.set_simple_transform(self, tx+self._x, ty+y,1,0)
+  
+  def get_y(self):
+    return self._y
+  
+  x = property(get_x, set_x)
+  y = property(get_y, set_y)
     
 class LineChart(Canvas):
   lines = {}
@@ -204,7 +272,6 @@ class LineChart(Canvas):
     left,top,right,bottom = self.get_bounds()
     self._y_axis.translate(50,bottom-50)
     self._x_axis = Axis(Axis.HORIZONTAL)
-    left,top,right,bottom = self.get_bounds()
     self._x_axis.translate(50,bottom-50)
     self.root = self.get_root_item()
     self.root.add_child(self._y_axis)
@@ -227,51 +294,32 @@ class LineChart(Canvas):
     
     self._adjust_points(line,data)
     notes = self._draw_notes(title,data,color)
+    
+    left,top,right,bottom = self.get_bounds()
+    self._adjust_notes(notes,right,bottom)
     self.lines[title] = [line,data,notes,color]
   
   def _adjust_points(self, line, data):
     line.props.points = Points(map(lambda d: (self._x_axis.coord(d[0]),self._y_axis.coord(d[1])),data))
   
-  def _adjust_notes(self, notes, data,w,h):
+  def _adjust_notes(self, notes,w=None,h=None):
     i = 0
     for i in range(len(notes)):
-      notes[i][0].props.center_x = self._x_axis.coord(data[notes[i][1]][0])
-      notes[i][0].props.center_y = self._y_axis.coord(data[notes[i][1]][1])
+      notes[i].x = self._x_axis.coord(notes[i].data[0])
+      notes[i].y = self._y_axis.coord(notes[i].data[1])
       if w!=None and h!=None:
-        notes[i][0].set_simple_transform(50,h-50,1,0)
+        notes[i].set_simple_transform(50,h-50,1,0)
     
-  def _draw_notes(self,line,data,color="#ffffffffffff"):
-    radius = 3
-    circles = []
+  def _draw_notes(self,line,data,color="#000000000000"):
+    notes = []
     i = 0
     for point in data:
       if point[2]!=None:
-        circle = Ellipse(parent=self.root,center_x=self._x_axis.coord(point[0]),center_y = self._y_axis.coord(point[1]),radius_x = radius,radius_y = radius,stroke_color = color,fill_color="#ffffffffffff",title="test")
-        circle.translate(50,self.get_bounds()[3]-50)
-        circle.connect("enter_notify_event",self.on_enter_notify,line,i)
-        circle.connect("leave_notify_event",self.on_leave_notify,line,i)
-        circle.connect("button_press_event", self.on_button_press,line,i)
-        circle.connect("button_release_event", self.on_button_release,line,i)
-        circles.append((circle,i))
+        note = Note(self.root,point,color)
+        notes.append(note)
         #print circle
       i += 1
-    return circles
-  
-  def on_enter_notify(self, item, target, event, line, index):
-    #print "enter",line[:12],index
-    item.props.fill_color = self.lines[line][3]
-  
-  def on_leave_notify(self, item, target, event, line, index):
-    #print "leave",line[:12],index
-    item.props.fill_color = "#ffffffffffff"
-  
-  def on_button_press(self, item, target, event, line, index):
-    #print "press",line[:12],index
-    print self.lines[line][1][index][2]
-  
-  def on_button_release(self, item, target, event, line, index):
-    #print "release",line[:12],index
-    pass
+    return notes
   
   def remove(self,title):
     pass
@@ -292,7 +340,7 @@ class LineChart(Canvas):
   
   def _move_points(self,w=None,h=None):
     map(lambda l: self._adjust_points(self.lines[l][0],self.lines[l][1]),self.lines.keys())
-    map(lambda l: self._adjust_notes(self.lines[l][2],self.lines[l][1],w,h),self.lines.keys())
+    map(lambda l: self._adjust_notes(self.lines[l][2],w,h),self.lines.keys())
   
   def mousemove(self, target, event):
     print event.get_coords()
