@@ -14,6 +14,7 @@ VERBOSE = False
 VERBOSE_RESULT = False
 
 UPSTREAM_NOTES = False
+#UPSTREAM_NOTES = True
 
 def get_age(distro, package, branch=None, arch=None, now=None):
   cur = con.cursor()

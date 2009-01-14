@@ -1,4 +1,5 @@
 from goocanvas import *
+import gobject
 import gtk
 import datetime
 
@@ -181,6 +182,15 @@ class Axis (Group):
       return self._orientation*(value-self._start)/float(self._end-self._start)*self._length
     return -1
   
+  def from_coord(self, coord):
+    if self._start==None or self._end==None:
+      print "error: no start or end values"
+    elif self._type==datetime.datetime or self._type==datetime.timedelta:
+      return int(1000*coord/float(self._orientation*self._length))*(self._end-self._start)//1000+self._start
+    else:
+      return coord/float(self._orientation*self._length)*(self._end-self._start)+self._start
+    return -1
+  
   def time_div(self,top,bottom):
     t = self.td_to_microsec(top)
     b = self.td_to_microsec(bottom)
@@ -229,7 +239,7 @@ class Note(Group):
     self._toggled = not self._toggled
     if self._toggled:
       self.popup.props.visibility = ITEM_VISIBLE
-      self.popup.raise_(None)
+      self.raise_(None)
     else:
       self.popup.props.visibility = ITEM_HIDDEN
   
@@ -259,9 +269,46 @@ class Note(Group):
   
   x = property(get_x, set_x)
   y = property(get_y, set_y)
+
+class Select(Group):
+  __gsignals__ = {
+    'select' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+    'select-range' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT))
+  }
+  
+  def __init__(self,parent,axis):
+    Group.__init__(self)
+    self.axis = axis
+    parent.connect("button_press_event",self.button_press)
+    self.select = polyline_new_line(self,0,0,10,10)
+    self.select.props.stroke_color = "#ffff00000000"
+    # reduce the alpha to 50%
+    self.select.props.stroke_color_rgba -= 128
+    self.lower(None)
     
+    self._size = 100
+    self._loc = 10
+  
+  def set_size(self, size):
+    self._size = size
+    self._redraw()
+  
+  def button_press(self, item, target, event):
+    if target==None:
+      self.emit('select',self.axis.from_coord(event.x-50))
+      self._loc = event.x-50
+      self._redraw()
+  
+  def _redraw(self):
+    self.select.props.points = Points([(self._loc,-1*self._size),(self._loc,0)])
+  
 class LineChart(Canvas):
   lines = {}
+  
+  __gsignals__ = {
+    'select' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+    'select-range' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT))
+  }
   
   def __init__(self):
     Canvas.__init__(self)
@@ -270,17 +317,23 @@ class LineChart(Canvas):
     self.props.anchor = gtk.ANCHOR_SW
     self._y_axis = Axis(Axis.VERTICAL)
     left,top,right,bottom = self.get_bounds()
-    self._y_axis.translate(50,bottom-50)
+    #self._y_axis.translate(50,bottom-50)
     self._x_axis = Axis(Axis.HORIZONTAL)
-    self._x_axis.translate(50,bottom-50)
+    #self._x_axis.translate(50,bottom-50)
     self.root = self.get_root_item()
+    self.root.translate(50,bottom-50)
     self.root.add_child(self._y_axis)
     self.root.add_child(self._x_axis)
+    
+    self.select = Select(self.root,self._x_axis)
+    self.select.connect('select', lambda w,d: self.emit('select',d))
+    #self.select.translate(50,bottom-50)
+    self.root.add_child(self.select)
   
   def add(self,title, data, color="#ffffffffffff"):
     line = polyline_new_line(self.root,0,0,0,0)
     line.props.stroke_color = color
-    line.translate(50,self.get_bounds()[3]-50)
+    #line.translate(50,self.get_bounds()[3]-50)
     xs = map(lambda x: x[0], data)
     ys = map(lambda y: y[1], data)
     if self._x_axis._start==None or self._y_axis._start==None:
@@ -307,8 +360,8 @@ class LineChart(Canvas):
     for i in range(len(notes)):
       notes[i].x = self._x_axis.coord(notes[i].data[0])
       notes[i].y = self._y_axis.coord(notes[i].data[1])
-      if w!=None and h!=None:
-        notes[i].set_simple_transform(50,h-50,1,0)
+      #if w!=None and h!=None:
+      #  notes[i].set_simple_transform(50,h-50,1,0)
     
   def _draw_notes(self,line,data,color="#000000000000"):
     notes = []
@@ -330,12 +383,16 @@ class LineChart(Canvas):
   def _resize(self, widget, allocation):
     w,h = allocation.width,allocation.height
     self.set_bounds(0,0,w,h)
-    self._y_axis.set_simple_transform(50,h-50,1,0)
-    self._y_axis.set_size(h-75)
-    self._x_axis.set_simple_transform(50,h-50,1,0)
-    self._x_axis.set_size(w-75)
     
-    map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
+    self.root.set_simple_transform(50,h-50,1,0)
+    #self._y_axis.set_simple_transform(50,h-50,1,0)
+    self._y_axis.set_size(h-75)
+    #self._x_axis.set_simple_transform(50,h-50,1,0)
+    self._x_axis.set_size(w-75)
+    #self.select.set_simple_transform(50,h-50,1,0)
+    self.select.set_size(h-75)
+    
+    #map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
     self._move_points(w,h)
   
   def _move_points(self,w=None,h=None):

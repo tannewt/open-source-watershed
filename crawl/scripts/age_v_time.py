@@ -30,18 +30,18 @@ class AgeView:
     self.window.set_default_size(500,300)
     self.window.show()
 
-    hbox = gtk.HPaned()
+    hbox = gtk.VPaned()
     hbox.show()
+    
+    self.graph = chart.LineChart()
+    self.graph.set_size_request(500,200)
+    self.graph.connect('select',self.select)
+
+    hbox.pack1(self.graph,True)
+    self.graph.show()
 
     vbox = gtk.VBox()
     vbox.show()
-    self.distro_store = gtk.ListStore(gobject.TYPE_STRING,gtk.gdk.Color)
-    l = gtk.TreeView(self.distro_store)
-    l.set_headers_visible(False)
-    renderer = gtk.CellRendererText()
-    l.append_column(gtk.TreeViewColumn("",renderer,text=0,foreground_gdk=1))
-    l.show()
-    vbox.add(l)
     
     # add distro stuff
     h = gtk.HBox()
@@ -62,36 +62,52 @@ class AgeView:
     vbox.pack_start(h,False,False)
     
     # package stuff
+    vbox2 = gtk.VBox()
+    vbox2.show()
     self.pkg_store = gtk.ListStore(gobject.TYPE_STRING)
     self.packages = []
-    s = gtk.ScrolledWindow()
-    l = gtk.TreeView(self.pkg_store)
-    l.set_headers_visible(False)
+    p_tv = gtk.TreeView(self.pkg_store)
+    p_tv.set_rules_hint(True)
+    p_tv.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
+    #p_tv.set_headers_visible(False)
     renderer = gtk.CellRendererText()
-    l.append_column(gtk.TreeViewColumn("",renderer,text=0))
-    l.show()
-    s.add(l)
-    s.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
-    s.show()
-    vbox.add(s)
+    p_tv.append_column(gtk.TreeViewColumn("Packages",renderer,text=0))
+    p_tv.show()
+    vbox2.pack_start(p_tv)
     
-    # add distro stuff
+    # add package stuff
     h = gtk.HBox()
     self.pkg = gtk.Entry()
     self.pkg.connect("activate",self.add_pkg_cb)
-    h.add(self.pkg)
+    h.pack_start(self.pkg,False,False)
     self.add = gtk.Button(stock=gtk.STOCK_ADD)
     self.add.connect("clicked",self.add_pkg_cb)
-    h.add(self.add)
+    h.pack_start(self.add,False,False)
     h.show_all()
-    vbox.pack_start(h,False,False)
+    vbox2.pack_start(h,False,False)
+    
+    hbox2 = gtk.HBox()
+    hbox2.show()
+    hbox2.pack_start(vbox2,False,False)
+    
+    self.distro_store = gtk.ListStore(gobject.TYPE_STRING,gtk.gdk.Color)
+    s = gtk.ScrolledWindow()
+    s.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+    s.show()
+    p_tv.set_vadjustment(s.props.vadjustment)
+    l = gtk.TreeView(self.distro_store)
+    l.set_rules_hint(True)
+    l.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
+    #l.set_headers_visible(False)
+    renderer = gtk.CellRendererText()
+    l.append_column(gtk.TreeViewColumn("Distros",renderer,text=0,foreground_gdk=1))
+    l.show()
+    s.add(l)
+    hbox2.pack_start(s)
+    vbox.pack_start(hbox2)
+    
     hbox.add(vbox)
     
-
-    self.graph = chart.LineChart()
-
-    hbox.add(self.graph)
-    self.graph.show()
     self.window.add(hbox)
     self.window.connect("destroy",lambda x: gtk.main_quit())
     
@@ -152,6 +168,9 @@ class AgeView:
       self.arch.props.model.clear()
       for a in self.distros[distro][branch]:
         self.arch.append_text(a)
+  
+  def select(self, widget, date):
+    print "view",date
 
   def run(self):
     gtk.main()
