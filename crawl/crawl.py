@@ -6,12 +6,16 @@ import distros.gentoo
 import distros.opensuse
 import distros.arch
 import distros.sabayon
+import distros.funtoo
+
+import gc
 
 import upstream.subversion
 import upstream.postfix
 import upstream.gnome
 import upstream.gnu
 import upstream.x
+import upstream.gimp
 
 DISTROS = {"slackware" : distros.slackware,
            "debian"    : distros.debian,
@@ -20,13 +24,15 @@ DISTROS = {"slackware" : distros.slackware,
            "gentoo"    : distros.gentoo,
            "opensuse"  : distros.opensuse,
            "arch"      : distros.arch,
-           "sabayon"   : distros.sabayon}
+           "sabayon"   : distros.sabayon,
+           "funtoo"    : distros.funtoo}
 
 UPSTREAM = {"subversion" : upstream.subversion,
             "postfix"    : upstream.postfix,
             "gnome"      : upstream.gnome,
             "gnu"        : upstream.gnu,
-            "x"          : upstream.x}
+            "x"          : upstream.x,
+            "gimp"       : upstream.gimp}
 
 import utils.helper
 
@@ -227,22 +233,27 @@ def crawl_upstream(target):
   return count
 
 print "Using %s/%s."%(HOST,DATABASE)
+gc.enable()
 stats = []
 if len(sys.argv)>1:
   for crawl in sys.argv[1:]:
     if DISTROS.has_key(crawl):
       stats.append((crawl,crawl_distro(DISTROS[crawl])))
+      gc.collect()
       continue
     if UPSTREAM.has_key(crawl):
       crawl_upstream(UPSTREAM[crawl])
+      gc.collect()
       continue
     print "unknown",crawl
 else:
   print "no args - running all"
   for d in DISTROS.keys():
     stats.append((d,crawl_distro(DISTROS[d])))
+    gc.collect()
   for u in UPSTREAM.keys():
     stats.append((u,crawl_upstream(UPSTREAM[u])))
+    gc.collect()
 
 save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)

@@ -51,7 +51,7 @@ def parse_filename(fn):
   ver = "-".join(ver)
   
   rel = [pkg,0,ver,None,None]
-  print fn,"=>",rel[:3]
+  #print fn,"=>",rel[:3]
   return rel
 
 def test(fn,expected):

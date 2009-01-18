@@ -134,7 +134,22 @@ def crawl_changelog(category,package,last_crawl=None):
           print "ERROR: parsing '%s' in %s"%(line,fn)
     f.close()
   return pkgs
-      
+
+def update_portage():
+  # rsync up
+  print "rsync",
+  try:
+    p = subprocess.Popen(("/usr/bin/rsync","-rt",MIRROR,STORAGE),stdout=None)
+    x = p.wait()
+  except OSError, e:
+    print e
+    x=-1
+  
+  if x != 0:
+    print "ERROR: rsync failed: %s"%x
+    return False
+  return True
+
 # return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
   distro,branch,codename,component,arch,last_crawl,new = repo
@@ -162,17 +177,7 @@ def crawl_repo(repo):
   
   # only do this if the cache is old
   
-  # rsync up
-  print "rsync",
-  try:
-    p = subprocess.Popen(("/usr/bin/rsync","-rt",MIRROR,STORAGE),stdout=None)
-    x = p.wait()
-  except OSError, e:
-    print e
-    x=-1
-  
-  if x != 0:
-    print "ERROR: rsync failed: %s"%x
+  if not update_portage():
     return []
   
   pkgs = {"unknown":{"unknown":[]}}
