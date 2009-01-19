@@ -12,6 +12,7 @@ import age
 
 import gtk,gobject
 from utils import chart
+from utils.history import *
 
 #age.VERBOSE_RESULT=True
 
@@ -64,16 +65,42 @@ class AgeView:
     # package stuff
     vbox2 = gtk.VBox()
     vbox2.show()
-    self.pkg_store = gtk.ListStore(gobject.TYPE_STRING)
+    self.pkg_store = gtk.ListStore(gobject.TYPE_STRING,gobject.TYPE_STRING)
     self.packages = []
     p_tv = gtk.TreeView(self.pkg_store)
+    #p_tv.set_fixed_height_mode(True)
     p_tv.set_rules_hint(True)
     p_tv.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
     #p_tv.set_headers_visible(False)
     renderer = gtk.CellRendererText()
-    p_tv.append_column(gtk.TreeViewColumn("Packages",renderer,text=0))
+    p_tv.append_column(gtk.TreeViewColumn("Packages",renderer,markup=0))
+    p_tv.append_column(gtk.TreeViewColumn("Version",renderer,text=1))
     p_tv.show()
-    vbox2.pack_start(p_tv)
+    sp = gtk.ScrolledWindow()
+    sp.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
+    sp.show()
+    sp.add(p_tv)
+    vbox2.pack_start(sp)
+    
+    hbox2 = gtk.HBox()
+    hbox2.show()
+    hbox2.pack_start(vbox2,False,False)
+    
+    self.distro_store = gtk.ListStore(str)
+    s = gtk.ScrolledWindow()
+    s.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+    s.show()
+    s.set_vadjustment(sp.props.vadjustment)
+    self.distro_view = gtk.TreeView(self.distro_store)
+    #self.distro_view.set_fixed_height_mode(True)
+    self.distro_view.set_rules_hint(True)
+    self.distro.set_size_request(-1,-1)
+    self.distro_view.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
+    #l.set_headers_visible(False)
+    self.distro_view.show()
+    s.add(self.distro_view)
+    hbox2.pack_start(s)
+    vbox.pack_start(hbox2)
     
     # add package stuff
     h = gtk.HBox()
@@ -84,27 +111,9 @@ class AgeView:
     self.add.connect("clicked",self.add_pkg_cb)
     h.pack_start(self.add,False,False)
     h.show_all()
-    vbox2.pack_start(h,False,False)
+    vbox.pack_start(h,False,False)
     
-    hbox2 = gtk.HBox()
-    hbox2.show()
-    hbox2.pack_start(vbox2,False,False)
     
-    self.distro_store = gtk.ListStore(gobject.TYPE_STRING,gtk.gdk.Color)
-    s = gtk.ScrolledWindow()
-    s.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
-    s.show()
-    p_tv.set_vadjustment(s.props.vadjustment)
-    l = gtk.TreeView(self.distro_store)
-    l.set_rules_hint(True)
-    l.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
-    #l.set_headers_visible(False)
-    renderer = gtk.CellRendererText()
-    l.append_column(gtk.TreeViewColumn("Distros",renderer,text=0,foreground_gdk=1))
-    l.show()
-    s.add(l)
-    hbox2.pack_start(s)
-    vbox.pack_start(hbox2)
     
     hbox.add(vbox)
     
@@ -130,6 +139,9 @@ class AgeView:
     for d in self.distros.keys():
       self.distro.append_text(d)
     
+    self.current = datetime.now()
+    
+    self._histories = []
     for p in pkgs:
       self.add_pkg(p)
   
@@ -138,10 +150,12 @@ class AgeView:
     b = self.branch.get_active_text()
     a = self.arch.get_active_text()
     c = self.color.get_color()
-    ages = age.get_combined_age(d,self.packages,b,a)
-    if len(ages)>0:
-      self.distro_store.append([" ".join(map(str,(d,b,a))),c])
-      self.graph.add(" ".join(map(str,[d,b,a])+self.packages),ages,c.to_string())
+    distro = DistroHistory(d,self.packages,b,a)
+    key = "|".join(map(str,(d,b,a)))
+    self._histories.append(distro)
+    self.new_distro_store([distro])
+    if len(distro.timeline)>0:
+      self.graph.add(key,distro.timeline,distro.notes,c.to_string())
     else:
       print "none"
   
@@ -151,8 +165,21 @@ class AgeView:
     self.pkg.set_text("")
   
   def add_pkg(self, pkg):
+    pkg = PackageHistory(pkg)
     self.packages.append(pkg)
-    self.pkg_store.append([pkg])
+    for distro in self._histories:
+      distro.add_pkg(pkg)
+      self.graph.update("|".join(map(str,(distro.name,distro.branch,distro.arch))),distro.timeline, distro.notes)
+    if not pkg.ish:
+      string = "<b>"+pkg.name+"</b>"
+    else:
+      string = pkg.name
+    self.pkg_store.append([string, str(pkg.timeline.last(self.current))])
+    if len(self._histories)>0:
+      self.distro_store.append((str,)*len(self._histories))
+    else:
+      self.distro_store.append(("",))
+    self.update_downstream()
   
   def distro_changed(self, widget):
     distro = self.distro.get_active_text()
@@ -170,7 +197,47 @@ class AgeView:
         self.arch.append_text(a)
   
   def select(self, widget, date):
-    print "view",date
+    self.current = date
+    self.update_upstream()
+    self.update_downstream()
+  
+  def update_upstream(self):
+    i = 0
+    for p in self.packages:
+      self.pkg_store[i][1] = str(p.timeline.last(self.current))
+      i += 1
+  
+  def update_downstream(self):
+    c = 0
+    for d in self._histories:
+      r = 0
+      for version,lag in d.snapshot(self.current):
+        if version == None:
+          content = ""
+        elif lag==timedelta():
+          content = "<b>"+version+"</b>"
+        elif lag.days>7:
+          content = version + " ~ " + str(lag.days/7)+" weeks"
+        else:
+          content = version + " ~ " + str(lag.days)+" days"
+        self.distro_store[r][c] = content
+        r += 1
+      c += 1
+  
+  def new_distro_store(self,new=[]):
+    self.distro_store = gtk.ListStore(*((str,)*len(self._histories)))
+    for i in range(len(self.packages)):
+      self.distro_store.append(("",)*len(self._histories))
+    self.distro_view.set_model(self.distro_store)
+    
+    renderer = gtk.CellRendererText()
+    
+    i = len(self._histories)-len(new)
+    for d in new:
+      self.distro_view.append_column(gtk.TreeViewColumn(d.name,renderer,markup=i))
+      i+=1
+    
+    self.update_downstream()
 
   def run(self):
     gtk.main()

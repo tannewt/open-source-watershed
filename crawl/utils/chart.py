@@ -330,30 +330,45 @@ class LineChart(Canvas):
     #self.select.translate(50,bottom-50)
     self.root.add_child(self.select)
   
-  def add(self,title, data, color="#ffffffffffff"):
+  def add(self,title, data, notes, color="#ffffffffffff"):
     line = polyline_new_line(self.root,0,0,0,0)
     line.props.stroke_color = color
     #line.translate(50,self.get_bounds()[3]-50)
-    xs = map(lambda x: x[0], data)
-    ys = map(lambda y: y[1], data)
+    self._adjust_axis(data)
+    
+    self._move_points()
+    
+    self._adjust_points(line,data)
+    notes = self._draw_notes(data,notes,color)
+    
+    left,top,right,bottom = self.get_bounds()
+    self._adjust_notes(notes,right,bottom)
+    self.lines[title] = [line,data,notes,color]
+  
+  def _adjust_axis(self, data):
+    xs = data.keys()
+    ys = map(lambda k: data[k], data)
     if self._x_axis._start==None or self._y_axis._start==None:
       self._x_axis.set_range(min(xs), max(xs))
       self._y_axis.set_range(min(ys), max(ys))
     else:
       self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
       self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
-    
-    self._move_points()
-    
-    self._adjust_points(line,data)
-    notes = self._draw_notes(title,data,color)
-    
-    left,top,right,bottom = self.get_bounds()
-    self._adjust_notes(notes,right,bottom)
-    self.lines[title] = [line,data,notes,color]
+  
+  def update(self, title, data, notes):
+    self.lines[title][1] = data
+    for i in range(len(self.lines[title][2])):
+      item = self.lines[title][2].pop()
+      p = item.get_parent()
+      #print item, p, self
+      index = p.find_child(item)
+      p.remove_child(index)
+    self._adjust_axis(data)
+    self.lines[title][2] = self._draw_notes(data,notes,self.lines[title][3])
+    self._adjust_points(self.lines[title][0], data)
   
   def _adjust_points(self, line, data):
-    line.props.points = Points(map(lambda d: (self._x_axis.coord(d[0]),self._y_axis.coord(d[1])),data))
+    line.props.points = Points(map(lambda d: (self._x_axis.coord(d),self._y_axis.coord(data[d])),data))
   
   def _adjust_notes(self, notes,w=None,h=None):
     i = 0
@@ -363,14 +378,14 @@ class LineChart(Canvas):
       #if w!=None and h!=None:
       #  notes[i].set_simple_transform(50,h-50,1,0)
     
-  def _draw_notes(self,line,data,color="#000000000000"):
+  def _draw_notes(self,data,note_data,color="#000000000000"):
     notes = []
     i = 0
-    for point in data:
-      if point[2]!=None:
-        note = Note(self.root,point,color)
-        notes.append(note)
-        #print circle
+    for point in note_data:
+      #print (point,data[point],note_data[point])
+      note = Note(self.root,(point,data[point],note_data[point]),color)
+      notes.append(note)
+      #print circle
       i += 1
     return notes
   

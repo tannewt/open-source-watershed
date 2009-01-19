@@ -6,7 +6,7 @@ def td_to_microsec(t):
 
 def td_div(s,o):
   return float(td_to_microsec(s))/td_to_microsec(o)
-
+    
 class Timeline(UserDict.DictMixin):
   """This timeline stores any value for a particular time."""
   def __init__(self, data=[]):
@@ -77,6 +77,16 @@ class Timeline(UserDict.DictMixin):
         return (d,v)
       else:
         return v
+  
+  def last(self, date):
+    i = bisect.bisect_left(self._dates,date)
+    #print date, i, self._dates[i-1],self._values[self._dates[i-1]]
+    if i == 0 and (len(self)==0 or self._dates[i]>date):
+      return None
+    if i<len(self._dates) and self._dates[i]==date:
+      return self._values[date]
+    d = self._dates[i-1]
+    return self._values[d]
   
   def __setitem__(self, date, value):
     """Set the value for this date."""
@@ -174,6 +184,11 @@ class Timeline(UserDict.DictMixin):
     for d in self._dates:
       points.append("".join(("(",d.__repr__(),",",self._values[d].__repr__(),")")))
     return "".join(("Timeline([",",".join(points),"])"))
+  
+  #def __iter__(self):
+  #  """Iterates over date,value tuples NOT just dates (keys)."""
+  #  for d in self._dates:
+  #    yield d,self._values[d]
 
 class StepTimeline(Timeline):
   def __getitem__(self, date):
@@ -195,11 +210,11 @@ class StepTimeline(Timeline):
         result = []
         for d in self._dates[start:stop]:
           result.append((d,self._values[d]))
-        return Timeline(result)
+        return StepTimeline(result)
     else:
       i = bisect.bisect_left(self._dates,date)
       #print date, i, self._dates[i-1],self._values[self._dates[i-1]]
-      if i == 0 and self._dates[i]>date:
+      if i == 0 and (len(self._dates)==0 or self._dates[i]>date):
         return 0
       if i<len(self._dates) and self._dates[i]==date:
         return self._values[date]
@@ -230,19 +245,19 @@ class StepTimeline(Timeline):
     return result
   
   def __add__(self, other):
-    result = Timeline()
+    result = StepTimeline()
     for date in self.merge_dates(self._dates, other._dates):
       result[date] = self[date]+other[date]
     return result
   
   def __mul__(self, other):
-    result = Timeline()
+    result = StepTimeline()
     for date in self.merge_dates(self._dates, other._dates):
       result[date] = self[date]*other[date]
     return result
   
   def __div__(self, other):
-    result = Timeline()
+    result = StepTimeline()
     for date in self.merge_dates(self._dates, other._dates):
       result[date] = self[date]/other[date]
     return result
@@ -270,16 +285,36 @@ class ConnectedTimeline(StepTimeline):
         return Timeline(result)
     else:
       i = bisect.bisect_left(self._dates,date)
-      #print date, i, self._dates[i-1],self._values[self._dates[i-1]]
-      if i == 0 and self._dates[i]>date:
-        return 0
+      if i == 0 and (len(self)==0 or self._dates[i]>date):
+        return timedelta()
       if i<len(self._dates) and self._dates[i]==date:
         return self._values[date]
       d1 = self._dates[i-1]
       if i==len(self._dates):
         return self._values[d1]
       d2 = self._dates[i]
-      return self._values[d1]+(self._values[d2]-self._values[d1])*(td_div((date-d1),(d2-d1)))
+      if type(self._values[self._dates[0]])==timedelta: #FIXME: hack, timeline should care about the value type
+        return self._values[d1]+(self._values[d2]-self._values[d1])*int(1000*(td_div((date-d1),(d2-d1))))//1000
+      else:
+        return self._values[d1]+(self._values[d2]-self._values[d1])*(td_div((date-d1),(d2-d1)))
   
   def __repr__(self):
     return "Connected"+Timeline.__repr__(self)
+  
+  def __add__(self, other):
+    result = ConnectedTimeline()
+    for date in self.merge_dates(self._dates, other._dates):
+      result[date] = self[date]+other[date]
+    return result
+  
+  def __mul__(self, other):
+    result = ConnectedTimeline()
+    for date in self.merge_dates(self._dates, other._dates):
+      result[date] = self[date]*other[date]
+    return result
+  
+  def __div__(self, other):
+    result = ConnectedTimeline()
+    for date in self.merge_dates(self._dates, other._dates):
+      result[date] = self[date]/other[date]
+    return result
