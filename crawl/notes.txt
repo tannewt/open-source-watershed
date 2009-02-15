@@ -1,0 +1,5 @@
+* Check for release date clustering.  IE 20 releases in 1 day is bad data.
+* Check for upstream/downstream release correlation.  Could have only one of many upstream sources.
+* Could use package homepages as clues to clustering different package name based on upstream.
+* Write new data structures to ease the computation and retrieval of age stuff.
+* Create package name relationship tree and use for upstream computation.

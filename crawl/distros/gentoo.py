@@ -139,7 +139,7 @@ def update_portage():
   # rsync up
   print "rsync",
   try:
-    p = subprocess.Popen(("/usr/bin/rsync","-rt",MIRROR,STORAGE),stdout=None)
+    p = subprocess.Popen(("/usr/bin/rsync","-rt",MIRROR,STORAGE),stdout=open("/dev/null","w"))
     x = p.wait()
   except OSError, e:
     print e

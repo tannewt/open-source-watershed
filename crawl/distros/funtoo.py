@@ -23,7 +23,7 @@ def update_portage():
   # rsync up
   print "git-pull",
   try:
-    p = subprocess.Popen(("/usr/bin/git-pull"),stdout=None,cwd=STORAGE)
+    p = subprocess.Popen(("/usr/bin/git-pull"),stdout=open("/dev/null","w"),cwd=STORAGE)
     x = p.wait()
   except OSError, e:
     print e

@@ -5,11 +5,15 @@ TESTS = [(None,"basic"),
          (None,"tricky version"),
          ("xine-lib-1-rc4.tar.gz",["xine-lib",0,"1-rc4",None,None]),
          ("xine-lib-1-beta1.tar.gz",["xine-lib",0,"1-beta1",None,None]),
+         ("httpd-2.1.3-beta.tar.gz",["httpd",0,"2.1.3-beta",None,None]),
+         ("httpd-2.1.3-alpha.tar.gz",["httpd",0,"2.1.3-alpha",None,None]),
          (None,"mixed filename"),
          ("webmin-1.080-minimal.tar.gz",["webmin-minimal",0,"1.080",None,None]),
          (None,"end src"),
          ("xmovie-1.9.8-src.tar.bz2",["xmovie",0,"1.9.8",None,None])]
 
+# text only version strings
+VER_TEXT = ["alpha","beta","BETA"]
 def has_alpha(s):
   for c in s:
     if c.isalpha():
@@ -22,24 +26,26 @@ def has_num(s):
       return True
   return False
 
-def parse_filename(fn):
+def parse_filename(fn,sep="-"):
   if fn.endswith(".tar.gz"):
     trimmed = fn[:-7]
   elif fn.endswith(".tar.bz2"):
     trimmed = fn[:-8]
+  elif fn.endswith(".tgz"):
+    trimmed = fn[:-4]
   else:
     return None
   
-  if "-" not in trimmed:
+  if sep not in trimmed:
       return None
   pkg = []
   ver = []
   past_ver = False
-  for bit in trimmed.split("-"):
+  for bit in trimmed.split(sep):
     if not has_alpha(bit):
       past_ver = True
       ver.append(bit)
-    elif past_ver and has_num(bit):
+    elif past_ver and (has_num(bit) or bit in VER_TEXT):
       ver.append(bit)
     elif bit!="src":
       pkg.append(bit)
@@ -47,8 +53,8 @@ def parse_filename(fn):
   if len(ver)==0:
     ver.append(pkg.pop())
   
-  pkg = "-".join(pkg)
-  ver = "-".join(ver)
+  pkg = sep.join(pkg)
+  ver = sep.join(ver)
   
   rel = [pkg,0,ver,None,None]
   #print fn,"=>",rel[:3]

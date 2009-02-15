@@ -1,12 +1,11 @@
 import xml.etree.ElementTree as xml
 import datetime
-import ftplib
 import gzip
 import time
 from .utils import helper
 
-MIRROR = "mirrors.kernel.org"
-HTTP_START_DIR = "fedora"
+MIRROR = "linux.nssl.noaa.gov"
+HTTP_START_DIR = "fedora/linux"
 FTP_START_DIR = HTTP_START_DIR
 
 NAMESPACE = "{http://linux.duke.edu/metadata/common}"
@@ -18,11 +17,7 @@ ARCHES = ["i386", "ppc", "ppc64", "x86_64"]
 def get_repos():
   #list dirs in /releases
   repos = []
-  ftp = ftplib.FTP(MIRROR)
-  ftp.login()
-  
-  ftp.cwd(FTP_START_DIR+"/releases")
-  files = ftp.nlst()
+  files = map(lambda s: s[1][:-1],helper.open_dir("http://"+MIRROR+"/"+HTTP_START_DIR+"/releases"))
   releases = []
   #get the releases
   for f in files:
@@ -40,8 +35,7 @@ def get_repos():
   
   for arch in ARCHES:
     repos.append(["fedora", "future", str(max(releases)+1), "Everything", arch, None, None])
-  
-  ftp.quit()
+
   return repos
 
 # return a list of [name, version, revision, time, extra]
@@ -60,6 +54,7 @@ def crawl_repo(repo):
     if repomd:
       f = open(filename)
       repomd_tree = xml.parse(f)
+      f.close()
       datas = repomd_tree.findall(REPO_NAMESPACE+"data")
       fn = None
       for data in datas:
@@ -68,6 +63,8 @@ def crawl_repo(repo):
           if loc!=None:
             fn = loc.attrib["href"]
           break
+      del datas
+      del repomd_tree
       if fn:
         primaries.append(("/".join([url_start,"development",arch,"os",fn]),file_start+"-".join([this_time,"devel",file_end])))
   else:
@@ -84,6 +81,7 @@ def crawl_repo(repo):
       continue
     gzp = gzip.open(filename)
     primary_tree = xml.parse(gzp)
+    gzp.close()
     
     i = primary_tree.getiterator(NAMESPACE + "package")
 
@@ -97,5 +95,7 @@ def crawl_repo(repo):
       rel_time = datetime.datetime.fromtimestamp(float(rel_time))
       
       pkgs.append([name, version, revision, epoch, rel_time, xml.tostring(e)])
+    del i
+    del primary_tree
   return pkgs
   

@@ -189,6 +189,12 @@ class Timeline(UserDict.DictMixin):
   #  """Iterates over date,value tuples NOT just dates (keys)."""
   #  for d in self._dates:
   #    yield d,self._values[d]
+  
+  def __str__(self):
+    result = []
+    for date in self._dates:
+      result.append(" ".join((str(date),str(self._values[date]))))
+    return "\n".join(result)
 
 class StepTimeline(Timeline):
   def __getitem__(self, date):

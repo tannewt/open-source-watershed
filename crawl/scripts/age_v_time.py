@@ -77,7 +77,7 @@ class AgeView:
     p_tv.append_column(gtk.TreeViewColumn("Version",renderer,text=1))
     p_tv.show()
     sp = gtk.ScrolledWindow()
-    sp.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
+    sp.set_policy(gtk.POLICY_NEVER,gtk.POLICY_ALWAYS)
     sp.show()
     sp.add(p_tv)
     vbox2.pack_start(sp)
@@ -88,7 +88,7 @@ class AgeView:
     
     self.distro_store = gtk.ListStore(str)
     s = gtk.ScrolledWindow()
-    s.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+    s.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_ALWAYS)
     s.show()
     s.set_vadjustment(sp.props.vadjustment)
     self.distro_view = gtk.TreeView(self.distro_store)

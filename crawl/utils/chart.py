@@ -295,8 +295,16 @@ class Select(Group):
   
   def button_press(self, item, target, event):
     if target==None:
-      self.emit('select',self.axis.from_coord(event.x-50))
-      self._loc = event.x-50
+      date_selected = self.axis.from_coord(event.x-50)
+      if date_selected > self.axis._end:
+        self.emit('select', self.axis._end)
+        self._loc = self.axis.coord(self.axis._end)
+      elif date_selected < self.axis._start:
+        self.emit('select', self.axis._start)
+        self._loc = self.axis.coord(self.axis._start)
+      else:
+        self.emit('select', date_selected)
+        self._loc = event.x-50
       self._redraw()
   
   def _redraw(self):

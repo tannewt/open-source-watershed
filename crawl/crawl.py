@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import distros.debian
 import distros.slackware
 import distros.ubuntu
@@ -16,6 +17,10 @@ import upstream.gnome
 import upstream.gnu
 import upstream.x
 import upstream.gimp
+import upstream.python
+import upstream.apache
+
+from utils.progressbar.progressbar import ProgressBar
 
 DISTROS = {"slackware" : distros.slackware,
            "debian"    : distros.debian,
@@ -32,7 +37,9 @@ UPSTREAM = {"subversion" : upstream.subversion,
             "gnome"      : upstream.gnome,
             "gnu"        : upstream.gnu,
             "x"          : upstream.x,
-            "gimp"       : upstream.gimp}
+            "gimp"       : upstream.gimp,
+            "python"     : upstream.python}#,
+            #"apache"     : upstream.apache}
 
 import utils.helper
 
@@ -49,8 +56,11 @@ EXTRA = True
 HOST, USER, PASSWORD, DATABASE = utils.helper.mysql_settings()
 
 def crawl_distro(target):
-  print "running",target.__name__
+  pb = ProgressBar(block='■', empty='□')
+  pb.render(0,"\n" + target.__name__ + " (??/??) +0\ngathering repos") 
   repos = target.get_repos()
+  format = "\n" + target.__name__ + " (%d/"+str(len(repos))+") +%d\n%s"
+  pb.render(0,format%(0,0,"starting"))
   release_count = 0
   if TEST:
     repos = [random.choice(repos)]
@@ -90,10 +100,12 @@ def crawl_distro(target):
     cache_pkgs[name] = id
 
   total_releases = 0
+  i = 0
   #print "processing releases"
   for repo in repos:
+    pb.render(100*i/len(repos),format%(i,total_releases," ".join(repo[1:5])))
     # pass in name, branch, codename, component, architecture, last_crawl and new
-    print "crawling:"," ".join(repo[1:5]),
+    #print "crawling:"," ".join(repo[1:5]),
     start_time = time.time()
     try:
       rels = target.crawl_repo(repo)
@@ -146,7 +158,7 @@ def crawl_distro(target):
           pass
     
     duration = time.time()-start_time
-    print "~"+str(int(duration)),"secs",
+    #print "~"+str(int(duration)),"secs",
     #print "committing"
     con.commit()
     
@@ -157,9 +169,11 @@ def crawl_distro(target):
       cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
     con.commit()
     total_releases += release_count
-    print release_count,"releases"
+    #print release_count,"releases"
+    i += 1
+  pb.render(100,format%(len(repos),total_releases,""))
   con.close()
-  print
+  #print
   return total_releases
 
 def crawl_upstream(target):
@@ -187,7 +201,7 @@ def crawl_upstream(target):
     last_crawl = row[0]
     
   #print last_crawl,cpkg_id
-  
+  #last_crawl = None
   # crawl
   rels = target.get_releases(last_crawl)
   count = 0
@@ -236,6 +250,16 @@ print "Using %s/%s."%(HOST,DATABASE)
 gc.enable()
 stats = []
 if len(sys.argv)>1:
+  if "upstream" in sys.argv:
+    sys.argv.remove("upstream")
+    for u in UPSTREAM.keys():
+      stats.append((u,crawl_upstream(UPSTREAM[u])))
+      gc.collect()
+  if "downstream" in sys.argv:
+    sys.argv.remove("downstream")
+    for d in DISTROS.keys():
+      stats.append((d,crawl_distro(DISTROS[d])))
+      gc.collect()
   for crawl in sys.argv[1:]:
     if DISTROS.has_key(crawl):
       stats.append((crawl,crawl_distro(DISTROS[crawl])))

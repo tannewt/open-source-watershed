@@ -10,20 +10,22 @@ CN_ETCH="etch"
 CN_LENNY="lenny"
 CN_SARGE="sarge"
 CN_SID="sid"
+CN_SQUEEZE="squeeze"
 CN_EXPERIMENTAL="experimental"
 
 CODENAMES = [
   CN_ETCH,
   CN_LENNY,
-  CN_SARGE,
   CN_SID,
+  CN_SQUEEZE,
   CN_EXPERIMENTAL]
 
 BRANCHES = {
-  CN_ETCH : "lts",
-  CN_LENNY : "future",
+  CN_ETCH : "past",
+  CN_LENNY : "current",
   CN_SARGE : "past",
-  CN_SID : "current",
+  CN_SID : "lts",
+  CN_SQUEEZE : "future",
   CN_EXPERIMENTAL : "experimental"}
 
 MIRROR = "debian.osuosl.org"
