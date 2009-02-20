@@ -64,7 +64,7 @@ def fill(store, parent, data):
   keys.sort()
   for key in keys:
     if key!="":
-      new = store.append(parent, ("<b>"+key+"</b>","",""))
+      new = store.append(parent, ("<b>"+key+"</b> "+str(len(data[key])),"",""))
       fill(store, new, data[key])
   if "" in data:
     data[""].sort()

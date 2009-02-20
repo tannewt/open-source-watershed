@@ -1,4 +1,5 @@
 from .utils import helper
+from .utils import parsers
 
 NAME="gnome"
 
@@ -20,16 +21,10 @@ def get_releases(last_crawl=None):
           if ver_info == None:
             continue
           for di,fn,date3 in ver_info:
-            if fn.endswith(".tar.bz2") and "-" in fn:
-              pkg,ver = fn[:-8].rsplit("-",1)
-              rel = [pkg,0,ver,date3,None]
-              print rel
-              pkgs.append(rel)
-            elif fn.endswith(".tar.gz") and "-" in fn:
-              pkg,ver = fn[:-7].rsplit("-",1)
-              rel = [pkg,0,ver,date3,None]
-              print rel
-              pkgs.append(rel)
+            rel = parsers.parse_filename(fn)
+            if rel != None:
+  	          rel[3] = date3
+  	          pkgs.append(rel)
   
   #name, epoch, version, date, extra
   #rel = ["subversion",0, None, None, None]

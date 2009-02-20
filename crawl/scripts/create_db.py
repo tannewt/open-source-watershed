@@ -1,8 +1,10 @@
 import MySQLdb as mysql
 import datetime
+import sys
+sys.path.append("")
 
 #open the file
-from .utils import helper
+from utils import helper
 
 HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
 con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD)

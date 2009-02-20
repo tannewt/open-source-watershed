@@ -46,6 +46,7 @@ def get_repos():
         crawl = codename
       #print "fetching", branch
       filename = "files/debian/Release-"+crawl+"-"+str(time.mktime(this_time.timetuple()))
+      #print ["http://",MIRROR,"/",START_DIR,crawl,"/Release"]
       if None==helper.open_url("".join(["http://",MIRROR,"/",START_DIR,crawl,"/Release"]),filename):
         continue
       
@@ -53,6 +54,7 @@ def get_repos():
       
       for line in open(filename).readlines()[:9]:
         line = line.strip()
+        #print line
         name, value = line.split(":")[:2]
         #print name
         if name == "Architectures":
@@ -60,8 +62,9 @@ def get_repos():
         elif name == "Components":
           components=line.split(' ')[1:]
       
+      #print components,architectures
       if not architectures or not components:
-        print "Something is missing from debian %s"%branch
+        print "Something is missing from debian %s"%crawl
       else:
         for arch in architectures:
           for comp in components:
