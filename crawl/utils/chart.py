@@ -318,7 +318,7 @@ class LineChart(Canvas):
     'select-range' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT))
   }
   
-  def __init__(self):
+  def __init__(self,select=True):
     Canvas.__init__(self)
     self.connect("size-allocate",self._resize)
     #self.connect("motion-notify-event",self.mousemove)
@@ -333,10 +333,16 @@ class LineChart(Canvas):
     self.root.add_child(self._y_axis)
     self.root.add_child(self._x_axis)
     
-    self.select = Select(self.root,self._x_axis)
-    self.select.connect('select', lambda w,d: self.emit('select',d))
-    #self.select.translate(50,bottom-50)
-    self.root.add_child(self.select)
+    if select:
+      self.select = Select(self.root,self._x_axis)
+      self.select.connect('select', lambda w,d: self.emit('select',d))
+      #self.select.translate(50,bottom-50)
+      self.root.add_child(self.select)
+    else:
+      self.select = None
+    
+    self.static_x_bounds = False
+    self.static_y_bounds = False
   
   def add(self,title, data, notes, color="#ffffffffffff"):
     line = polyline_new_line(self.root,0,0,0,0)
@@ -353,15 +359,27 @@ class LineChart(Canvas):
     self._adjust_notes(notes,right,bottom)
     self.lines[title] = [line,data,notes,color]
   
+  def set_x_bounds(self, mi, ma):
+    self._x_axis.set_range(mi, ma)
+    self.static_x_bounds = True
+  
+  def set_y_bounds(self, mi, ma):
+    self._y_axis.set_range(mi, ma)
+    self.static_y_bounds = True
+  
   def _adjust_axis(self, data):
     xs = data.keys()
     ys = map(lambda k: data[k], data)
     if self._x_axis._start==None or self._y_axis._start==None:
-      self._x_axis.set_range(min(xs), max(xs))
-      self._y_axis.set_range(min(ys), max(ys))
+      if not self.static_x_bounds:
+        self._x_axis.set_range(min(xs), max(xs))
+      if not self.static_y_bounds:
+        self._y_axis.set_range(min(ys), max(ys))
     else:
-      self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
-      self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
+      if not self.static_x_bounds:
+        self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
+      if not self.static_y_bounds:
+        self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
   
   def update(self, title, data, notes):
     self.lines[title][1] = data
@@ -413,7 +431,8 @@ class LineChart(Canvas):
     #self._x_axis.set_simple_transform(50,h-50,1,0)
     self._x_axis.set_size(w-75)
     #self.select.set_simple_transform(50,h-50,1,0)
-    self.select.set_size(h-75)
+    if self.select != None:
+      self.select.set_size(h-75)
     
     #map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
     self._move_points(w,h)

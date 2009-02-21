@@ -62,6 +62,9 @@ def get_repos():
         elif name == "Components":
           components=line.split(' ')[1:]
       
+      if not architectures:
+      	architectures = "alpha amd64 arm hppa i386 ia64 mips mipsel powerpc s390 sparc".split(' ')
+      
       #print components,architectures
       if not architectures or not components:
         print "Something is missing from debian %s"%crawl

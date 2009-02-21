@@ -155,7 +155,8 @@ class AgeView:
     self._histories.append(distro)
     self.new_distro_store([distro])
     if len(distro.timeline)>0:
-      self.graph.add(key,distro.timeline,distro.notes,c.to_string())
+    	#distro.notes
+      self.graph.add(key,distro.timeline,[],c.to_string())
     else:
       print "none"
   
@@ -242,15 +243,16 @@ class AgeView:
   def run(self):
     gtk.main()
 
-if "--verbose" in sys.argv:
-  age.VERBOSE_RESULT = True
-  sys.argv.remove("--verbose")
+if __name__=="__main__":
+	if "--verbose" in sys.argv:
+		age.VERBOSE_RESULT = True
+		sys.argv.remove("--verbose")
 
-pkgs = []
-if len(sys.argv)>1:
-  f = open(sys.argv[1])
-  pkgs = map(lambda x: x.strip(), f.readlines())
-  pkgs = filter(lambda s: s[0]!="#", pkgs)
-  f.close()
-av = AgeView(pkgs)
-av.run()
+	pkgs = []
+	if len(sys.argv)>1:
+		f = open(sys.argv[1])
+		pkgs = map(lambda x: x.strip(), f.readlines())
+		pkgs = filter(lambda s: s[0]!="#", pkgs)
+		f.close()
+	av = AgeView(pkgs)
+	av.run()
