@@ -42,7 +42,7 @@ def crawl_repo(repo):
   
   #print "extract"
   try:
-    p = subprocess.Popen(("/bin/bunzip2",fn+".bz2"),stdout=None)
+    p = subprocess.Popen(("bunzip2",fn+".bz2"),stdout=None)
     x = p.wait()
   except OSError, e:
     print e
