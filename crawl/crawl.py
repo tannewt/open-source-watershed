@@ -56,11 +56,11 @@ EXTRA = True
 HOST, USER, PASSWORD, DATABASE = utils.helper.mysql_settings()
 
 def crawl_distro(target):
-  pb = ProgressBar(block='■', empty='□')
-  pb.render(0,"\n" + target.__name__ + " (??/??) +0\ngathering repos") 
+  #pb = ProgressBar(block='■', empty='□')
+  #pb.render(0,"\n" + target.__name__ + " (??/??) +0\ngathering repos") 
   repos = target.get_repos()
   format = "\n" + target.__name__ + " (%d/"+str(len(repos))+") +%d\n%s"
-  pb.render(0,format%(0,0,"starting"))
+  #pb.render(0,format%(0,0,"starting"))
   release_count = 0
   if TEST:
     repos = [random.choice(repos)]
@@ -103,9 +103,9 @@ def crawl_distro(target):
   i = 0
   #print "processing releases"
   for repo in repos:
-    pb.render(100*i/len(repos),format%(i,total_releases," ".join(repo[1:5])))
+    #pb.render(100*i/len(repos),format%(i,total_releases," ".join(repo[1:5])))
     # pass in name, branch, codename, component, architecture, last_crawl and new
-    #print "crawling:"," ".join(repo[1:5]),
+    print "crawling:"," ".join(repo[1:5]),
     start_time = time.time()
     try:
       rels = target.crawl_repo(repo)
@@ -158,7 +158,7 @@ def crawl_distro(target):
           pass
     
     duration = time.time()-start_time
-    #print "~"+str(int(duration)),"secs",
+    print "~"+str(int(duration)),"secs",
     #print "committing"
     con.commit()
     
@@ -169,9 +169,9 @@ def crawl_distro(target):
       cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
     con.commit()
     total_releases += release_count
-    #print release_count,"releases"
+    print release_count,"releases"
     i += 1
-  pb.render(100,format%(len(repos),total_releases,""))
+  #pb.render(100,format%(len(repos),total_releases,""))
   con.close()
   #print
   return total_releases
