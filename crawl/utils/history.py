@@ -20,7 +20,11 @@ class PackageHistory:
     cur = con.cursor()
     
     cur.execute("SELECT id,source_id FROM packages WHERE name = %s",(name,))
-    sid,source = cur.fetchone()
+    result = cur.fetchone()
+    if result == None:
+    	raise Exception("unknown package")
+    else:
+    	sid,source = result
     
     sname = None
     while source != None:
@@ -232,7 +236,7 @@ class DistroHistory:
     return age
 
 if __name__=="__main__":
-  apache = PackageHistory("apache2")
-  print apache
-  d = DistroHistory("ubuntu",[apache],"current")
-  print d.timeline
+  p = PackageHistory("inkscape")
+  print p
+  #d = DistroHistory("ubuntu",[apache],"current")
+  #print d.timeline

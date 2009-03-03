@@ -1,6 +1,10 @@
-from goocanvas import *
+try:
+	from goocanvas import *
+	import gtk
+except:
+	print "argh headless!"
+	from headless import *
 import gobject
-import gtk
 import datetime
 
 class Axis (Group):
@@ -344,9 +348,11 @@ class LineChart(Canvas):
     self.static_x_bounds = False
     self.static_y_bounds = False
   
-  def add(self,title, data, notes, color="#ffffffffffff"):
+  def add(self,title, data, notes, color="#ffffffffffff", line_dash=None):
     line = polyline_new_line(self.root,0,0,0,0)
     line.props.stroke_color = color
+    if line_dash != None:
+    	line.props.line_dash = line_dash
     #line.translate(50,self.get_bounds()[3]-50)
     self._adjust_axis(data)
     
@@ -394,7 +400,7 @@ class LineChart(Canvas):
     self._adjust_points(self.lines[title][0], data)
   
   def _adjust_points(self, line, data):
-    line.props.points = Points(map(lambda d: (self._x_axis.coord(d),self._y_axis.coord(data[d])),data))
+    line.props.points = Points(map(lambda d: (self._x_axis.coord(d),self._y_axis.coord(data[d])),[self._x_axis._start] + data[self._x_axis._start:self._x_axis._end].keys()))
   
   def _adjust_notes(self, notes,w=None,h=None):
     i = 0

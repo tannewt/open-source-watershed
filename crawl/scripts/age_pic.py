@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 import cairo
+import goocanvas
 from datetime import timedelta, datetime
 
 from utils import chart
@@ -66,7 +67,16 @@ for d in downstream:
 		name = d
 		distro = DistroHistory(name,upstream,branch)
 	c = DISTRO_COLORS[name]
-	graph.add(key,distro.timeline,[],c.to_string())
+	dash = None
+	if branch=="future":
+		dash = goocanvas.LineDash([2.0,2.0])
+	elif branch=="experimental":
+		dash = goocanvas.LineDash([2.0,5.0])
+	elif branch=="lts":
+		dash = goocanvas.LineDash([10.0,2.0])
+	elif branch=="past":
+		dash = goocanvas.LineDash([10.0,10.0])
+	graph.add(key,distro.timeline,[],c.to_string(),dash)
 
 now = datetime.now()
 d6m = timedelta(weeks=26)
