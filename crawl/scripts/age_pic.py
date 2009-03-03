@@ -80,7 +80,12 @@ for d in downstream:
 		dash = goocanvas.LineDash([10.0,2.0])
 	elif branch=="past":
 		dash = goocanvas.LineDash([10.0,10.0])
-	graph.add(key,distro.timeline,[],c.to_string(),dash)
+	
+	def to_color(c):
+		h = hex(c)[2:]
+		return "0"*(4-len(h))+h
+	
+	graph.add(key,distro.timeline,[],"#"+"".join(map(to_color,c)),dash)
 
 now = datetime.now()
 d6m = timedelta(weeks=26)
