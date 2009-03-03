@@ -10,20 +10,27 @@ HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
 import age
 
-import gtk,gobject
+try:
+	import gtk
+	HEADLESS=False
+except:
+	print "headless!"
+	HEADLESS=True
+import gobject
+from gtk import gdk
 from utils import chart
 from utils.history import *
 
 #age.VERBOSE_RESULT=True
 
-DISTRO_COLORS = {"gentoo":   gtk.gdk.Color( 70*256,  53*256, 124*256),
-                 "sabayon":  gtk.gdk.Color(  1*256, 112*256, 202*256),
-                 "debian":   gtk.gdk.Color(199*256,   0*256,  54*256),
-                 "ubuntu":   gtk.gdk.Color(247*256, 128*256,  38*256),
-                 "slackware":gtk.gdk.Color( 80*256, 104*256, 178*256),
-                 "fedora":   gtk.gdk.Color(  7*256,  42*256,  96*256),
-                 "opensuse": gtk.gdk.Color( 36*256, 168*256,   1*256),
-                 "arch":     gtk.gdk.Color( 23*256, 147*256, 209*256)}
+DISTRO_COLORS = {"gentoo":   gdk.Color( 70*256,  53*256, 124*256),
+                 "sabayon":  gdk.Color(  1*256, 112*256, 202*256),
+                 "debian":   gdk.Color(199*256,   0*256,  54*256),
+                 "ubuntu":   gdk.Color(247*256, 128*256,  38*256),
+                 "slackware":gdk.Color( 80*256, 104*256, 178*256),
+                 "fedora":   gdk.Color(  7*256,  42*256,  96*256),
+                 "opensuse": gdk.Color( 36*256, 168*256,   1*256),
+                 "arch":     gdk.Color( 23*256, 147*256, 209*256)}
 
 class AgeView:
   def __init__(self, pkgs=[]):
