@@ -2,7 +2,11 @@ import sys
 import os
 sys.path.append(os.getcwd())
 import cairo
-import goocanvas
+try:
+	import goocanvas
+except:
+	print "ack headless"
+	import utils.headless as goocanvas
 from datetime import timedelta, datetime
 
 from utils import chart
