@@ -72,15 +72,15 @@ class Text:
 		y = self.props.y+self.parent.dy
 		text = self.args["text"]
 		
-		width, height = context.text_extents(text)[2:4]
+		x_bearing, y_bearing, width, height, x_advance, y_advance = context.text_extents(text)
 		if self.props.anchor == gtk.ANCHOR_SW:
 			pass
 		elif self.props.anchor == gtk.ANCHOR_NORTH:
-			x -= width/2
+			x -= (width)/2
 			y += height
 		elif self.props.anchor == gtk.ANCHOR_EAST:
 			x -= width
-			y += height/2
+			y += (height)/2
 		
 		context.move_to(x, y)
 		context.show_text(text)
@@ -92,6 +92,7 @@ class MoreProps:
 	def __init__(self):
 		self.points = []
 		self.stroke_color = "#000000000000"
+		self.line_dash = None
 
 class Polyline:
 	def __init__(self, **kwargs):
@@ -106,6 +107,8 @@ class Polyline:
 		return self.parent
 	
 	def render(self, context):
+		if self.props.line_dash != None:
+			context.set_dash(self.props.line_dash.dashes)
 		points = map(lambda (x,y): (x+self.parent.dx, y+self.parent.dy), self.props.points.points)
 		context.new_path()
 		context.move_to(points[0][0], points[0][1])
@@ -117,6 +120,10 @@ class Polyline:
 		b = int(c[8:],16)
 		context.set_source_rgb(*map(lambda x: float(x)/16**4,(r,g,b)))
 		context.stroke()
+
+class LineDash:
+	def __init__(self, dashes):
+		self.dashes = dashes
 
 class Props:
 	anchor = None
@@ -146,6 +153,7 @@ class Canvas:
 		pass
 		
 	def render(self, context, something, somethingelse):
+		context.set_font_size(15.0)
 		self.root.render(context)
 	
 	props = Props
