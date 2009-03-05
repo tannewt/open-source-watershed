@@ -57,6 +57,7 @@ class gtk:
 	ANCHOR_SW = 0
 	ANCHOR_NORTH = 1
 	ANCHOR_EAST = 2
+	ANCHOR_SOUTH = 3
 
 class Text:
 	def __init__(self, **kwargs):
@@ -81,6 +82,9 @@ class Text:
 		elif self.props.anchor == gtk.ANCHOR_EAST:
 			x -= width
 			y += (height)/2
+		elif self.props.anchor == gtk.ANCHOR_SOUTH:
+			x -= width/2
+			y -= height
 		
 		context.move_to(x, y)
 		context.show_text(text)

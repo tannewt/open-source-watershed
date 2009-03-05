@@ -322,7 +322,7 @@ class LineChart(Canvas):
     'select-range' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT))
   }
   
-  def __init__(self,select=True):
+  def __init__(self,select=True,title=""):
     Canvas.__init__(self)
     self.connect("size-allocate",self._resize)
     #self.connect("motion-notify-event",self.mousemove)
@@ -333,6 +333,9 @@ class LineChart(Canvas):
     self._x_axis = Axis(Axis.HORIZONTAL)
     #self._x_axis.translate(50,bottom-50)
     self.root = self.get_root_item()
+    self.title = Text(text=title)
+    self.title.props.anchor = gtk.ANCHOR_NORTH
+    self.root.add_child(self.title)
     self.root.translate(50,bottom-50)
     self.root.add_child(self._y_axis)
     self.root.add_child(self._x_axis)
@@ -348,7 +351,7 @@ class LineChart(Canvas):
     self.static_x_bounds = False
     self.static_y_bounds = False
   
-  def add(self,title, data, notes, color="#ffffffffffff", line_dash=None):
+  def add(self, title, data, notes, color="#ffffffffffff", line_dash=None):
     line = polyline_new_line(self.root,0,0,0,0)
     line.props.stroke_color = color
     if line_dash != None:
@@ -432,6 +435,9 @@ class LineChart(Canvas):
     self.set_bounds(0,0,w,h)
     
     self.root.set_simple_transform(50,h-50,1,0)
+    
+    self.title.props.x = w/2-50
+    self.title.props.y = -1*(h-50)
     #self._y_axis.set_simple_transform(50,h-50,1,0)
     self._y_axis.set_size(h-75)
     #self._x_axis.set_simple_transform(50,h-50,1,0)

@@ -44,12 +44,28 @@ if "--d" in sys.argv[1:]:
 		else:
 			break
 
+title = ""
+if "--t" in sys.argv[1:]:
+	title = []
+	for i in range(sys.argv.index("--t")+1,len(sys.argv)):
+		if not sys.argv[i].startswith("--"):
+			title.append(sys.argv[i])
+		else:
+			break
+	title = " ".join(title)
+
 print "upstream",upstream
 print "downstream",downstream
 
-upstream = map(PackageHistory, upstream)
+def to_history(name):
+	try:
+		return PackageHistory(name)
+	except:
+		return None
 
-graph = chart.LineChart(select=False)
+upstream = filter(lambda x: x != None, map(to_history, upstream))
+
+graph = chart.LineChart(select=False,title=title)
 graph.show()
 
 class bounds:
