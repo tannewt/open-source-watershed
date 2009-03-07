@@ -113,6 +113,8 @@ class Polyline:
 	def render(self, context):
 		if self.props.line_dash != None:
 			context.set_dash(self.props.line_dash.dashes)
+		else:
+			context.set_dash([])
 		points = map(lambda (x,y): (x+self.parent.dx, y+self.parent.dy), self.props.points.points)
 		context.new_path()
 		context.move_to(points[0][0], points[0][1])

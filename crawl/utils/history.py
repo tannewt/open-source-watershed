@@ -13,37 +13,43 @@ VERBOSE = False
 VERBOSE_RESULT = False
 
 class PackageHistory:
-  def __init__(self, name):
+  def __init__(self, name, threshold = 255):
     self.name = name
     # find the package name aliases
     con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
     cur = con.cursor()
     
-    cur.execute("SELECT id,source_id FROM packages WHERE name = %s",(name,))
+    cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
     result = cur.fetchone()
     if result == None:
-    	raise Exception("unknown package")
+      raise Exception("unknown package")
     else:
-    	sid,source = result
+      sid = result[0]
     
-    sname = None
-    while source != None:
-      cur.execute("SELECT id,name,source_id FROM packages WHERE id = %s",(source,))
-      sid, sname, source = cur.fetchone()
+    while True:
+      cur.execute("SELECT package_id1 FROM links WHERE package_id2 = %s AND strength >= %s",(sid,threshold))
+      row = cur.fetchone()
+      if row==None:
+        break
+      print row[0],sid
+      sid = row[0]
     
-    if sname != None:
-      print "found real name",sname
-      self.name = sname
+    cur.execute("SELECT name FROM packages WHERE id = %s",(sid,))
+    sname = cur.fetchone()[0]
+    
+    print "found real name",sname
+    self.name = sname
     
     explore = [sid]
     aliases = [self.name]
     while len(explore)>0:
       tmp = []
       for sid in explore:
-        cur.execute("SELECT id,name FROM packages WHERE source_id = %s",(sid,))
+        cur.execute("SELECT package_id2,packages.name FROM packages,links WHERE package_id1 = %s AND package_id2=packages.id AND strength >= %s",(sid,threshold))
         for row in cur:
           aliases.append(row[1])
           tmp.append(row[0])
+          print row[0],sid
       explore = tmp
     
     #print "aliases",aliases
@@ -236,7 +242,10 @@ class DistroHistory:
     return age
 
 if __name__=="__main__":
-  p = PackageHistory("inkscape")
+  if len(sys.argv)<4:
+    print sys.argv[0],"<package>","<threshold>","<distro>"
+    sys.exit(1)
+  p = PackageHistory(sys.argv[1],int(sys.argv[2]))
   print p
-  #d = DistroHistory("ubuntu",[apache],"current")
-  #print d.timeline
+  d = DistroHistory(sys.argv[3],[p],"current")
+  print d.timeline

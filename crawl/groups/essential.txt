@@ -1,7 +1,6 @@
 autoconf
 automake
 bash
-bash-doc
 db
 binutils
 bison
@@ -28,7 +27,6 @@ inetutils
 iproute2
 kbd
 less
-lfs-bootscripts
 libtool
 linux
 m4
