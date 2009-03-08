@@ -21,6 +21,7 @@ import upstream.python
 import upstream.apache
 import upstream.db
 import upstream.linux
+import upstream.sf
 
 from utils.progressbar.progressbar import ProgressBar
 
@@ -42,7 +43,8 @@ UPSTREAM = {"subversion" : upstream.subversion,
             "gimp"       : upstream.gimp,
             "python"     : upstream.python,
             "db"         : upstream.db,
-            "linux"      : upstream.linux}#,
+            "linux"      : upstream.linux,
+            "sf"         : upstream.sf}#,
             #"apache"     : upstream.apache}
 
 import utils.helper
