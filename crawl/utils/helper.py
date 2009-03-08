@@ -19,7 +19,10 @@ class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
 
 def open_url(url, filename, last_crawl=None):
   request = urllib2.Request(url)
-  if last_crawl:
+  request.add_header('Accept','text/html,application/xhtml+xml,application/xml,q=0.9,*/*;q=0.8')
+  request.add_header('Accept-Language','en-us,en;q=0.5')
+  request.add_header('Accept-Charset','ISO-8859-1')
+  if last_crawl!=None:
     last_crawl = last_crawl.strftime("%a, %d %b %Y %H:%M:%S PST")
     #                                                     Thu, 15 Apr 2004 19:45:21 GMT
     request.add_header('If-Modified-Since', last_crawl)
@@ -47,17 +50,18 @@ def open_dir(url):
   if open_url(url, filename)==None:
     return None
   
-  pattern = '(<tr><td valign=\"top\">)?<img [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>( |</td><td>)<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
+  pattern = '(<tr><td valign=\"top\">)?(<(img|IMG) [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>)?( |</td><td>)?<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
   pattern = re.compile(pattern)
 
   f = open(filename)
   files = []
   for line in f:
     match = pattern.match(line)
-    #print line,match
     if match:
       d = match.groupdict()
-      files.append((d["dir"]=="[DIR]",d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
+      is_dir = d["dir"]=="[DIR]" or (d["dir"]==None and d["name"][-1]=="/")
+        
+      files.append((is_dir,d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
   f.close()
   return files
 
