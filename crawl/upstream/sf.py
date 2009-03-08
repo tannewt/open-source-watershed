@@ -37,7 +37,9 @@ PROJECTS = [ 30, #afterstep
              17457, #webmin
              67268, #xdtv
              19869, #xfce
-             9655] #xine-lib
+             9655, #xine-lib
+             15273] #psmisc
+             
              
 BAD_FNS = {235: ["gtk"],
            67268: [".orig.","patch"],
@@ -50,7 +52,7 @@ BAD_FNS = {235: ["gtk"],
            13554: ["ubuntu"],
            6235: ["linux-i386","debian"]}
 
-GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", ]
+GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", "psmisc" ]
 
 def get_files(project_id,last_crawl=None):
   limit = 10
