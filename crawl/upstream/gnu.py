@@ -1,8 +1,10 @@
 from .utils import helper
+from .utils import parsers
 
 NAME="gnu"
 
 MIRROR="http://ftp.gnu.org/gnu/"
+MIRROR2="http://alpha.gnu.org/gnu/"
 
 DEADENDS = ["windows/","packages/","gnu-0.2/","Doc/"]
 
@@ -48,7 +50,7 @@ def parse_fn(fn):
   rel = [pkg,0,ver,None,None]
   return rel
   
-def explore(url, last_crawl):
+def explore(url, last_crawl, parser):
   #print url
   pkgs = []
   info = helper.open_dir(url)
@@ -58,14 +60,14 @@ def explore(url, last_crawl):
     if last_crawl!=None and date<last_crawl:
       continue
     if d and name not in DEADENDS:
-      pkgs += explore(url+name, last_crawl)
+      pkgs += explore(url+name, last_crawl, parser)
     else:
-      rel = parse_fn(name)
-      if rel!=None:
+      rel = parser(name)
+      if rel!=None and rel[0]!="grub-pc" and "netconf" not in rel[2] and "test1" not in rel[2] and "+libtool" not in rel[0]:
         rel[-2] = date
         #print rel
         pkgs.append(rel)
   return pkgs
   
 def get_releases(last_crawl=None):
-  return explore(MIRROR, last_crawl)
+  return explore(MIRROR, last_crawl, parse_fn) + explore(MIRROR2,None,parsers.parse_filename)
