@@ -9,11 +9,11 @@ NAME="sourceforge"
 PROJECTS = [ 30, #afterstep
              6235, #audacity
              40696, #blackbox
-             13554, #cinelerra
+             #13554, #cinelerra
              42641, #digikam
              52551, #dosbox
              2406, #e2fsprogs
-             2, #enlightenment
+             #2, #enlightenment
              #9028, #firebird
              97492, #flex
              35398, #fluxbox
@@ -27,10 +27,10 @@ PROJECTS = [ 30, #afterstep
              86937, #kaffeine
              93482, #ndiswrapper
              8642, #netatalk
-             23067, #phpmyadmin
+             #23067, #phpmyadmin
              235, #pidgin
              108454, #scim
-             125235, #scribus
+             #125235, #scribus
              311, #squuirrelmail
              #10894, #tcl
              #14067, #tightvnc
@@ -49,6 +49,8 @@ BAD_FNS = {235: ["gtk"],
            108454: ["fcitx"],
            13554: ["ubuntu"],
            6235: ["linux-i386","debian"]}
+
+GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", ]
 
 def get_files(project_id,last_crawl=None):
   limit = 10
@@ -89,7 +91,14 @@ def get_releases(last_crawl=None):
       if BAD_FNS.has_key(project) and contains(f[0],BAD_FNS[project]):
         continue
       rel = parsers.parse_filename(f[0])
-      if rel!=None:
+      if rel!=None and rel[2]=="0.45+0.46pre3":
+        rel[2]="0.45"
+      
+      if rel!=None and rel[0] in GOOD_PACKAGES and ".slack." not in rel[2]:
         rel[-2] = f[1]
         rels.append(rel)
+        #print "GOOD",rel
+      elif rel!=None:
+        #print "BAD ", rel
+        pass
   return rels
