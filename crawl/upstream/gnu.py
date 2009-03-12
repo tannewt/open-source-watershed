@@ -70,4 +70,4 @@ def explore(url, last_crawl, parser):
   return pkgs
   
 def get_releases(last_crawl=None):
-  return explore(MIRROR, last_crawl, parse_fn) + explore(MIRROR2,None,parsers.parse_filename)
+  return explore(MIRROR, last_crawl, parse_fn) + explore(MIRROR2, last_crawl, parsers.parse_filename)

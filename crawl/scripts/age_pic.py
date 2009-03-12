@@ -16,6 +16,11 @@ from age_v_time import DISTRO_COLORS
 upstream = []
 downstream = []
 
+DATA = False
+if "--data" in sys.argv:
+	DATA = True
+	sys.argv.remove("--data")
+
 if "--uf" in sys.argv[1:]:
 	for i in range(sys.argv.index("--uf")+1,len(sys.argv)):
 		if not sys.argv[i].startswith("--"):
@@ -74,6 +79,10 @@ class bounds:
 	
 graph._resize(None, bounds)
 
+if DATA:
+	out = open("data.php","w")
+	out.write("<?php\n$distro_data = array(\n")
+
 for d in downstream:
 	if d.count(":")==2:
 		name, branch, codename = d.split(":")
@@ -86,6 +95,13 @@ for d in downstream:
 	else:
 		name = d
 		distro = DistroHistory(name,upstream,branch)
+	
+	if DATA:
+		out.write("\"%s\" => array(\"age\" => \"%s\", \"pkgs\" => array(\n"%(d,distro.timeline[-1][1]))
+		for pkg in distro._packages:
+			package, downstream, age = distro._packages[pkg]
+			out.write("  \"%s\" => array(\"upstream\" => \"%s\", \"downstream\" => \"%s\", \"age\" => \"%s\"),\n"%(pkg,package.timeline[-1][1],downstream[-1][1],age[-1][1]))
+		out.write(")),\n")
 	c = DISTRO_COLORS[name]
 	dash = None
 	if branch=="future":
@@ -102,6 +118,10 @@ for d in downstream:
 		return "0"*(4-len(h))+h
 	
 	graph.add(key,distro.timeline,[],"#"+"".join(map(to_color,c)),dash)
+
+if DATA:
+	out.write(");\n?>")
+	out.close();
 
 now = datetime.now()
 d6m = timedelta(weeks=26)

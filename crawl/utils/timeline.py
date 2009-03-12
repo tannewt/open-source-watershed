@@ -69,8 +69,11 @@ class Timeline(UserDict.DictMixin):
         i = date
         index = True
       #print date, i, self._dates
-      if i == len(self._dates) or (not index and self._dates[i]!=date):
-        return None
+      if i == len(self._dates) or len(self._dates)==0 or (not index and self._dates[i]!=date):
+        if index:
+          return (None, None)
+        else:
+          return None
       d = self._dates[i]
       v = self._values[d]
       if index:
@@ -290,7 +293,15 @@ class ConnectedTimeline(StepTimeline):
           result.append((d,self._values[d]))
         return Timeline(result)
     else:
-      i = bisect.bisect_left(self._dates,date)
+      if type(date)==datetime:
+        i = bisect.bisect_left(self._dates,date)
+      else:
+        i = date
+        if len(self._dates) == 0:
+          return (None, None)
+        else:
+          date = self._dates[i]
+          return (date,self._values[date])
       if i == 0 and (len(self)==0 or self._dates[i]>date):
         return timedelta()
       if i<len(self._dates) and self._dates[i]==date:

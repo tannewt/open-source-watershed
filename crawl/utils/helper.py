@@ -74,8 +74,11 @@ def find_match(s, res):
     i += 1
   return (None, None)
 
-def mysql_settings():
-  f = open("mysql_settings.txt")
+def mysql_settings(comp="local"):
+  if comp=="local":
+    f = open("mysql_settings.txt")
+  else:
+    f = open("mysql_settings_"+comp+".txt")
   settings = map(lambda x: x.strip(),f.readlines())
   f.close()
   return settings
