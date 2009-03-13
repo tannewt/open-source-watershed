@@ -66,12 +66,12 @@ class PackageHistory:
     
     self.ish = False
     #print "query upstream"
-    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released)"
+    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
     cur.execute(q,aliases)
     if cur.rowcount == 0:
       print "falling back to approximate upstream"
       self.ish = True
-      q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released)"
+      q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
       cur.execute(q,(self.name,))
     
     self.timeline = Timeline()
@@ -148,7 +148,7 @@ class DistroHistory:
     if self.name not in package.aliases:
       return Timeline()
     q_start = "SELECT releases.version, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
-    q_end = "GROUP BY releases.version ORDER BY MIN(releases.released)"
+    q_end = "GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
     if self.branch==None and self.arch==None:
       cur.execute(" ".join((q_start,q_end)),package.aliases[self.name]+[self.name])
     elif self.branch==None:
