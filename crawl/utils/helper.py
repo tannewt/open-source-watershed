@@ -45,7 +45,7 @@ def open_url(url, filename, last_crawl=None):
       date = datastream.headers.dict['date']
     return datetime.datetime.strptime(date,"%a, %d %b %Y %H:%M:%S %Z")
 
-def open_dir(url):
+def http_open_dir(url):
   filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))
   if open_url(url, filename)==None:
     return None
@@ -64,6 +64,31 @@ def open_dir(url):
       files.append((is_dir,d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
   f.close()
   return files
+
+def ftp_open_dir(url):
+  x, y, host, d = url.split("/",3)
+  ftp = ftplib.FTP(host,"anonymous")
+  files = []
+  def process_line(line):
+    line = line.split()
+    is_dir = line[0][0]=="d"
+    if ":" in line[-2]:
+      time = line[-2]
+      year = datetime.datetime.now().year
+    else:
+      time = "00:00"
+      year = line[-2]
+    date = datetime.datetime.strptime(" ".join(map(str,(line[-4],line[-3],year,time))),"%b %d %Y %H:%M")
+    files.append((is_dir,line[-1],date))
+  ftp.dir(d,process_line)
+  ftp.close()
+  return files
+
+def open_dir(url):
+  if url.startswith("ftp://"):
+    return ftp_open_dir(url)
+  else:
+    return http_open_dir(url)
 
 def find_match(s, res):
   i = 1

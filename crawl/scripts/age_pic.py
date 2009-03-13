@@ -83,6 +83,9 @@ if DATA:
 	out = open("data.php","w")
 	out.write("<?php\n$distro_data = array(\n")
 
+def to_html_color(c):
+	return "#"+"".join(map(lambda x: hex(x/256)[2:], c))
+
 for d in downstream:
 	if d.count(":")==2:
 		name, branch, codename = d.split(":")
@@ -96,13 +99,15 @@ for d in downstream:
 		name = d
 		distro = DistroHistory(name,upstream,branch)
 	
+	c = DISTRO_COLORS[name]
+	
 	if DATA:
-		out.write("\"%s\" => array(\"age\" => \"%s\", \"pkgs\" => array(\n"%(d,distro.timeline[-1][1]))
+		out.write("\"%s\" => array(\"color\" => \"%s\", \"name\" => \"%s\", \"age\" => \"%s\", \"pkgs\" => array(\n"%(d,to_html_color(c),name,distro.timeline[-1][1]))
 		for pkg in distro._packages:
 			package, downstream, age = distro._packages[pkg]
 			out.write("  \"%s\" => array(\"upstream\" => \"%s\", \"downstream\" => \"%s\", \"age\" => \"%s\"),\n"%(pkg,package.timeline[-1][1],downstream[-1][1],age[-1][1]))
 		out.write(")),\n")
-	c = DISTRO_COLORS[name]
+	
 	dash = None
 	if branch=="future":
 		dash = goocanvas.LineDash([2.0,2.0])
