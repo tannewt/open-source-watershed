@@ -84,7 +84,19 @@ if DATA:
 	out.write("<?php\n$distro_data = array(\n")
 
 def to_html_color(c):
-	return "#"+"".join(map(lambda x: hex(x/256)[2:], c))
+  result = "#"
+  for col in c:
+    h = hex(col/256)[2:]
+    if len(h)==1:
+      h = "0" + h
+    result += h
+  return result
+
+def to_str(t):
+  if t.days<7:
+    return str(t.days)+" days"
+  else:
+    return str(int(t.days/7))+" weeks"
 
 for d in downstream:
 	if d.count(":")==2:
@@ -102,7 +114,7 @@ for d in downstream:
 	c = DISTRO_COLORS[name]
 	
 	if DATA:
-		out.write("\"%s\" => array(\"color\" => \"%s\", \"name\" => \"%s\", \"age\" => \"%s\", \"pkgs\" => array(\n"%(d,to_html_color(c),name,distro.timeline[-1][1]))
+		out.write("\"%s\" => array(\"color\" => \"%s\", \"name\" => \"%s\", \"age\" => \"%s\", \"pkgs\" => array(\n"%(d,to_html_color(c),name,to_str(distro.timeline[-1][1])))
 		for pkg in distro._packages:
 			package, downstream, age = distro._packages[pkg]
 			out.write("  \"%s\" => array(\"upstream\" => \"%s\", \"downstream\" => \"%s\", \"age\" => \"%s\"),\n"%(pkg,package.timeline[-1][1],downstream[-1][1],age[-1][1]))
