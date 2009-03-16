@@ -1,10 +1,10 @@
 try:
 	from goocanvas import *
 	import gtk
+	import gobject
 except:
 	print "argh headless!"
 	from headless import *
-import gobject
 import datetime
 
 class Axis (Group):

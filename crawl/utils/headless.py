@@ -59,6 +59,12 @@ class gtk:
 	ANCHOR_EAST = 2
 	ANCHOR_SOUTH = 3
 
+class gobject:
+	SIGNAL_RUN_LAST = None
+	TYPE_NONE = None
+	TYPE_PYOBJECT = None
+	
+
 class Text:
 	def __init__(self, **kwargs):
 		self.args = kwargs
