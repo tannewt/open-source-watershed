@@ -71,6 +71,7 @@ def ftp_open_dir(url):
   files = []
   def process_line(line):
     line = line.split()
+    print line
     is_dir = line[0][0]=="d"
     if ":" in line[-2]:
       time = line[-2]
@@ -80,7 +81,15 @@ def ftp_open_dir(url):
       year = line[-2]
     date = datetime.datetime.strptime(" ".join(map(str,(line[-4],line[-3],year,time))),"%b %d %Y %H:%M")
     files.append((is_dir,line[-1],date))
-  ftp.dir(d,process_line)
+  
+  ftp.cwd(d)
+  for fn in ftp.nlst():
+    fn_only = fn.split("/")[-1]
+    try:
+      date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
+      files.append((False,fn_only,datetime.datetime.strptime(date,"%Y%m%d%H%M%S")))
+    except ftplib.error_perm:
+      files.append((True,fn_only,None))
   ftp.close()
   return files
 
