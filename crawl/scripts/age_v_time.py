@@ -12,11 +12,11 @@ import age
 
 try:
 	import gtk
+	import gobject
 	HEADLESS=False
 except:
 	print "headless!"
 	HEADLESS=True
-import gobject
 from utils import chart
 from utils.history import *
 
