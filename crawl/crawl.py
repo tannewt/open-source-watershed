@@ -127,6 +127,6 @@ cache.evict([(None, None)])
 
 print time.clock()-total_start,"seconds total"
 
-save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
+save_to = open("/var/www/crawl.oswatershed.org/htdocs/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)
 save_to.close()

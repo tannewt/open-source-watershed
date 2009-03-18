@@ -34,19 +34,19 @@ def crawl_changelog(category,package,last_crawl=None):
 	return []
 
 def update_portage():
-	# rsync up
-	print "git-pull",
-	try:
-		p = subprocess.Popen(("/usr/bin/git","pull"),stdout=open("/dev/null","w"),cwd=STORAGE)
-		x = p.wait()
-	except OSError, e:
-		print e
-		x=-1
-	
-	if x != 0:
-		print "ERROR: git-pull failed: %s"%x
-		return False
-	return True
+  # rsync up
+  #print "git pull",
+  try:
+    p = subprocess.Popen(("/usr/bin/git","pull"),stdout=open("/dev/null","w"),cwd=STORAGE)
+    x = p.wait()
+  except OSError, e:
+    print e
+    x=-1
+  
+  if x != 0:
+    print "ERROR: git pull failed: %s"%x
+    return False
+  return True
 
 def crawl_repo(repo):
 	gSTORAGE = gentoo.STORAGE
