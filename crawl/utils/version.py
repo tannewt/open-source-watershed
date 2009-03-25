@@ -21,6 +21,8 @@ class VersionNode:
       return (self.date,[])
     else:
       date,children = self.children[tokens[0]].next(tokens[1:])
+      if date==None:
+        date = self.date
       return (date,children + map(lambda x: self.children[x], self.tokens[self.tokens.index(tokens[0])+1:]))
   
   def after(self, date):
