@@ -5,11 +5,12 @@ import datetime
 
 sys.path.append(os.getcwd())
 from utils import helper
+from utils.version import VersionTree
 from utils.timeline import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-VERBOSE = False
+VERBOSE = True
 VERBOSE_RESULT = False
 
 class PackageHistory:
@@ -175,65 +176,37 @@ class DistroHistory:
   
   def _compute_package_age(self, upstream, downstream):
     ms = timedelta(microseconds=1)
-    upstreams = {}
-    latest = []
+    versions = VersionTree()
     age = ConnectedTimeline()
     last_downstream = None
-    ds = False
     u = 0
     d = 0
     #print
     #print "interleave"
     #interleave the dates
     while u+d < len(upstream)+len(downstream):
-      is_u = False
       version = None
       date = None
-      append = False
       if u<len(upstream) and (len(downstream)==d or upstream[u][0]<=downstream[d][0]):
         if VERBOSE:
           print "upstream",upstream[u]
         date, version = upstream[u]
-        upstreams[version] = date
-        is_u = True
-        append = len(downstream)==d or upstream[u][0]!=downstream[d][0]
+        versions.add_release(date,version)
         u+=1
       else:
         if VERBOSE:
           print "downstream",downstream[d]
         date, version = downstream[d]
         last_downstream = version
-        append = True
+        age[date] = versions.compute_lag(date, version)
         d+=1
-      if ds and append:
-        if len(latest)==0:
-          age[date] = date-date
-        else:
-          age[date] = date-upstreams[latest[0]]
-      if is_u:
-        latest.append(version)
-        #print latest
-      else:
-        while len(latest)>0  and latest.pop(0)!=version:
-          pass
-        #print latest
-      if last_downstream!=None and append:
-        ds=True
-          
-        if len(latest)==0:
-          age[date+ms] = date-date
-        else:
-          age[date+ms] = date-upstreams[latest[0]]
     #print
     #print "age"
     now = self._now
     if now==None:
       now = datetime.now()
     if last_downstream!=None:
-      if len(latest)==0:
-        age[now] = now-now
-      else:
-        age[now] = now-upstreams[latest[0]]
+      age[now] = versions.compute_lag(now, last_downstream)
     
     if VERBOSE or VERBOSE_RESULT:
       for a in age:
@@ -242,10 +215,21 @@ class DistroHistory:
     return age
 
 if __name__=="__main__":
-  if len(sys.argv)<4:
-    print sys.argv[0],"<package>","<threshold>","<distro>"
+  if len(sys.argv)<2:
+    print sys.argv[0],"<package>","[threshold]","[distro]"
     sys.exit(1)
-  p = PackageHistory(sys.argv[1],int(sys.argv[2]))
+  p = sys.argv[1]
+  t = 255
+  d = None
+  if len(sys.argv)>2:
+    t = sys.argv[2]
+  
+  if len(sys.argv)>3:
+    d = sys.argv[3]
+
+  p = PackageHistory(p,t)
   print p
-  d = DistroHistory(sys.argv[3],[p],"current")
-  print d.timeline
+  
+  if d != None:
+    d = DistroHistory(d,[p],"future")
+    print d.timeline

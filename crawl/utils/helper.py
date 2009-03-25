@@ -3,6 +3,7 @@ import ftplib
 import datetime
 import time
 import re
+import os
 
 class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
     def http_error_default(self, req, fp, code, msg, headers):
@@ -109,6 +110,9 @@ def find_match(s, res):
   return (None, None)
 
 def mysql_settings(comp="local"):
+  if "WATERSHED_SERVER" in os.environ:
+    comp = os.environ["WATERSHED_SERVER"]
+  
   if comp=="local":
     f = open("mysql_settings.txt")
   else:
