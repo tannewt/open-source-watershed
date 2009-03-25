@@ -10,7 +10,7 @@ from utils.timeline import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-VERBOSE = True
+VERBOSE = False
 VERBOSE_RESULT = False
 
 class PackageHistory:
