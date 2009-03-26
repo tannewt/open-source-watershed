@@ -10,7 +10,7 @@ NAME="apache"
 
 MIRROR="http://archive.apache.org/dist/"
 
-GOOD = ["apache","mod_python"activemq-cpp apr apr-iconv apr-util cocoon hadoop lucene nutch maven mina mod_perl Mail-SpamAssassin tapestry ]
+GOOD = ["apache","mod_python", "activemq-cpp", "apr", "apr-iconv", "apr-util", "cocoon", "hadoop", "lucene", "nutch", "maven", "mina", "mod_perl", "Mail-SpamAssassin", "tapestry"]
 
 de = open("upstream/apache_deadends.txt")
 DEADENDS = map(lambda s: s.strip()+"/", de.readlines())
@@ -19,7 +19,7 @@ de.close()
 DEADENDS.append("cgi/")
 DEADENDS.append("harmony/")
 DEADENDS.append("incubator/")
-win32-bin/
+DEADENDS.append("win32-bin/")
 
 RENAME = {"httpd":"apache"}
   
