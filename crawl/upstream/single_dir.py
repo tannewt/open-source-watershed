@@ -19,7 +19,9 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
            "http://mirror.sourceshare.org/savannah/man-db/": [["man-db"],[]],
            "http://www.kernel.org/pub/linux/utils/kernel/module-init-tools/": [["module-init-tools"],[]],
            "http://www.kernel.org/pub/linux/utils/kernel/hotplug/": [["udev"],[]],
-           "http://ftp.vim.org/pub/vim/unix/": [["vim"],[]]
+           "http://ftp.vim.org/pub/vim/unix/": [["vim"],[]],
+           "ftp://ftp.alsa-project.org/pub/lib/": [["alsa-lib"],[]],
+           "ftp://ftp.alsa-project.org/pub/driver/": [["alsa-driver"],[]]
           }
 
 def get_releases(last_crawl=None):

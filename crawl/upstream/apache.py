@@ -8,13 +8,18 @@ from utils import parsers
 
 NAME="apache"
 
-MIRROR="http://archive.apache.org/dist/httpd/"
+MIRROR="http://archive.apache.org/dist/"
+
+GOOD = ["apache","mod_python"activemq-cpp apr apr-iconv apr-util cocoon hadoop lucene nutch maven mina mod_perl Mail-SpamAssassin tapestry ]
 
 de = open("upstream/apache_deadends.txt")
 DEADENDS = map(lambda s: s.strip()+"/", de.readlines())
 de.close()
 
 DEADENDS.append("cgi/")
+DEADENDS.append("harmony/")
+DEADENDS.append("incubator/")
+win32-bin/
 
 RENAME = {"httpd":"apache"}
   
@@ -39,7 +44,8 @@ def explore(url, last_crawl):
         if rel[0] in RENAME:
           rel[0] = RENAME[rel[0]]
         print rel[0],rel[2]
-        pkgs.append(rel)
+        if rel[0] in GOOD:
+          pkgs.append(rel)
   return pkgs
   
 def get_releases(last_crawl=None):
@@ -47,5 +53,7 @@ def get_releases(last_crawl=None):
 
 if __name__=="__main__":
   pkgs = get_releases()
-  #for p in pkgs:
-  #  print p[0],p[2],p[-2]
+  print
+  print
+  for p in pkgs:
+    print p[0],p[2],p[-2]
