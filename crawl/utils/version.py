@@ -37,6 +37,26 @@ class VersionNode:
     else:
       return c
   
+  def max(self, t1, t2):
+    if len(t1)==0:
+      return 2
+    if len(t2)==0:
+      return 1
+    
+    if t1[0]==t2[0]:
+      return self.max(t1[1:],t2[1:])
+    else:
+      if t1[0] in self.tokens and t2[0] in self.tokens:
+        if self.tokens.index(t1[0]) < self.tokens.index(t2[0]):
+          return 2
+        else:
+          return 1
+      else:
+        if t1[0] < t2[0]:
+          return 2
+        else:
+          return 1
+  
   def __str__(self, prefix="", indent=0):
     result = ["  "*indent + str(self.date)]
     for t in self.tokens:
@@ -51,6 +71,18 @@ class VersionTree:
   
   def add_release(self, date, version):
     self.root.add(date, self._tokenize(version))
+  
+  def max(self, v1, v2):
+    if v1=="0":
+      return v2
+    if v2=="0":
+      return v1
+    
+    i = self.root.max(self._tokenize(v1), self._tokenize(v2))
+    if i==1:
+      return v1
+    else:
+      return v2
   
   def compute_lag(self, date, version):
     d,newer = self.root.next(self._tokenize(version))

@@ -96,6 +96,7 @@ class PackageHistory:
 class DistroHistory:
   def __init__(self, name, packages=[], branch=None, codename=None, arch=None, now=None):
     self._timeline = ConnectedTimeline()
+    self.timeline = self._timeline
     self.notes = Timeline()
     self.count = StepTimeline()
     self.name = name
@@ -122,7 +123,10 @@ class DistroHistory:
   def add_pkg(self, package):
     upstream = package.timeline
     downstream = self._get_downstream(package)
-    age = self._compute_package_age(upstream, downstream)
+    if len(downstream)>0:
+      age = self._compute_package_age(upstream, downstream)
+    else:
+      age = ConnectedTimeline()
     self._packages[package.name] = (package,downstream,age)
     self._pkg_order.append(package.name)
     #print self.timeline
@@ -178,7 +182,7 @@ class DistroHistory:
     ms = timedelta(microseconds=1)
     versions = VersionTree()
     age = ConnectedTimeline()
-    last_downstream = None
+    greatest_downstream = "0"
     u = 0
     d = 0
     #print
@@ -192,21 +196,24 @@ class DistroHistory:
           print "upstream",upstream[u]
         date, version = upstream[u]
         versions.add_release(date,version)
+        if greatest_downstream != "0":
+          age[date] = versions.compute_lag(date, greatest_downstream)
         u+=1
       else:
         if VERBOSE:
           print "downstream",downstream[d]
         date, version = downstream[d]
-        last_downstream = version
-        age[date] = versions.compute_lag(date, version)
+        age[date] = versions.compute_lag(date, greatest_downstream)
+        greatest_downstream = versions.max(greatest_downstream,version)
+        age[date+ms] = versions.compute_lag(date, greatest_downstream)
         d+=1
     #print
     #print "age"
     now = self._now
     if now==None:
       now = datetime.now()
-    if last_downstream!=None:
-      age[now] = versions.compute_lag(now, last_downstream)
+    if greatest_downstream!=None:
+      age[now] = versions.compute_lag(now, greatest_downstream)
     
     if VERBOSE or VERBOSE_RESULT:
       for a in age:
@@ -218,6 +225,7 @@ if __name__=="__main__":
   if len(sys.argv)<2:
     print sys.argv[0],"<package>","[threshold]","[distro]"
     sys.exit(1)
+  VERBOSE = True
   p = sys.argv[1]
   t = 255
   d = None
@@ -231,5 +239,5 @@ if __name__=="__main__":
   print p
   
   if d != None:
-    d = DistroHistory(d,[p],"future")
+    d = DistroHistory(d,[p],"current")
     print d.timeline
