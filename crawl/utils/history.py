@@ -203,8 +203,13 @@ class DistroHistory:
         if VERBOSE:
           print "downstream",downstream[d]
         date, version = downstream[d]
-        age[date] = versions.compute_lag(date, greatest_downstream)
+        if VERBOSE:
+          print greatest_downstream, version
+        if greatest_downstream != "0":
+          age[date] = versions.compute_lag(date, greatest_downstream)
         greatest_downstream = versions.max(greatest_downstream,version)
+        if VERBOSE:
+          print greatest_downstream
         age[date+ms] = versions.compute_lag(date, greatest_downstream)
         d+=1
     #print

@@ -17,8 +17,11 @@ class VersionNode:
   
   def next(self, tokens):
     """Given a series of tokens return its release date and all subtrees with later versions."""
-    if len(tokens)==0 or tokens[0] not in self.tokens:
+    if len(tokens)==0 and len(self.tokens)==0:
       return (self.date,[])
+    elif len(tokens)==0:
+      date,children = self.children[self.tokens[0]].next([])
+      return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
     else:
       date,children = self.children[tokens[0]].next(tokens[1:])
       if date==None:
