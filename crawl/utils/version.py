@@ -54,10 +54,13 @@ class VersionTree:
   
   def compute_lag(self, date, version):
     d,newer = self.root.next(self._tokenize(version))
-    if len(newer)>0:
-      oldest_new = min(map(lambda r: r.after(d),newer))
+    if d==None:
+      oldest_new = self.root.after(datetime.datetime(1986, 7, 15))
     else:
-      oldest_new = datetime.datetime(9999,12,31)
+      if len(newer)>0:
+        oldest_new = min(map(lambda r: r.after(d),newer))
+      else:
+        oldest_new = datetime.datetime(9999,12,31)
     
     if oldest_new != datetime.datetime(9999,12,31):
       return date - oldest_new
