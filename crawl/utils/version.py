@@ -75,6 +75,9 @@ class VersionTree:
   def add_release(self, date, version):
     self.root.add(date, self._tokenize(version))
   
+  def get_date(self, version):
+    return self.root.next(self._tokenize(version))[0]
+  
   def max(self, v1, v2):
     if v1=="0":
       return v2

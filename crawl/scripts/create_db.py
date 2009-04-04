@@ -18,6 +18,7 @@ cur.execute('use '+DATABASE);
 cur.execute("""CREATE TABLE distros (
 id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(255) NOT NULL UNIQUE,
+color VARCHAR(7),
 description TEXT,
 website TEXT
 ) ENGINE=INNODB""")
@@ -89,6 +90,8 @@ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 release_id BIGINT UNSIGNED,
 content TEXT,
 FOREIGN KEY (release_id) REFERENCES releases(id) ON DELETE CASCADE
-) ENGINE=INNODB""") 
+) ENGINE=INNODB""")
+
+# cache
 
 con.close()

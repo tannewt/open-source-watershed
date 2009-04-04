@@ -102,6 +102,13 @@ class DistroHistory:
     self.name = name
     self.branch = branch
     self.codename = codename
+    
+    con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+    cur = con.cursor()
+    cur.execute("SELECT id, color FROM distros WHERE name = %s",(name))
+    self.id, self.color = cur.fetchone()
+    con.close()
+    
     self.arch = arch
     self._now = now
     
@@ -120,9 +127,12 @@ class DistroHistory:
       result.append((self._packages[p][1].last(date),self._packages[p][2][date]))
     return result
   
+  def get_pkg(self, name):
+    return self._packages[name][1]
+  
   def add_pkg(self, package):
     upstream = package.timeline
-    downstream = self._get_downstream(package)
+    downstream = self.get_downstream(package)
     if len(downstream)>0:
       age = self._compute_package_age(upstream, downstream)
     else:
@@ -147,13 +157,17 @@ class DistroHistory:
     
     self.timeline = self._timeline / self.count
   
-  def _get_downstream(self, package):
+  def get_downstream(self, package, revisions=False):
     con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
     cur = con.cursor()
     if self.name not in package.aliases:
       return Timeline()
-    q_start = "SELECT releases.version, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
-    q_end = "GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
+    if revisions:
+      q_start = "SELECT releases.version, releases.revision, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
+      q_end = "GROUP BY releases.version, releases.revision ORDER BY MIN(releases.released), releases.version, releases.revision"
+    else:
+      q_start = "SELECT releases.version, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
+      q_end = "GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
     if self.branch==None and self.arch==None:
       cur.execute(" ".join((q_start,q_end)),package.aliases[self.name]+[self.name])
     elif self.branch==None:
@@ -169,10 +183,16 @@ class DistroHistory:
     downstream = Timeline()
     if VERBOSE:
       print "downstream"
-    for version, date in cur:
-      if VERBOSE:
-        print version, date
-      downstream[date] = version
+    if revisions:
+      for version, revision, date in cur:
+        if VERBOSE:
+          print version, revision, date
+        downstream[date] = (version, revision)
+    else:
+      for version, date in cur:
+        if VERBOSE:
+          print version, date
+        downstream[date] = version
 
     if VERBOSE:
       print

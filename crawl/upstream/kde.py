@@ -9,12 +9,12 @@ except:
 
 NAME="kde"
 
-MIRROR="http://ftp.oregonstate.edu/pub/kde/"
+MIRROR="http://mirror.cc.columbia.edu/pub/software/kde/"
 
 DEADENDS = ["snapshots/", "FreeBSD/", "Mandrake/", "RedHat/", "SuSE/", "contrib/", "Conectiva/", "Mandriva/", "kubuntu/", "AIX/", "ArkLinux/", "Slamd64/", "Pardus/", "Slackware/", "windows/", "win32/", "Debian/", "Turbo/", "Mandrakelinux/", "adm/", "devel/", "doc/", "events/", "packages/", "printing/", "Pardus/", "mac/", "security_patches/", "kolab/", "icons/"]
   
 def explore(url, last_crawl):
-  #print url
+  print url
   pkgs = []
   info = helper.open_dir(url)
   if info==None:
@@ -33,7 +33,7 @@ def explore(url, last_crawl):
   return pkgs
   
 def get_releases(last_crawl=None):
-  return explore(MIRROR, last_crawl)
+  return explore(MIRROR, None)
 
 if __name__=="__main__":
   pkgs = get_releases()

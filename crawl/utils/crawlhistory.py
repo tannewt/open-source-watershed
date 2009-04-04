@@ -1,6 +1,7 @@
 import sys
 import os
 import MySQLdb as mysql
+import datetime
 
 sys.path.append(os.getcwd())
 from utils import helper
@@ -22,8 +23,13 @@ class CrawlHistory:
       cur.execute("SELECT packages.name, releases.version, releases.released FROM packages, releases WHERE packages.id = releases.package_id AND releases.repo_id IS NULL AND packages.name = %s GROUP BY  releases.version ORDER BY releases.released DESC LIMIT 25",(package,))
     else:
       cur.execute("SELECT packages.name, releases.version, releases.revision, releases.released FROM packages, releases, repos, distros WHERE packages.id = releases.package_id AND repos.id = releases.repo_id AND distros.id = repos.distro_id AND distros.name = %s AND packages.name = %s GROUP BY releases.package_id, releases.version, releases.revision ORDER BY MIN(releases.released) DESC LIMIT 25",(distro,package))
+    self.today = 0
+    now = datetime.datetime.now()
+    day = datetime.timedelta(1)
     for row in cur:
       self.releases.append(row)
+      if now-row[-1] <= day:
+        self.today += 1
   
   def __str__(self):
     result = []
