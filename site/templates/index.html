@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% include "includes/how.html" %}
+  {% include "includes/what.html" %}
+  {% include "includes/who.html" %}
+{% endblock %}
+
+{% block right %}
+  {% for title, count, releases in crawl_stats %}
+    {% include "includes/sidebar-item.html" %}
+  {% endfor %}
+{% endblock %}

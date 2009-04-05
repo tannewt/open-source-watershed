@@ -1,0 +1,13 @@
+<div class="sidebar-item" style="font-family: sans-serif; margin-bottom: 3px;">
+  <div class="title-bar" style="background-image: url('http://static.oswatershed.org/green_grad_21.png'); width: 100%; height: 17px; padding: 2px 2px 2px 2px;">
+    <div class="feed" style="float: right;">
+      <a href="{{ feed }}"><img src="http://static.oswatershed.org/rss_white.png" style="border: none"/></a>
+    </div>
+    <span class="title" style="font-weight: bold; color: white;">{{ title }}</span>
+    <span class="count" style="color: white; font-size: small;">{{ count }}</span>
+    
+  </div>
+  {% for package, version, date in releases %}
+    <div class="rel" style="font-size: small"><span class="pkg"><a href="pkg/{{ package }}">{{ package }}</a></span><span class="ver">{{ version }}</span></div>
+  {% endfor %}
+</div>

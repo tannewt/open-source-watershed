@@ -1,0 +1,27 @@
+{% load humanize %}
+<html>
+  <head>
+    <title>{% block title %}Open Source Watershed{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="http://static.oswatershed.org/style.css" />
+    {% block header %}{% endblock %}
+  </head>
+  <body>
+    <div class="center_column">
+      {% block bar %}<div id="bar">{{ stats.distro_count|intcomma }} Distributions &nbsp;&nbsp;&nbsp;  {{ stats.package_count|intcomma }} Total Packages &nbsp;&nbsp;&nbsp; {{ stats.release_count|intcomma }} Releases &nbsp;&nbsp;&nbsp; {{ stats.upstream_count|intcomma }} Upstream Packages<span class="search"><input type="text"/><span id="search">Search</span></span></div>{% endblock %}
+      {% block logo %}<div id="logo">
+        <a href="/"><img src="http://static.oswatershed.org/logo.png" /></a>
+      </div>
+      {% endblock %}
+      {% block sidebar %}
+      <div class="right sidebar" style="margin: 0px 0px 0px 0px; padding: 0px 0px 0px 0px; padding-top: 20px;">
+      {% block right %} {% endblock %}
+      </div>
+      {% endblock %}
+      {% block contentblock %}
+      <div class="content" style="margin: 0px 0px 0px 0px; padding: 0px 0px 0px 0px;">
+      {% block content %} No Content {% endblock %}
+      </div>
+      {% endblock %}
+    </div>
+  </body>
+</html>
