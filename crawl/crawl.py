@@ -25,7 +25,7 @@ import upstream.sf
 import upstream.single_dir
 import upstream.kde
 
-from utils.progressbar.progressbar import ProgressBar
+from utils.cache import Cache
 
 DISTROS = {"slackware" : distros.slackware,
            "debian"    : distros.debian,
@@ -66,11 +66,9 @@ EXTRA = True
 HOST, USER, PASSWORD, DATABASE = utils.helper.mysql_settings()
 
 def crawl_distro(target):
-  #pb = ProgressBar(block='■', empty='□')
-  #pb.render(0,"\n" + target.__name__ + " (??/??) +0\ngathering repos") 
+  cache = Cache()
   repos = target.get_repos()
   format = "\n" + target.__name__ + " (%d/"+str(len(repos))+") +%d\n%s"
-  #pb.render(0,format%(0,0,"starting"))
   release_count = 0
   if TEST:
     repos = [random.choice(repos)]
@@ -164,6 +162,8 @@ def crawl_distro(target):
             rel_id = cur.fetchone()[0]
             cur.execute("insert into extra (release_id, content) values (%s, %s)", (rel_id,rel[-1]))
           release_count += 1
+          cache.evict([(pkg_id, distro_id)])
+          
         except mysql.IntegrityError:
           pass
     
@@ -175,19 +175,20 @@ def crawl_distro(target):
     #add the crawl
     if release_count>0:
       cur.execute("insert into crawls (repo_id, release_count, time) values (%s,%s,NOW())", [repo_id,release_count])
+      cache.evict([(None, distro_id)])
     else:
       cur.execute("insert into crawls (repo_id, time) values (%s,NOW())", [repo_id])
     con.commit()
     total_releases += release_count
     print release_count,"releases"
     i += 1
-  #pb.render(100,format%(len(repos),total_releases,""))
   con.close()
   #print
   return total_releases
 
 def crawl_upstream(target):
   print "running",target.__name__,
+  cache = Cache()
 
   con = mysql.connect(host=HOST, user=USER, passwd=PASSWORD, db=DATABASE)
 
@@ -237,6 +238,7 @@ def crawl_upstream(target):
         continue
       cur.execute("insert into releases (package_id, epoch, version, released) values (%s,%s,%s,%s)",(pkg_id,epoch,version,date))
       count += 1
+      cache.evict([(pkg_id, None)])
       if EXTRA and extra:
         cur.execute("select last_insert_id();")
         rel_id = cur.fetchone()[0]
@@ -288,6 +290,9 @@ else:
   for u in UPSTREAM.keys():
     stats.append((u,crawl_upstream(UPSTREAM[u])))
     gc.collect()
+
+cache = Cache()
+cache.evict([(None, None)])
 
 save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)
