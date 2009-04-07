@@ -22,7 +22,6 @@ grep
 groff
 grub
 gzip
-iana-etc
 inetutils
 iproute2
 kbd
@@ -48,8 +47,6 @@ sysvinit
 tar
 texinfo
 udev
-udev-config
 util-linux-ng
 vim
-vim-lang
 zlib

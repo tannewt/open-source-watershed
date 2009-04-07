@@ -6,23 +6,39 @@ import datetime
 
 NAME="sourceforge"
 
-PROJECTS = [ 30, #afterstep
+PROJECTS = [ 20003, #aa project
+             33140, #acpid
+             30, #afterstep
              6235, #audacity
              40696, #blackbox
+             26089, #bridge-utils
              #13554, #cinelerra
+             2171, #cdrdao
+             4664, #cscope
              42641, #digikam
              52551, #dosbox
              2406, #e2fsprogs
              #2, #enlightenment
              #9028, #firebird
+             13478, #flac
              97492, #flex
              35398, #fluxbox
              3157, #freetype
+             121684, #fuse
              31, #icewm
              1897, #ghostscript
+             3242, #gkernel
              192, #gnucash
              115843, #gparted
+             2055, #gnuplot
+             4050, #gqview
+             1537, #gutenprint
+             136732, #hdparm
+             149981, #hplip
+             24099, #ImageMagick
              93438, #inkscape
+             23475, #joe
+             26279, #lcms
              26138, #k3b
              86937, #kaffeine
              93482, #ndiswrapper
@@ -52,7 +68,7 @@ BAD_FNS = {235: ["gtk"],
            13554: ["ubuntu"],
            6235: ["linux-i386","debian"]}
 
-GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", "psmisc" ]
+GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", "psmisc", "aalib", "acpid", "bridge-utils", "cdrdao", "cscope", "ethtool", "flac", "fuse", "gnuplot", "gqview", "gutenprint", "hdparm", "hplip", "ImageMagick", "joe", "lcms" ]
 
 def get_files(project_id,last_crawl=None):
   limit = 10

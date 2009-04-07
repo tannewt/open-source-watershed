@@ -32,13 +32,13 @@ class PackageHistory:
       row = cur.fetchone()
       if row==None:
         break
-      print row[0],sid
       sid = row[0]
     
     cur.execute("SELECT name FROM packages WHERE id = %s",(sid,))
     sname = cur.fetchone()[0]
     
-    print "found real name",sname
+    if VERBOSE:
+      print "found real name",sname
     self.name = sname
     
     explore = [sid]
@@ -50,7 +50,6 @@ class PackageHistory:
         for row in cur:
           aliases.append(row[1])
           tmp.append(row[0])
-          print row[0],sid
       explore = tmp
     
     #print "aliases",aliases
@@ -64,13 +63,16 @@ class PackageHistory:
         else:
           distro_aliases[row[0]].append(alias)
     self.aliases = distro_aliases
+    if VERBOSE:
+      print self.aliases
     
     self.ish = False
     #print "query upstream"
     q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
     cur.execute(q,aliases)
     if cur.rowcount == 0:
-      print "falling back to approximate upstream"
+      if VERBOSE:
+        print "falling back to approximate upstream"
       self.ish = True
       q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
       cur.execute(q,(self.name,))
@@ -250,7 +252,7 @@ if __name__=="__main__":
   if len(sys.argv)<2:
     print sys.argv[0],"<package>","[threshold]","[distro]"
     sys.exit(1)
-  VERBOSE = True
+  #VERBOSE = True
   p = sys.argv[1]
   t = 255
   d = None

@@ -65,7 +65,7 @@ EXTRA = True
 
 HOST, USER, PASSWORD, DATABASE = utils.helper.mysql_settings()
 
-def crawl_distro(target):
+def crawl_distro(target, last=True):
   cache = Cache()
   repos = target.get_repos()
   format = "\n" + target.__name__ + " (%d/"+str(len(repos))+") +%d\n%s"
@@ -98,7 +98,7 @@ def crawl_distro(target):
     cur.execute("SELECT crawls.time FROM crawls,repos WHERE repos.distro_id=%s AND repos.branch=%s AND repos.codename=%s AND repos.component=%s AND repos.architecture=%s AND crawls.repo_id=repos.id ORDER BY crawls.time DESC LIMIT 1", [distro_id] + repo[1:-2])
     row = cur.fetchone()
     repo[-1] = row==None
-    if row:
+    if row and last:
       repo[-2] = row[0]
   
   # build package cache
@@ -186,7 +186,7 @@ def crawl_distro(target):
   #print
   return total_releases
 
-def crawl_upstream(target):
+def crawl_upstream(target, last=True):
   print "running",target.__name__,
   cache = Cache()
 
@@ -208,7 +208,7 @@ def crawl_upstream(target):
   cur.execute("SELECT time FROM crawls WHERE package_id=%s ORDER BY time DESC LIMIT 1",(cpkg_id,))
   row = cur.fetchone()
   last_crawl = None
-  if row:
+  if row and last:
     last_crawl = row[0]
     
   #print last_crawl,cpkg_id
@@ -261,34 +261,41 @@ def crawl_upstream(target):
 print "Using %s/%s."%(HOST,DATABASE)
 gc.enable()
 stats = []
+
+if "--ignore-last" in sys.argv:
+  sys.argv.remove("--ignore-last")
+  last = False
+else:
+  last = True
+
 if len(sys.argv)>1:
   if "upstream" in sys.argv:
     sys.argv.remove("upstream")
     for u in UPSTREAM.keys():
-      stats.append((u,crawl_upstream(UPSTREAM[u])))
+      stats.append((u,crawl_upstream(UPSTREAM[u],last)))
       gc.collect()
   if "downstream" in sys.argv:
     sys.argv.remove("downstream")
     for d in DISTROS.keys():
-      stats.append((d,crawl_distro(DISTROS[d])))
+      stats.append((d,crawl_distro(DISTROS[d],last)))
       gc.collect()
   for crawl in sys.argv[1:]:
     if DISTROS.has_key(crawl):
-      stats.append((crawl,crawl_distro(DISTROS[crawl])))
+      stats.append((crawl,crawl_distro(DISTROS[crawl],last)))
       gc.collect()
       continue
     if UPSTREAM.has_key(crawl):
-      crawl_upstream(UPSTREAM[crawl])
+      crawl_upstream(UPSTREAM[crawl],last)
       gc.collect()
       continue
     print "unknown",crawl
 else:
   print "no args - running all"
   for d in DISTROS.keys():
-    stats.append((d,crawl_distro(DISTROS[d])))
+    stats.append((d,crawl_distro(DISTROS[d], last)))
     gc.collect()
   for u in UPSTREAM.keys():
-    stats.append((u,crawl_upstream(UPSTREAM[u])))
+    stats.append((u,crawl_upstream(UPSTREAM[u], last)))
     gc.collect()
 
 cache = Cache()
