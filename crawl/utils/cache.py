@@ -43,7 +43,7 @@ class Cache:
     
     for pkg,distro in deps:
       cur.execute("INSERT INTO cache_deps (package_id, distro_id, cache_id) VALUES (%s, %s, %s)", (pkg, distro, cache_id))
-    self.db.commit()
+      self.db.commit()
   
   def evict(self, deps=[]):
     cur = self.db.cursor()
@@ -66,7 +66,7 @@ class Cache:
       
       result = cur.execute("DELETE FROM cache WHERE id IN ("+query+")",args)
       rows += result
-    self.db.commit()
+      self.db.commit()
     
     if VERBOSE:
       print rows,"cache line(s) evicted"
@@ -74,17 +74,20 @@ class Cache:
   def dump(self):
     cur = self.db.cursor()
     
-    print "cache"
-    cur.execute("SELECT * FROM cache")
-    for row in cur:
-      print row
-    print
+    #print "cache"
+    #cur.execute("SELECT * FROM cache")
+    #for row in cur:
+    #  print row
+    #print
     
     print "cache deps"
-    cur.execute("SELECT * FROM cache_deps")
+    cur.execute("SELECT packages.name, distros.id, cache.caches FROM cache_deps, packages, distros, cache WHERE packages.id = cache_deps.package_id AND distros.id = cache_deps.distro_id AND cache.id = cache_deps.cache_id")
     for row in cur:
       print row
     print
+  
+  def __del__(self):
+    self.db.close()
     
 if __name__=="__main__":
   c = Cache()

@@ -183,6 +183,7 @@ def crawl_distro(target, last=True):
     print release_count,"releases"
     i += 1
   con.close()
+  del cache
   #print
   return total_releases
 
@@ -255,6 +256,7 @@ def crawl_upstream(target, last=True):
   
   con.commit()
   con.close()
+  del cache
   print count,"releases"
   return count
 

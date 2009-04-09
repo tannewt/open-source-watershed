@@ -42,7 +42,32 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
            "ftp://iptraf.seul.org/pub/iptraf/": [["iptraf"],["bin"]],
            "http://irssi.org/files/": [["irssi"],[]],
            "http://ftp.yars.free.net/pub/source/lftp/old": [["lftp"],[]],
-           "http://ftp.yars.free.net/pub/source/lftp/": [["lftp"],[]]
+           "http://ftp.yars.free.net/pub/source/lftp/": [["lftp"],[]],
+           "http://downloads.xiph.org/releases/ao/": [["libao"],[]],
+           "ftp://ftp.gnupg.org/gcrypt/libgpg-error/": [["libgpg-error"],[]],
+           "ftp://ftp.gnupg.org/gcrypt/libksba/": [["libksba"],[]],
+           "http://downloads.xiph.org/releases/ogg/": [["libogg"],[]],
+           "http://downloads.xiph.org/releases/vorbis/": [["libvorbis", "vorbis-tools"],[]],
+           "http://downloads.xiph.org/releases/theora/": [["libtheora"],[]],
+           "http://liboil.freedesktop.org/download/": [["liboil"],[]],
+           "http://www.linux1394.org/dl/": [["libraw1394", "libiec61883"],[]],
+           "http://www.codon.org.uk/~mjg59/libx86/downloads/": [["libx86"],[]],
+           "http://www.oberhumer.com/opensource/lzo/download/": [["lzo"],[]],
+           "http://www.kernel.org/pub/linux/utils/raid/mdadm/": [["mdadm"],[]],
+           "http://www.selenic.com/mercurial/release/": [["mercurial"],[]],
+           "ftp://ftp.bitwizard.nl/mtr/": [["mtr"],[]],
+           #"http://www.tazenda.demon.co.uk/phil/net-tools/": [["net-tools"],[]],
+           "ftp://ftp.uk.linux.org/pub/linux/Networking/netkit-devel/": [["netkit-ftp", "netkit-rsh", "netkit-bootparamd", "netkit-ntalk", "netkit-routed", "netkit-rusers", "netkit-rwall", "netkit-rwho", "netkit-timed"],[]],
+           "ftp://ftp.uk.linux.org/pub/linux/Networking/netkit/": [["netkit-ftp", "netkit-rsh", "netkit-bootparamd", "netkit-ntalk", "netkit-routed", "netkit-rusers", "netkit-rwall", "netkit-rwho", "netkit-timed"],[]],
+           "http://nmap.org/dist/": [["nmap"],[]],
+           "http://mirror.mcs.anl.gov/openssh/": [["openssh"],[]],
+           "ftp://ftp.openssl.org/source/": [["openssl"],[]],
+           "http://openvpn.net/release/": [["openvpn"],[]],
+           "ftp://atrey.karlin.mff.cuni.cz/pub/linux/pci/": [["pciutils"],[]],
+           "http://kernel.org/pub/linux/utils/kernel/pcmcia/": [["pcmciautils"],[]],
+           "ftp://ftp.gnupg.org/gcrypt/pinentry/": [["pinentry"],[]],
+           "http://pm-utils.freedesktop.org/releases/": [["pm-utils"],[]],
+           "ftp://ftp.samba.org/pub/ppp/": [["ppp"],[]]
           }
 
 def get_releases(last_crawl=None):
