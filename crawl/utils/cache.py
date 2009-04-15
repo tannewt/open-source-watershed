@@ -21,6 +21,16 @@ class Cache:
   def __init__(self):
     self.db = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
   
+  def has_key(self, key):
+    cur = self.db.cursor()
+    cur.execute("SELECT COUNT(v) FROM cache WHERE k = %s",(key,))
+    self.db.commit()
+    value = cur.fetchone()[0]
+    if value==0:
+      return False
+    else:
+      return True
+  
   def key_status(self, key):
     cur = self.db.cursor()
     cur.execute("SELECT status FROM cache WHERE k = %s",(key,))
