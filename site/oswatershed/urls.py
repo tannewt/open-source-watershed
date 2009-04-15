@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     (r'^$', 'oswatershed.views.index'),
     (r'^distro/(?P<distro>[^/]+)/?$', 'oswatershed.views.distro'),
     (r'^pkg/(?P<pkg>[^/]+)/?$', 'oswatershed.views.pkg'),
+    (r'^search/(?P<search>[^/]+)/?$', 'oswatershed.views.search'),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:

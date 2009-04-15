@@ -1,0 +1,25 @@
+{% extends "includes/section.html" %}
+
+{% block id %}search{% endblock %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+We found {{ results|length }} results for your search for "{{ search }}":
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Real Name</th>
+    <th>Description</th>
+    <th>Latest</th>
+  </tr>
+{% for name, real_name, description, version in results %}
+  <tr>
+    <td>{{ name }}</td>
+    <td>{{ real_name }}</td>
+    <td>{{ description }}</td>
+    <td>{{ version }}</td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

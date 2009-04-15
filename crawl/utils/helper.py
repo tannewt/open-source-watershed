@@ -95,10 +95,14 @@ def ftp_open_dir(url):
   return files
 
 def open_dir(url):
-  if url.startswith("ftp://"):
-    return ftp_open_dir(url)
-  else:
-    return http_open_dir(url)
+  try:
+    if url.startswith("ftp://"):
+      return ftp_open_dir(url)
+    else:
+      return http_open_dir(url)
+  except urllib2.URLError:
+    print "bad http",url
+  return []
 
 def find_match(s, res):
   i = 1

@@ -91,7 +91,7 @@ class Cache:
     
 if __name__=="__main__":
   c = Cache()
-  if sys.argv[1]=="print":
+  if len(sys.argv)>1 and sys.argv[1]=="print":
     c.dump()
   else:
     c.put("/upstream/latest",["1", 2, 3],[(None, None)])

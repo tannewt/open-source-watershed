@@ -67,7 +67,23 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
            "http://kernel.org/pub/linux/utils/kernel/pcmcia/": [["pcmciautils"],[]],
            "ftp://ftp.gnupg.org/gcrypt/pinentry/": [["pinentry"],[]],
            "http://pm-utils.freedesktop.org/releases/": [["pm-utils"],[]],
-           "ftp://ftp.samba.org/pub/ppp/": [["ppp"],[]]
+           "ftp://ftp.samba.org/pub/ppp/": [["ppp"],[]],
+           "ftp://ftp.samba.org/pub/rsync/src//": [["rsync"],[]],
+           "ftp://us1.samba.org/pub/samba/stable/": [["samba"],[]],
+           "http://sg.danny.cz/sg/p/": [["sdparm"],[]],
+           "http://freedesktop.org/software/shared-mime-info/": [["shared-mime-info"],[]],
+           "ftp://www.stunnel.org/stunnel/src/": [["stunnel"],[]],
+           "http://www.sudo.ws/sudo/dist/OLD/": [["sudo"],[]],
+           "http://www.sudo.ws/sudo/dist/": [["sudo"],[]],
+           "http://www.kernel.org/pub/linux/utils/boot/syslinux/Old/": [["syslinux"],[]],
+           "http://www.kernel.org/pub/linux/utils/boot/syslinux/": [["syslinux"],[]],
+           "ftp://sunsite.unc.edu/pub/Linux/libs/graphics/": [["t1lib"],[]],
+           "http://developer.kde.org/~wheeler/files/src/": [["taglib"],[]],
+           "http://www.tcpdump.org/release/": [["tcpdump"],[]],
+           "ftp://ftp.astron.com/pub/tcsh/old/": [["tcsh"],[]],
+           "ftp://ftp.astron.com/pub/tcsh/": [["tcsh"],[]],
+           "ftp://ftp.tin.org/pub/news/clients/tin/stable/": [["tin"],["current"]],
+           "ftp://ftp.tin.org/pub/news/clients/tin/unstable/": [["tin"],[]]
           }
 
 def get_releases(last_crawl=None):
