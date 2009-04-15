@@ -102,6 +102,8 @@ def open_dir(url):
       return http_open_dir(url)
   except urllib2.URLError:
     print "bad http",url
+  except Exception, e:
+    print e
   return []
 
 def find_match(s, res):

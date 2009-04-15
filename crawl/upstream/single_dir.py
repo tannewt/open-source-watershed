@@ -89,7 +89,6 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
 def get_releases(last_crawl=None):
   pkgs = []
   for source in SOURCES:
-    print source
     info = helper.open_dir(source)
     if info==None:
       return []

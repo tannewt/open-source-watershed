@@ -11,22 +11,27 @@ HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
 VERBOSE = False
 
+# ALTER TABLE cache ADD COLUMN status TINYINT NOT NULL DEFAULT 1;
+
 class Cache:
+  STALE = -1
+  REFRESH = 0
+  FRESH = 1
+  
   def __init__(self):
     self.db = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
   
-  def has_key(self, key):
+  def key_status(self, key):
     cur = self.db.cursor()
-    cur.execute("SELECT COUNT(v) FROM cache WHERE k = %s",(key,))
+    cur.execute("SELECT status FROM cache WHERE k = %s",(key,))
+    self.db.commit()
     value = cur.fetchone()[0]
-    if value == 0:
-      return False
-    else:
-      return True
+    return value
     
   def get(self, key):
     cur = self.db.cursor()
     cur.execute("SELECT v FROM cache WHERE k = %s",(key,))
+    self.db.commit()
     value = cur.fetchone()[0]
     if value != None:
       value = pickle.loads(value)
@@ -37,15 +42,25 @@ class Cache:
   def put(self, key, value, deps=[]):
     cur = self.db.cursor()
     value = pickle.dumps(value)
-    cur.execute("INSERT INTO cache (k, v, cached) VALUES (%s, %s, NOW())",(key,value))
-    cur.execute("SELECT LAST_INSERT_ID();")
-    cache_id = cur.fetchone()[0]
+    try:
+      cur.execute("INSERT INTO cache (k, v, cached) VALUES (%s, %s, NOW())",(key,value))
+      cur.execute("SELECT LAST_INSERT_ID();")
+      self.db.commit()
+      cache_id = cur.fetchone()[0]
+    except:
+      cur.execute("SELECT id FROM cache WHERE k = %s",(k,))
+      cache_id = cur.fetchone()[0]
+      cur.execute("UPDATE cache SET v = %s, status = %s, cached = NOW() WHERE id = %s", (value, Cache.FRESH, cache_id))
+      self.db.commit()
     
     for pkg,distro in deps:
-      cur.execute("INSERT INTO cache_deps (package_id, distro_id, cache_id) VALUES (%s, %s, %s)", (pkg, distro, cache_id))
+      try:
+        cur.execute("INSERT INTO cache_deps (package_id, distro_id, cache_id) VALUES (%s, %s, %s)", (pkg, distro, cache_id))
+      except:
+        pass
       self.db.commit()
   
-  def evict(self, deps=[]):
+  def evict(self, deps=[], force=False):
     cur = self.db.cursor()
     rows = 0
     for pkg,distro in deps:
@@ -64,7 +79,10 @@ class Cache:
         query += "distro_id = %s"
         args.append(distro)
       
-      result = cur.execute("DELETE FROM cache WHERE id IN ("+query+")",args)
+      if force:
+        result = cur.execute("DELETE FROM cache WHERE id IN ("+query+")",args)
+      else:
+        result = cur.execute("UPDATE cache SET status = %s WHERE id IN ("+query+")",[Cache.STALE]+args)
       rows += result
       self.db.commit()
     
@@ -82,6 +100,7 @@ class Cache:
     
     print "cache deps"
     cur.execute("SELECT packages.name, distros.id, cache.caches FROM cache_deps, packages, distros, cache WHERE packages.id = cache_deps.package_id AND distros.id = cache_deps.distro_id AND cache.id = cache_deps.cache_id")
+    self.db.commit()
     for row in cur:
       print row
     print
