@@ -17,7 +17,7 @@ We found {{ results|length }} results for your search for "{{ search }}":
   <tr>
     <td>{{ name }}</td>
     <td>{{ real_name }}</td>
-    <td>{{ description }}</td>
+    <td>{% if description %}{{ description }}{% else %}No description.{% endif %}</td>
     <td>{{ version }}</td>
   </tr>
 {% endfor %}

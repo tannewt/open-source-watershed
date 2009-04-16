@@ -24,7 +24,7 @@ class Search:
   def __str__(self):
     result = []
     for search,history in self.results:
-      line = [search, history.name, "No description.", str(history.timeline[-1][1])]
+      line = [search, history.name, history.description, str(history.timeline[-1][1])]
       if history.ish:
         line[-1] += "*"
       if line[0]==line[1]:

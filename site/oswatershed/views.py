@@ -53,7 +53,7 @@ def search(request, search):
   
   results = []
   for name,history in search.results:
-    line = [name[:20], history.name[:20], "No description.", str(history.timeline[-1][1])]
+    line = [name[:20], history.name[:20], history.description, str(history.timeline[-1][1])]
     if history.ish:
       line[-1] += "*"
     if line[0]==line[1]:
