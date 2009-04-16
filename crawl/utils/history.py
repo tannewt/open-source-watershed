@@ -46,7 +46,7 @@ class PackageHistory:
     while len(explore)>0:
       tmp = []
       for sid in explore:
-        cur.execute("SELECT package_id2,packages.name FROM packages,links WHERE package_id1 = %s AND package_id2=packages.id AND strength >= %s",(sid,threshold))
+        cur.execute("SELECT package_id2, packages.name FROM packages,links WHERE package_id1 = %s AND package_id2=packages.id AND strength >= %s",(sid,threshold))
         for row in cur:
           aliases.append(row[1])
           tmp.append(row[0])

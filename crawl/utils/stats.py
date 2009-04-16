@@ -2,6 +2,7 @@ import sys
 import os
 import datetime
 import MySQLdb as mysql
+import threading
 
 sys.path.append(os.getcwd())
 from utils import helper
@@ -14,26 +15,36 @@ HOST, USER, PASSWORD, DB = helper.mysql_settings()
 class DataStats:
   def __init__(self):
     cache = Cache()
-    if cache.has_key("/stats"):
-      self.distro_count, self.package_count, self.upstream_count, self.release_count = cache.get("/stats")
+    status = cache.key_status("/stats")
+    if status == None:
+      self.update(cache)
     else:
-      con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
-      cur = con.cursor()
-      
-      cur.execute("SELECT COUNT(*) FROM distros;")
-      self.distro_count = cur.fetchone()[0]
-      
-      cur.execute("SELECT COUNT(*) FROM packages;")
-      self.package_count = cur.fetchone()[0]
-      
-      cur.execute("SELECT COUNT( DISTINCT package_id ) FROM releases WHERE repo_id IS NULL;")
-      self.upstream_count = cur.fetchone()[0]
-      
-      cur.execute("SELECT COUNT(DISTINCT package_id, version, revision, repos.codename) FROM releases, repos WHERE releases.repo_id = repos.id;");
-      self.release_count = cur.fetchone()[0]
-      con.close()
-      
-      cache.put("/stats", (self.distro_count, self.package_count, self.upstream_count, self.release_count), [(None, None)])
+      if status == Cache.STALE:
+        t = threading.Thread(target=self.update)
+        t.start()
+      self.distro_count, self.package_count, self.upstream_count, self.release_count = cache.get("/stats")
+    
+  def update(self, cache=None):
+    if cache == None:
+      cache = Cache()
+    
+    con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+    cur = con.cursor()
+    
+    cur.execute("SELECT COUNT(*) FROM distros;")
+    self.distro_count = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT(*) FROM packages;")
+    self.package_count = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT( DISTINCT package_id ) FROM releases WHERE repo_id IS NULL;")
+    self.upstream_count = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT(DISTINCT package_id, version, revision, repos.codename) FROM releases, repos WHERE releases.repo_id = repos.id;");
+    self.release_count = cur.fetchone()[0]
+    con.close()
+    
+    cache.put("/stats", (self.distro_count, self.package_count, self.upstream_count, self.release_count), [(None, None)])
   
   def __str__(self):
     result = []
