@@ -53,11 +53,11 @@ class CrawlHistory:
     day = datetime.timedelta(1)
     
     status = c.key_status(key)
-    if status != None and status != Cache.STALE:
+    if status != None:
       self.releases = c.get(key)
-    elif status == Cache.STALE:
-      t = threading.Thread(target=self.update, args=(key, query, query_args, package_id, distro_id))
-      t.start()
+      if status == Cache.STALE:
+        t = threading.Thread(target=self.update, args=(key, query, query_args, package_id, distro_id))
+        t.start()
     else:
       self.update(key, query, query_args, package_id, distro_id)
       
