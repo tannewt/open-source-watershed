@@ -53,6 +53,7 @@ PROJECTS = [ 20003, #aa project
              62662, #libwpd
              26138, #k3b
              86937, #kaffeine
+             80184, #krecipes
              12349, #mad
              106236, #mailx
              4286, #mhash
@@ -98,7 +99,7 @@ BAD_FNS = {235: ["gtk"],
            13554: ["ubuntu"],
            6235: ["linux-i386","debian"]}
 
-GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", "psmisc", "aalib", "acpid", "bridge-utils", "cdrdao", "cscope", "ethtool", "flac", "fuse", "gnuplot", "gqview", "gutenprint", "hdparm", "hplip", "ImageMagick", "joe", "lcms", "libcddb", "libexif", "libgphoto2", "gtkpod", "libgpod", "libid3tag", "libmad", "madplay", "libieee1284", "libmng", "libmtp", "libnjb", "libusb", "libvisual", "libvisual-plugins", "libwmf", "libwpd", "mailx", "mhash", "mtx", "mutt", "nasm", "net-snmp", "netpbm", "nfs-utils", "ntfsprogs", "obexftp", "rdesktop", "slrn", "smartmontools", "sox", "strace", "sysfsutils", "usbutils" ]
+GOOD_PACKAGES = ["e2fsprogs", "e2fsprogs-libs", "dosbox", "digikam", "blackbox", "audacity", "libAfterImage", "AfterStep", "libAfter", "libAfterBase", "freetype", "fluxbox", "flex", "inkscape", "gparted", "gnucash", "ghostscript", "icewm", "pidgin", "netatalk", "ndiswrapper", "kaffeine", "squirrelmail", "skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim", "usermin", "webmin", "xdtv", "xfce", "xine-lib", "xine-plugin", "gxine", "xine-ui", "psmisc", "aalib", "acpid", "bridge-utils", "cdrdao", "cscope", "ethtool", "flac", "fuse", "gnuplot", "gqview", "gutenprint", "hdparm", "hplip", "ImageMagick", "joe", "lcms", "libcddb", "libexif", "libgphoto2", "gtkpod", "libgpod", "libid3tag", "libmad", "madplay", "libieee1284", "libmng", "libmtp", "libnjb", "libusb", "libvisual", "libvisual-plugins", "libwmf", "libwpd", "mailx", "mhash", "mtx", "mutt", "nasm", "net-snmp", "netpbm", "nfs-utils", "ntfsprogs", "obexftp", "rdesktop", "slrn", "smartmontools", "sox", "strace", "sysfsutils", "usbutils", "krecipes" ]
 
 def get_files(project_id,last_crawl=None):
   limit = 10

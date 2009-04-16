@@ -35,7 +35,7 @@ class Cache:
     cur = self.db.cursor()
     cur.execute("SELECT status FROM cache WHERE k = %s",(key,))
     value = cur.fetchone()
-    if claim and value[0] == Cache.STALE:
+    if claim and value!=None and value[0] == Cache.STALE:
       cur.execute("UPDATE cache SET status = %s WHERE k = %s",(Cache.REFRESH,key))
     self.db.commit()
     if value == None:

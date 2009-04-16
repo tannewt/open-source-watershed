@@ -34,8 +34,8 @@ class PackageHistory:
         break
       sid = row[0]
     
-    cur.execute("SELECT name FROM packages WHERE id = %s",(sid,))
-    sname = cur.fetchone()[0]
+    cur.execute("SELECT name, description FROM packages WHERE id = %s",(sid,))
+    sname, self.description = cur.fetchone()
     
     if VERBOSE:
       print "found real name",sname

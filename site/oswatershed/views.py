@@ -38,10 +38,12 @@ STAT_DISTROS = [("arch","current"),("arch","future"),
 def pkg(request, pkg):
   ps = PackageStats(pkg)
   s = DataStats()
+  print "desc",ps.hist.description
   return render_to_response('pkg.html',
     {"stats": s,
     "pkg_stats":map(lambda x: ps.for_distro(*x),STAT_DISTROS),
-    "name" : pkg
+    "name" : pkg,
+    "description" : ps.hist.description
     }
   )
 
