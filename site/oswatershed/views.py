@@ -38,16 +38,21 @@ STAT_DISTROS = [("arch","current"),("arch","future"),
 def pkg(request, pkg):
   ps = PackageStats(pkg)
   s = DataStats()
-  print "desc",ps.hist.description
+  h = ps.hist.timeline[-5:]
+  history = []
+  for d in h:
+    history.insert(0, (d, h[d]))
   return render_to_response('pkg.html',
     {"stats": s,
     "pkg_stats":map(lambda x: ps.for_distro(*x),STAT_DISTROS),
     "name" : pkg,
-    "description" : ps.hist.description
+    "description" : ps.hist.description,
+    "history" : history,
+    "approx" : ps.hist.ish
     }
   )
 
-def search(request, search):
+def search2(request, search):
   search = Search(search)
   s = DataStats()
   
@@ -58,6 +63,23 @@ def search(request, search):
       line[-1] += "*"
     if line[0]==line[1]:
       line[1] = "-"
+    results.append(line)
+  return render_to_response('search2.html',
+    {"stats": s,
+    "search": search.search,
+    "results" : results
+    }
+  )
+
+def search(request, search):
+  search = Search(search, basic=True)
+  s = DataStats()
+  
+  results = []
+  for name,description in search.results:
+    if len(name)>35:
+      name = name[:32]+"..."
+    line = [name, description]
     results.append(line)
   return render_to_response('search.html',
     {"stats": s,

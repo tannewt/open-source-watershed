@@ -1,0 +1,9 @@
+{% extends "includes/section.html" %}
+
+{% block title %}{% if approx %}Approx. {% endif %}History{% endblock %}
+
+{% block content%}
+  {% for date, version in history %}
+    {{ date }} - {{ version }}<br>
+  {% endfor %}
+{% endblock %}

@@ -11,12 +11,16 @@ We found {{ results|length }} results for your search for "{{ search }}":
 <table>
   <tr>
     <th>Name</th>
+    <th>Real Name</th>
     <th>Description</th>
+    <th>Latest</th>
   </tr>
-{% for name, description in results %}
+{% for name, real_name, description, version in results %}
   <tr>
     <td><a href="/pkg/{{ name }}">{{ name|highlight:search }}</a></td>
+    <td>{{ real_name }}</td>
     <td>{% if description %}{{ description }}{% else %}No description.{% endif %}</td>
+    <td>{{ version }}</td>
   </tr>
 {% endfor %}
 </table>
