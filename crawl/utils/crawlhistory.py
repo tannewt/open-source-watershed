@@ -33,11 +33,11 @@ class CrawlHistory:
     cached = False
     if package == None and distro == None:
       key = "/upstream/latest"
-      query = "SELECT packages.name, releases.version, MIN(releases.released) FROM packages, releases WHERE packages.id = releases.package_id AND releases.repo_id IS NULL AND releases.released >= DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY releases.package_id, releases.version ORDER BY MIN(releases.released) DESC"
+      query = "SELECT packages.name, releases.version, MIN(releases.released) FROM packages, releases WHERE packages.id = releases.package_id AND releases.repo_id IS NULL AND releases.released >= DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY releases.package_id, releases.version ORDER BY MIN(releases.released) DESC, packages.name ASC"
       query_args = []
     elif package == None and distro != None:
       key = "/distro/%s/latest"%distro
-      query = "SELECT packages.name, releases.version, releases.revision, MIN(releases.released) FROM packages, releases, repos, distros WHERE packages.id = releases.package_id AND repos.id = releases.repo_id AND distros.id = repos.distro_id AND distros.name = %s AND releases.released >= DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY packages.id, releases.version ORDER BY MIN(releases.released) DESC"
+      query = "SELECT packages.name, releases.version, releases.revision, MIN(releases.released) FROM packages, releases, repos, distros WHERE packages.id = releases.package_id AND repos.id = releases.repo_id AND distros.id = repos.distro_id AND distros.name = %s AND releases.released >= DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY packages.id, releases.version ORDER BY MIN(releases.released) DESC, packages.name ASC"
       query_args = (distro,)
     elif package != None and distro == None:
       key = "/pkg/%s/latest"%package
