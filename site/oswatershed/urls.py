@@ -11,6 +11,8 @@ urlpatterns = patterns('',
     (r'^pkg/(?P<pkg>[^/]+)/?$', 'oswatershed.views.pkg'),
     (r'^search2/(?P<search>[^/]+)/?$', 'oswatershed.views.search2'),
     (r'^search/(?P<search>[^/]+)/?$', 'oswatershed.views.search'),
+    (r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': 'http://static.oswatershed.org/favicon.ico'}),
+
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
