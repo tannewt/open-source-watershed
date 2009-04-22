@@ -5,6 +5,7 @@ NAME="gnome"
 
 MIRROR="http://ftp.gnome.org/pub/gnome/sources/"
 def get_releases(last_crawl=None):
+  last_crawl = None
   pkgs = []
   info = helper.open_dir(MIRROR)
   if info==None:
