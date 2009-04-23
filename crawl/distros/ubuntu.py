@@ -12,6 +12,7 @@ CN_GUTSY="gutsy"
 CN_HARDY="hardy"
 CN_INTREPID="intrepid"
 CN_JAUNTY="jaunty"
+CN_KARMIC="karmic"
 
 CODENAMES = [
   CN_DAPPER,
@@ -19,7 +20,8 @@ CODENAMES = [
   CN_GUTSY,
   CN_HARDY,
   CN_INTREPID,
-  CN_JAUNTY]
+  CN_JAUNTY,
+  CN_KARMIC]
 
 LTS = [CN_DAPPER, CN_HARDY]
 
