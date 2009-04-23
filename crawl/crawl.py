@@ -10,6 +10,7 @@ import distros.sabayon
 import distros.funtoo
 
 import gc
+import traceback
 
 import upstream.subversion
 import upstream.postfix
@@ -274,30 +275,54 @@ if len(sys.argv)>1:
   if "upstream" in sys.argv:
     sys.argv.remove("upstream")
     for u in UPSTREAM.keys():
-      stats.append((u,crawl_upstream(UPSTREAM[u],last)))
+      try:
+        stats.append((u,crawl_upstream(UPSTREAM[u],last)))
+      except:
+        print "error from upstream:",u
+        print traceback.format_exc()
       gc.collect()
   if "downstream" in sys.argv:
     sys.argv.remove("downstream")
     for d in DISTROS.keys():
-      stats.append((d,crawl_distro(DISTROS[d],last)))
+      try:
+        stats.append((d,crawl_distro(DISTROS[d],last)))
+      except:
+        print "error from upstream:",d
+        print traceback.format_exc()
       gc.collect()
   for crawl in sys.argv[1:]:
     if DISTROS.has_key(crawl):
-      stats.append((crawl,crawl_distro(DISTROS[crawl],last)))
+      try:
+        stats.append((crawl,crawl_distro(DISTROS[crawl],last)))
+      except:
+        print "error from distro:",crawl
+        print traceback.format_exc()
       gc.collect()
       continue
     if UPSTREAM.has_key(crawl):
-      crawl_upstream(UPSTREAM[crawl],last)
+      try:
+        crawl_upstream(UPSTREAM[crawl],last)
+      except:
+        print "error from upstream:",crawl
+        print traceback.format_exc()
       gc.collect()
       continue
     print "unknown",crawl
 else:
   print "no args - running all"
   for d in DISTROS.keys():
-    stats.append((d,crawl_distro(DISTROS[d], last)))
+    try:
+      stats.append((d,crawl_distro(DISTROS[d], last)))
+    except:
+      print "error from distro:",d
+      print traceback.format_exc()
     gc.collect()
   for u in UPSTREAM.keys():
-    stats.append((u,crawl_upstream(UPSTREAM[u], last)))
+    try:
+      stats.append((u,crawl_upstream(UPSTREAM[u], last)))
+    except:
+      print "error from upstream:",u
+      print traceback.format_exc()
     gc.collect()
 
 cache = Cache()
