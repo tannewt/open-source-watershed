@@ -30,7 +30,8 @@ ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
   CN_GUTSY : ["amd64", "i386", "powerpc", "sparc"],
   CN_HARDY : ["amd64", "i386"],
   CN_INTREPID : ["amd64", "i386"],
-  CN_JAUNTY : ["amd64", "i386"]}
+  CN_JAUNTY : ["amd64", "i386"],
+  CN_KARMIC : ["amd64", "i386"]}
 
 MIRROR = "ubuntu.osuosl.org"
 
