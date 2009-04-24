@@ -240,6 +240,9 @@ class Note(Group):
   
   def on_button_press(self, item, target, event):
     #print "press",line[:12],index
+    self.toggle()
+  
+  def toggle(self):
     self._toggled = not self._toggled
     if self._toggled:
       self.popup.props.visibility = ITEM_VISIBLE
@@ -401,6 +404,11 @@ class LineChart(Canvas):
     self._adjust_axis(data)
     self.lines[title][2] = self._draw_notes(data,notes,self.lines[title][3])
     self._adjust_points(self.lines[title][0], data)
+  
+  def toggle_all_notes(self):
+    for title in self.lines:
+      for note in self.lines[title][2]:
+        note.toggle()
   
   def _adjust_points(self, line, data):
     line.props.points = Points(map(lambda d: (self._x_axis.coord(d),self._y_axis.coord(data[d])),[self._x_axis._start] + data[self._x_axis._start:self._x_axis._end].keys()))

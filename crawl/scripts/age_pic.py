@@ -16,10 +16,25 @@ from age_v_time import DISTRO_COLORS
 upstream = []
 downstream = []
 
-DATA = False
-if "--data" in sys.argv:
-	DATA = True
-	sys.argv.remove("--data")
+FILENAME = sys.argv[-1]
+del sys.argv[-1]
+
+NOTES = False
+if "--notes" in sys.argv:
+	NOTES = True
+	sys.argv.remove("--notes")
+
+WIDTH = 500
+if "--width" in sys.argv:
+  i = sys.argv.index("--width")
+  del sys.argv[i]
+  WIDTH = int(sys.argv.pop(i))
+
+HEIGHT = 300
+if "--height" in sys.argv:
+  i = sys.argv.index("--height")
+  del sys.argv[i]
+  HEIGHT = int(sys.argv.pop(i))
 
 if "--uf" in sys.argv[1:]:
 	for i in range(sys.argv.index("--uf")+1,len(sys.argv)):
@@ -74,23 +89,10 @@ graph = chart.LineChart(select=False,title=title)
 graph.show()
 
 class bounds:
-	width = 500
-	height = 300
+	width = WIDTH
+	height = HEIGHT
 	
 graph._resize(None, bounds)
-
-if DATA:
-	out = open("data.php","w")
-	out.write("<?php\n$distro_data = array(\n")
-
-def to_html_color(c):
-  result = "#"
-  for col in c:
-    h = hex(col/256)[2:]
-    if len(h)==1:
-      h = "0" + h
-    result += h
-  return result
 
 def to_str(t):
   if t.days<7:
@@ -113,13 +115,6 @@ for d in downstream:
 	
 	c = DISTRO_COLORS[name]
 	
-	if DATA:
-		out.write("\"%s\" => array(\"color\" => \"%s\", \"name\" => \"%s\", \"age\" => \"%s\", \"pkgs\" => array(\n"%(d,to_html_color(c),name,to_str(distro.timeline[-1][1])))
-		for pkg in distro._packages:
-			package, downstream, age = distro._packages[pkg]
-			out.write("  \"%s\" => array(\"upstream\" => \"%s\", \"downstream\" => \"%s\", \"age\" => \"%s\"),\n"%(pkg,package.timeline[-1][1],downstream[-1][1],age[-1][1]))
-		out.write(")),\n")
-	
 	dash = None
 	if branch=="future":
 		dash = goocanvas.LineDash([2.0,2.0])
@@ -134,21 +129,24 @@ for d in downstream:
 		h = hex(c)[2:]
 		return "0"*(4-len(h))+h
 	
-	graph.add(key,distro.timeline,[],"#"+"".join(map(to_color,c)),dash)
+	notes = []
+	if NOTES:
+	  notes = distro.notes
+	graph.add(key,distro.timeline,notes,"#"+"".join(map(to_color,c)),dash)
 
-if DATA:
-	out.write(");\n?>")
-	out.close();
 
 now = datetime.now()
 d6m = timedelta(weeks=26)
 
 graph.set_x_bounds(now-d6m,now)
-graph.set_y_bounds(timedelta(),timedelta(weeks=52))
+graph.set_y_bounds(timedelta(),timedelta(weeks=36))
 
-graph._move_points(500,300)
+if NOTES:
+  graph.toggle_all_notes()
 
-img = cairo.ImageSurface(cairo.FORMAT_ARGB32,500,300)
+graph._move_points(WIDTH,HEIGHT)
+
+img = cairo.ImageSurface(cairo.FORMAT_ARGB32,WIDTH,HEIGHT)
 context = cairo.Context(img)
 graph.render(context,None,1.0)
-img.write_to_png("output.png")
+img.write_to_png(FILENAME)
