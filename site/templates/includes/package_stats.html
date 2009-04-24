@@ -27,7 +27,7 @@
     <td>{{ stat.mean_lag|prettydelta }}</td>
     <td>{{ stat.max_lag|prettydelta }}</td>
     <td>{{ stat.rel_count }}</td>
-    <td>{{ stat.mean_rev_count }}</td>
+    <td>{{ stat.mean_rev_count|floatformat:2 }}</td>
   </tr>
   {% endfor %}
 </table>
