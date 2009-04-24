@@ -113,7 +113,20 @@ class VersionTree:
     token = v[0]
     num = v[0].isdigit()
     for c in v[1:]:
-      if num and not c.isdigit():
+      if not c.isdigit() and not c.isalpha():
+        if num:
+          tokens.append(int(token))
+        else:
+          tokens.append()
+        token = None
+        num = None
+      elif num == None:
+        token = c
+        if c.isdigit():
+          num = True
+        else:
+          num = False
+      elif num and not c.isdigit():
         tokens.append(int(token))
         token = c
         num = False
@@ -136,6 +149,7 @@ class VersionTree:
 if __name__=="__main__":
   t = VersionTree()
   print t._tokenize("2.6.28.10")
+  print t._tokenize("1.0_beta1")
   
   t.add_release(datetime.datetime(2009, 3, 1), "2.0")
   t.add_release(datetime.datetime(2009, 3, 2), "2.1")
