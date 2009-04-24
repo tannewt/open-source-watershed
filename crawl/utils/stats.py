@@ -71,6 +71,10 @@ class PackageStats:
     zero = datetime.timedelta()
     diffs = []
     for date in downstream:
+      upstream_date = self.vt.get_date(downstream[date])
+      if upstream_date==None:
+        diffs.append(datetime.timedelta(0))
+        continue
       diff = date-self.vt.get_date(downstream[date])
       if diff >= zero:
         diffs.append(diff)

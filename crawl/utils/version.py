@@ -17,11 +17,14 @@ class VersionNode:
   
   def next(self, tokens):
     """Given a series of tokens return its release date and all subtrees with later versions."""
-    if (len(tokens)==0 or tokens[0] not in self.tokens) and (self.date != None or len(self.tokens)==0):
-      return (self.date,[])
-    elif (len(tokens)==0 or tokens[0] not in self.tokens) and len(self.tokens)>0:
-      date,children = self.children[self.tokens[0]].next([])
-      return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
+    if len(tokens)==0 or tokens[0] not in self.tokens:
+      if len(tokens)>0 and len(self.tokens)>0 and type(tokens[0]) == type(self.tokens[-1]) and tokens[0] > self.tokens[-1]: 
+        return (self.date,[])
+      elif len(tokens)>0 and len(self.tokens)>0:
+        date,children = self.children[self.tokens[0]].next([])
+        return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
+      else:
+        return (self.date,[])
     else:
       date,children = self.children[tokens[0]].next(tokens[1:])
       if date==None:
@@ -93,7 +96,7 @@ class VersionTree:
   def compute_lag(self, date, version):
     d,newer = self.root.next(self._tokenize(version))
     if d==None:
-      oldest_new = self.root.after(datetime.datetime(1986, 7, 15))
+      oldest_new = datetime.datetime(9999,12,31)
     else:
       if len(newer)>0:
         oldest_new = min(map(lambda r: r.after(d),newer))

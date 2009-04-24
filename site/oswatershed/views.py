@@ -48,7 +48,8 @@ def pkg(request, pkg):
     "name" : pkg,
     "description" : ps.hist.description,
     "history" : history,
-    "approx" : ps.hist.ish
+    "approx" : ps.hist.ish,
+    "True" : True
     }
   )
 

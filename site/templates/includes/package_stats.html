@@ -22,7 +22,7 @@
     <th>{{ stat.name }}</th>
     <td>{{ stat.branch }}</td>
     <td>{{ stat.current }}</td>
-    <td>{{ stat.lag|prettydelta}}</td>
+    <td>{{ stat.lag|prettydelta:True }}</td>
     <td>{{ stat.min_lag|prettydelta }}</td>
     <td>{{ stat.mean_lag|prettydelta }}</td>
     <td>{{ stat.max_lag|prettydelta }}</td>
