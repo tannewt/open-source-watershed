@@ -117,7 +117,7 @@ class VersionTree:
         if num:
           tokens.append(int(token))
         else:
-          tokens.append()
+          tokens.append(token)
         token = None
         num = None
       elif num == None:
