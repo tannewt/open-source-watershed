@@ -84,7 +84,8 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
            "ftp://ftp.astron.com/pub/tcsh/": [["tcsh"],[]],
            "ftp://ftp.tin.org/pub/news/clients/tin/stable/": [["tin"],["current"]],
            "ftp://ftp.tin.org/pub/news/clients/tin/unstable/": [["tin"],[]],
-           "http://kernel.org/pub/software/scm/git/": [["git", "git-core", "git-htmldocs", "git-manpages"],[]]
+           "http://kernel.org/pub/software/scm/git/": [["git", "git-core", "git-htmldocs", "git-manpages"],[]],
+           "ftp://invisible-island.net/xterm/": [["xterm"],[]]
           }
 
 def get_releases(last_crawl=None):
