@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urllib2
 import ftplib
 import datetime
@@ -68,7 +69,7 @@ def http_open_dir(url):
 
 def ftp_open_dir(url):
   x, y, host, d = url.split("/",3)
-  ftp = ftplib.FTP(host,"anonymous")
+  ftp = ftplib.FTP(host,"anonymous",timeout=90)
   files = []
   def process_line(line):
     line = line.split()

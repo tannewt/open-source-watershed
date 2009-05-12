@@ -14,7 +14,7 @@ VERBOSE = False
 VERBOSE_RESULT = False
 
 class PackageHistory:
-  def __init__(self, name, threshold = 255):
+  def __init__(self, name, threshold = 255, force_approx = False):
     self.name = name
     # find the package name aliases
     con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
@@ -68,13 +68,14 @@ class PackageHistory:
     
     self.ish = False
     #print "query upstream"
-    q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
-    cur.execute(q,aliases)
-    if cur.rowcount == 0:
+    if not force_approx:
+      q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
+      cur.execute(q,aliases)
+    if cur.rowcount == 0 or force_approx:
       if VERBOSE:
         print "falling back to approximate upstream"
       self.ish = True
-      q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
+      q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' AND releases.repo_id IS NOT NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
       cur.execute(q,(self.name,))
     
     self.timeline = Timeline()
@@ -266,7 +267,7 @@ if __name__=="__main__":
   if len(sys.argv)>4:
     b = sys.argv[4]
 
-  p = PackageHistory(p,t)
+  p = PackageHistory(p,t,True)
   print p
   
   if d != None:
