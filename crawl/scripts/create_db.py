@@ -48,7 +48,8 @@ FOREIGN KEY (repo_id) REFERENCES repos(id) ON DELETE CASCADE
 # every package
 cur.execute("""CREATE TABLE packages (
 id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-name VARCHAR(255) NOT NULL UNIQUE
+name VARCHAR(255) NOT NULL UNIQUE,
+description TEXT
 ) ENGINE=INNODB""")
 
 cur.execute("""CREATE TABLE link_sources (
@@ -63,7 +64,7 @@ package_id1 INT UNSIGNED,
 distro_id1 INT UNSIGNED,
 package_id2 INT UNSIGNED,
 distro_id2 INT UNSIGNED,
-strength INT UNSIGNED
+strength INT UNSIGNED,
 FOREIGN KEY (link_source_id) REFERENCES link_sources(id) ON DELETE CASCADE,
 FOREIGN KEY (package_id1) REFERENCES packages(id) ON DELETE CASCADE,
 FOREIGN KEY (package_id2) REFERENCES packages(id) ON DELETE CASCADE
@@ -97,7 +98,8 @@ cur.execute("""CREATE TABLE cache (
 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 cached DATETIME NOT NULL,
 k VARCHAR(255) NOT NULL UNIQUE,
-v LONGBLOB
+v LONGBLOB,
+status TINYINT NOT NULL DEFAULT 1
 ) ENGINE=INNODB""")
 
 cur.execute("""CREATE TABLE cache_deps (

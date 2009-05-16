@@ -267,7 +267,7 @@ if __name__=="__main__":
   if len(sys.argv)>4:
     b = sys.argv[4]
 
-  p = PackageHistory(p,t,True)
+  p = PackageHistory(p,t)
   print p
   
   if d != None:

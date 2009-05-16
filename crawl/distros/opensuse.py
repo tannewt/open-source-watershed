@@ -22,6 +22,8 @@ def get_repos():
     codename = n.strip("/")
     for c in COMPONENTS:
       arches = helper.open_dir("http://"+MIRROR+"/distribution/"+n+"repo/"+c+"/suse/")
+      if arches == None:
+      	continue
       for ad,an,at in filter(lambda x: x[0] and x[1]!="repodata/" and x[1]!="setup/",arches):
         arch = an.strip("/")
         if to_num(codename)==CURRENT:
