@@ -5,8 +5,8 @@ import gzip
 import time
 from .utils import helper
 
-MIRROR = "linux.nssl.noaa.gov"
-HTTP_START_DIR = "fedora/linux"
+MIRROR = "mirrors.kernel.org"
+HTTP_START_DIR = "fedora"
 FTP_START_DIR = HTTP_START_DIR
 
 NAMESPACE = "{http://linux.duke.edu/metadata/common}"
