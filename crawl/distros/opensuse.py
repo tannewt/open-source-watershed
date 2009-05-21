@@ -58,7 +58,11 @@ def crawl_repo(repo):
 	
 	pkg_lines = []
 	for url in urls:
-		pkg_lines += helper.open_dir(url)
+		lines = helper.open_dir(url)
+		if lines==None:
+			print "Nothing from:",url
+			continue
+		pkg_lines += lines
 	
 	for d,name,time in pkg_lines:
 		if name=="MD5SUMS":
