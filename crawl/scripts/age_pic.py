@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 sys.path.append(os.getcwd())
@@ -23,6 +24,11 @@ NOTES = False
 if "--notes" in sys.argv:
 	NOTES = True
 	sys.argv.remove("--notes")
+
+COUNT = False
+if "--count" in sys.argv:
+	COUNT = True
+	sys.argv.remove("--count")
 
 WIDTH = 500
 if "--width" in sys.argv:
@@ -88,12 +94,6 @@ upstream = filter(lambda x: x != None, map(to_history, upstream))
 graph = chart.LineChart(select=False,title=title)
 graph.show()
 
-class bounds:
-	width = WIDTH
-	height = HEIGHT
-	
-graph._resize(None, bounds)
-
 def to_str(t):
   if t.days<7:
     return str(t.days)+" days"
@@ -129,17 +129,27 @@ for d in downstream:
 		h = hex(c)[2:]
 		return "0"*(4-len(h))+h
 	
-	notes = []
-	if NOTES:
-	  notes = distro.notes
-	graph.add(key,distro.timeline,notes,"#"+"".join(map(to_color,c)),dash)
+	if not COUNT:
+		notes = []
+		if NOTES:
+			notes = distro.notes
+		graph.add(key,distro.timeline,notes,"#"+"".join(map(to_color,c)),dash)
+	else:
+		graph.add(key,distro.obs_timeline,[],"#"+"".join(map(to_color,c)),dash)
 
 
 now = datetime.now()
 d6m = timedelta(weeks=26)
 
 graph.set_x_bounds(now-d6m,now)
-graph.set_y_bounds(timedelta(),timedelta(weeks=36))
+if not COUNT:
+	graph.set_y_bounds(timedelta(),timedelta(weeks=36))
+
+class bounds:
+	width = WIDTH
+	height = HEIGHT
+	
+graph._resize(None, bounds)
 
 if NOTES:
   graph.toggle_all_notes()
