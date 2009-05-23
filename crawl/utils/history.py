@@ -79,13 +79,16 @@ class PackageHistory:
 			q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' AND releases.repo_id IS NOT NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
 			cur.execute(q,(self.name,))
 		
-		self.timeline = Timeline()
+		data = []
 		if VERBOSE:
 			print "upstream"
 		for version,date in cur:
 			if VERBOSE:
 				print version,date
-			self.timeline[date] = version
+			data.append((date, version))
+		
+		self.timeline = Timeline(data)
+		self.count = DayTimeline(data,default=[])
 		
 		con.close()
 	
@@ -94,7 +97,7 @@ class PackageHistory:
 			pre = "approx history of "
 		else:
 			pre = "history of "
-		return "\n".join((pre+self.name,str(self.timeline)))
+		return "\n".join((pre+self.name,str(self.timeline),"release count",str(self.count)))
 		
 
 class DistroHistory:
@@ -303,6 +306,16 @@ class DistroHistory:
 				print a,age[a]
 			print
 		return age
+
+def get_upstream():
+	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+	cur = con.cursor()
+	result = []
+	cur.execute("SELECT DISTINCT name FROM packages, releases WHERE releases.package_id = packages.id AND releases.repo_id IS NULL")
+	for pkg in cur:
+		result.append(PackageHistory(pkg[0]))
+	con.close()
+	return result
 
 if __name__=="__main__":
 	if len(sys.argv)<2:

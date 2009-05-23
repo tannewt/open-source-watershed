@@ -167,7 +167,7 @@ class Axis (Group):
 				self._grid.append(text)
 				i += 1
 				month += one_month
-		else:
+		elif type(self._start)==float:
 			spread = self._end - self._start
 			if spread <= 1:
 				i = self._start
@@ -238,7 +238,58 @@ class Axis (Group):
 					self._grid.append(line)
 					self._grid.append(text)
 					i += 10
-				
+		elif type(self._start)==int:
+			spread = self._end - self._start
+			if spread < 20:
+				i = int(self._start)
+				while i<self._end:
+					#print "draw month",month
+					line = polyline_new_line(self,0,0,0,0)
+					c = self.coord(i)
+					
+					text = Text(text=str(i))
+					self.add_child(text,-1)
+					if self._orientation==self.HORIZONTAL:
+						points= Points([(c,5), (c,-5)])
+						text.props.anchor = gtk.ANCHOR_NORTH
+						text.props.x = c
+						text.props.y = 6
+					else:
+						points = Points([(-5,c), (5,c)])
+						text.props.anchor = gtk.ANCHOR_EAST
+						text.props.x = -6
+						text.props.y = c
+					line.props.points = points
+					self._grid.append(line)
+					self._grid.append(text)
+					i += 1
+			elif spread < 100:
+				pass
+			else:
+				i = int(self._start)
+				while i<self._end:
+					#print "draw month",month
+					line = polyline_new_line(self,0,0,0,0)
+					c = self.coord(i)
+					
+					text = Text(text=str(i))
+					self.add_child(text,-1)
+					if self._orientation==self.HORIZONTAL:
+						points= Points([(c,5), (c,-5)])
+						text.props.anchor = gtk.ANCHOR_NORTH
+						text.props.x = c
+						text.props.y = 6
+					else:
+						points = Points([(-5,c), (5,c)])
+						text.props.anchor = gtk.ANCHOR_EAST
+						text.props.x = -6
+						text.props.y = c
+					line.props.points = points
+					self._grid.append(line)
+					self._grid.append(text)
+					i += 100
+		else:
+			pass
 	
 	def _redraw(self):
 		self._draw_grid()
@@ -545,3 +596,83 @@ class LineChart(Canvas):
 	
 	def mousemove(self, target, event):
 		print event.get_coords()
+
+class BarChart(Canvas):
+	def __init__(self, timeline, color="#ffffffffffff", title=""):
+		Canvas.__init__(self)
+		self.connect("size-allocate",self._resize)
+		#self.connect("motion-notify-event",self.mousemove)
+		self.props.anchor = gtk.ANCHOR_SW
+		self._y_axis = Axis(Axis.VERTICAL)
+		left,top,right,bottom = self.get_bounds()
+		#self._y_axis.translate(50,bottom-50)
+		self._x_axis = Axis(Axis.HORIZONTAL)
+		#self._x_axis.translate(50,bottom-50)
+		self.root = self.get_root_item()
+		self.title = Text(text=title)
+		self.title.props.anchor = gtk.ANCHOR_NORTH
+		self.root.add_child(self.title)
+		self.root.translate(50,bottom-50)
+		self.root.add_child(self._y_axis)
+		self.root.add_child(self._x_axis)
+		
+		self.static_x_bounds = False
+		self.static_y_bounds = False
+		
+		self._timeline = timeline
+		
+		self._adjust_axis(timeline)
+		
+		day = datetime.timedelta(days=1)
+		self.rectangles = []
+		for date in timeline:
+			x1 = self._x_axis.coord(date)
+			x2 = self._x_axis.coord(date+day)
+			y = self._y_axis.coord(timeline[date])
+			rectangle = Rect(x=x1,y=y,width=x2-x1,height=-1*self._y_axis.coord(timeline[date]),fill_color=color,stroke_color=None)
+			self.rectangles.append((date, timeline[date], rectangle))
+			self.root.add_child(rectangle)
+	
+	def set_x_bounds(self, mi, ma):
+		self._x_axis.set_range(mi, ma)
+		self.static_x_bounds = True
+	
+	def set_y_bounds(self, mi, ma):
+		self._y_axis.set_range(mi, ma)
+		self.static_y_bounds = True
+	
+	def _adjust_axis(self, data):
+		xs = data.keys()
+		ys = map(lambda k: data[k], data)
+		if self._x_axis._start==None or self._y_axis._start==None:
+			if not self.static_x_bounds:
+				self._x_axis.set_range(min(xs), max(xs))
+			if not self.static_y_bounds:
+				self._y_axis.set_range(0, max(ys))
+		else:
+			if not self.static_x_bounds:
+				self._x_axis.set_range(min(xs + [self._x_axis._start]), max(xs + [self._x_axis._end]))
+			if not self.static_y_bounds:
+				self._y_axis.set_range(min(ys + [self._y_axis._start]), max(ys + [self._y_axis._end]))
+	
+	def _resize(self, widget, allocation):
+		w,h = allocation.width,allocation.height
+		self.set_bounds(0,0,w,h)
+		
+		self.root.set_simple_transform(50,h-50,1,0)
+		
+		self.title.props.x = w/2-50
+		self.title.props.y = -1*(h-50)
+		#self._y_axis.set_simple_transform(50,h-50,1,0)
+		self._y_axis.set_size(h-75)
+		#self._x_axis.set_simple_transform(50,h-50,1,0)
+		self._x_axis.set_size(w-75)
+		#self.select.set_simple_transform(50,h-50,1,0)
+		
+		
+		#map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
+		for date,val,rect in self.rectangles:
+			rect.props.x = self._x_axis.coord(date)
+			rect.props.y = self._y_axis.coord(val)
+			rect.props.height = -1*rect.props.y
+		

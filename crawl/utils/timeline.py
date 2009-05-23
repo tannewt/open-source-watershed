@@ -73,16 +73,10 @@ class Timeline(UserDict.DictMixin):
 				index = True
 			#print date, i, self._dates
 			if i == len(self._dates) or len(self._dates)==0 or (not index and self._dates[i]!=date):
-				if index:
-					return (None, None)
-				else:
-					return None
+				return self.default
 			d = self._dates[i]
 			v = self._values[d]
-			if index:
-				return (d,v)
-			else:
-				return v
+			return v
 	
 	def last(self, date):
 		i = bisect.bisect_left(self._dates,date)
@@ -270,6 +264,79 @@ class StepTimeline(Timeline):
 	
 	def __div__(self, other):
 		result = StepTimeline(default=self.default)
+		for date in self.merge_dates(self._dates, other._dates):
+			result[date] = self[date]/other[date]
+		return result
+
+class DayTimeline(StepTimeline):
+	def __init__(self, data=[], default = 0):
+		new_data = []
+		last_date = None
+		for date,value in data:
+			date = datetime(date.year, date.month, date.day)
+			if last_date!=None and last_date==date:
+				new_data[-1][1].append(value)
+			else:
+				new_data.append((date,[value]))
+			last_date = date
+		Timeline.__init__(self, new_data, default)
+	
+	def __setitem__(self, date, value):
+		"""Set the value for this date."""
+		date = datetime(date.year, date.month, date.day)
+		i = bisect.bisect_left(self._dates,date)
+		if i < len(self) and self._dates[i] == date:
+			self._values[date] = value
+		else:
+			self._dates.insert(i,date)
+			self._values[date] = value
+	
+	def __getitem__(self, date):
+		"""Get the value at this date or earlier."""
+		if type(date)==slice:
+			step = None
+			if step==None:
+				start = None
+				stop = None
+				if date.start!=None and type(date.start)==datetime:
+					start = bisect.bisect_left(self._dates,date.start)
+				else:
+					start = date.start
+				if date.stop!=None and type(date.start)==datetime:
+					stop = bisect.bisect_left(self._dates,date.stop)
+				else:
+					stop = date.stop
+				
+				result = []
+				for d in self._dates[start:stop]:
+					result.append((d,self._values[d]))
+				return StepTimeline(result)
+		else:
+			i = bisect.bisect_left(self._dates,date)
+			#print date, i, self._dates[i-1],self._values[self._dates[i-1]]
+			if i == 0 and (len(self._dates)==0 or self._dates[i]>date):
+				return self.default
+			if i<len(self._dates) and self._dates[i]==date:
+				return self._values[date]
+			if date-self._dates[i-1]>timedelta(days=1):
+				return self.default
+			d = self._dates[i-1]
+			return self._values[d]
+	
+	def __add__(self, other):
+		result = DayTimeline(default=self.default)
+		for date in self.merge_dates(self._dates, other._dates):
+			result[date] = self[date]+other[date]
+		return result
+	
+	def __mul__(self, other):
+		result = DayTimeline(default=self.default)
+		for date in self.merge_dates(self._dates, other._dates):
+			result[date] = self[date]*other[date]
+		return result
+	
+	def __div__(self, other):
+		result = DayTimeline(default=self.default)
 		for date in self.merge_dates(self._dates, other._dates):
 			result[date] = self[date]/other[date]
 		return result
