@@ -11,7 +11,7 @@ from utils.timeline import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-VERBOSE = False
+VERBOSE = True
 VERBOSE_RESULT = False
 
 class PackageHistory:
@@ -85,7 +85,7 @@ class PackageHistory:
 		for version,date in cur:
 			if VERBOSE:
 				print version,date
-			data.append((date, version))
+			data.append((date, self.name+" "+version))
 		
 		self.timeline = Timeline(data)
 		self.count = DayTimeline(data,default=[])
@@ -102,11 +102,13 @@ class PackageHistory:
 
 class DistroHistory:
 	def __init__(self, name, packages=[], branch=None, codename=None, arch=None, now=None):
-		self._timeline = ConnectedTimeline()
+		self._timeline = ConnectedTimeline(default=timedelta())
 		self._obs_timeline = StepTimeline(default=0.0)
+		self._bin_obs_timeline = StepTimeline(default=0.0)
 		self.timeline = self._timeline
 		self.obs_timeline = self._obs_timeline
-		self.notes = Timeline()
+		self.bin_obs_timeline = self._bin_obs_timeline
+		self.notes = Timeline(default="")
 		self.count = StepTimeline()
 		self.fcount = StepTimeline()
 		self.name = name
@@ -146,15 +148,23 @@ class DistroHistory:
 		if len(downstream)>0:
 			age = self._compute_package_age(upstream, downstream)
 			obs = self._compute_package_obsoletion(upstream, downstream)
+			bin_obs = StepTimeline()
+			for date in obs:
+				if obs[date] > 0:
+					bin_obs[date] = 1.0
+				else:
+					bin_obs[date] = 0.0
 		else:
 			age = ConnectedTimeline()
 			obs = StepTimeline()
+			bin_obs = StepTimeline()
 		self._packages[package.name] = (package,downstream,age,obs)
 		self._pkg_order.append(package.name)
 		#print self.timeline
 		#print age
 		self._timeline = self._timeline + age
 		self._obs_timeline = self._obs_timeline + obs
+		self._bin_obs_timeline = self._bin_obs_timeline + bin_obs
 		#print "result",self.timeline
 		#print
 		ms = timedelta(microseconds=1)
@@ -171,6 +181,7 @@ class DistroHistory:
 		
 		self.timeline = self._timeline / self.count
 		self.obs_timeline = self._obs_timeline / self.fcount
+		self.bin_obs_timeline = self._bin_obs_timeline / self.fcount
 	
 	def get_downstream(self, package, revisions=False):
 		con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
@@ -226,18 +237,21 @@ class DistroHistory:
 		while u+d < len(upstream)+len(downstream):
 			version = None
 			date = None
-			if u<len(upstream) and (len(downstream)==d or upstream[u][0]<=downstream[d][0]):
+			if u<len(upstream) and (len(downstream)==d or upstream.keys()[u]<=downstream.keys()[d]):
 				if VERBOSE:
-					print "upstream",upstream[u]
-				date, version = upstream[u]
+					print "upstream",upstream.keys()[u],upstream[u]
+				date = upstream.keys()[u]
+				version = upstream[u]
 				versions.add_release(date,version)
 				if greatest_downstream != "0":
 					age[date] = versions.compute_lag(date, greatest_downstream)
 				u+=1
 			else:
+				version = downstream[d]
+				date = downstream.keys()[d]
 				if VERBOSE:
-					print "downstream",downstream[d]
-				date, version = downstream[d]
+					print "downstream", date, version
+				
 				if VERBOSE:
 					print greatest_downstream, version
 				if greatest_downstream != "0":
@@ -274,18 +288,20 @@ class DistroHistory:
 		while u+d < len(upstream)+len(downstream):
 			version = None
 			date = None
-			if u<len(upstream) and (len(downstream)==d or upstream[u][0]<=downstream[d][0]):
+			if u<len(upstream) and (len(downstream)==d or upstream.keys()[u]<=downstream.keys()[d]):
 				if VERBOSE:
-					print "upstream",upstream[u]
-				date, version = upstream[u]
+					print "upstream",upstream.keys()[u],upstream[u]
+				date = upstream.keys()[u]
+				version = upstream[u]
 				versions.add_release(date,version)
 				if greatest_downstream != "0":
 					age[date] = versions.compute_obsoletions(date, greatest_downstream)
 				u+=1
 			else:
 				if VERBOSE:
-					print "downstream",downstream[d]
-				date, version = downstream[d]
+					print "downstream",downstream.keys()[d],downstream[d]
+				version = downstream[d]
+				date = downstream.keys()[d]
 				if VERBOSE:
 					print greatest_downstream, version
 				greatest_downstream = versions.max(greatest_downstream,version)
@@ -313,6 +329,7 @@ def get_upstream():
 	result = []
 	cur.execute("SELECT DISTINCT name FROM packages, releases WHERE releases.package_id = packages.id AND releases.repo_id IS NULL")
 	for pkg in cur:
+		print pkg[0]
 		result.append(PackageHistory(pkg[0]))
 	con.close()
 	return result

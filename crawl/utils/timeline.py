@@ -63,7 +63,7 @@ class Timeline(UserDict.DictMixin):
 				result = []
 				for d in self._dates[start:stop]:
 					result.append((d,self._values[d]))
-				return Timeline(result)
+				return Timeline(result,default=self.default)
 		else:
 			if type(date)==datetime:
 				i = bisect.bisect_left(self._dates,date)
@@ -216,7 +216,7 @@ class StepTimeline(Timeline):
 				result = []
 				for d in self._dates[start:stop]:
 					result.append((d,self._values[d]))
-				return StepTimeline(result)
+				return StepTimeline(result,default=self.default)
 		else:
 			i = bisect.bisect_left(self._dates,date)
 			#print date, i, self._dates[i-1],self._values[self._dates[i-1]]
@@ -310,7 +310,7 @@ class DayTimeline(StepTimeline):
 				result = []
 				for d in self._dates[start:stop]:
 					result.append((d,self._values[d]))
-				return StepTimeline(result)
+				return StepTimeline(result,default=self.default)
 		else:
 			i = bisect.bisect_left(self._dates,date)
 			#print date, i, self._dates[i-1],self._values[self._dates[i-1]]
@@ -318,7 +318,7 @@ class DayTimeline(StepTimeline):
 				return self.default
 			if i<len(self._dates) and self._dates[i]==date:
 				return self._values[date]
-			if date-self._dates[i-1]>timedelta(days=1):
+			if date-self._dates[i-1]>=timedelta(days=1):
 				return self.default
 			d = self._dates[i-1]
 			return self._values[d]
@@ -361,17 +361,17 @@ class ConnectedTimeline(StepTimeline):
 				result = []
 				for d in self._dates[start:stop]:
 					result.append((d,self._values[d]))
-				return Timeline(result)
+				return ConnectedTimeline(result,default=self.default)
 		else:
 			if type(date)==datetime:
 				i = bisect.bisect_left(self._dates,date)
 			else:
 				i = date
 				if len(self._dates) == 0:
-					return (None, None)
+					return None
 				else:
 					date = self._dates[i]
-					return (date,self._values[date])
+					return self._values[date]
 			if i == 0 and (len(self)==0 or self._dates[i]>date):
 				return timedelta()
 			if i<len(self._dates) and self._dates[i]==date:

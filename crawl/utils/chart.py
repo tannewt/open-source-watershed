@@ -14,10 +14,16 @@ class Axis (Group):
 	VERTICAL = -1
 	HORIZONTAL = 1
 	
-	def __init__(self,orientation):
+	def __init__(self,orientation,label="default"):
 		Group.__init__(self)
 		self._orientation=orientation
 		self.p = polyline_new_line(self,0,0,0,0)
+		self.label_text = label
+		self.label = Text(text=label)
+		self.add_child(self.label,-1)
+		if orientation==Axis.VERTICAL:
+			self.label.rotate(-90, 0, 0)
+		self.label.props.anchor = gtk.ANCHOR_SOUTH
 		self._start = None
 		self._end = None
 		self._length = 100
@@ -33,6 +39,15 @@ class Axis (Group):
 			self._type = type(start)
 			self._start = start
 			self._end = end
+			if start == end:
+				if self._type == float:
+					self._start = 0.0
+				elif self._type == datetime.timedelta:
+					self._start = datetime.timedelta()
+				elif self._type == int:
+					self._start = 0
+				else:
+					raise Exception("Range is 0.")
 			self._redraw()
 	
 	def set_size(self, length):
@@ -243,7 +258,6 @@ class Axis (Group):
 			if spread < 20:
 				i = int(self._start)
 				while i<self._end:
-					#print "draw month",month
 					line = polyline_new_line(self,0,0,0,0)
 					c = self.coord(i)
 					
@@ -263,12 +277,9 @@ class Axis (Group):
 					self._grid.append(line)
 					self._grid.append(text)
 					i += 1
-			elif spread < 100:
-				pass
 			else:
 				i = int(self._start)
 				while i<self._end:
-					#print "draw month",month
 					line = polyline_new_line(self,0,0,0,0)
 					c = self.coord(i)
 					
@@ -287,7 +298,7 @@ class Axis (Group):
 					line.props.points = points
 					self._grid.append(line)
 					self._grid.append(text)
-					i += 100
+					i += 10
 		else:
 			pass
 	
@@ -295,8 +306,12 @@ class Axis (Group):
 		self._draw_grid()
 		if self._orientation==self.HORIZONTAL:
 			points= Points([(0,0), (self._length,0)])
+			self.label.props.x = self._length/2
+			self.label.props.y = 45
 		else:
 			points = Points([(0,0), (0,-1*self._length)])
+			self.label.props.x = self._length/2
+			self.label.props.y = -45
 		self.p.props.points = points
 	
 	def coord(self, value):
@@ -443,28 +458,26 @@ class Select(Group):
 		self.select.props.points = Points([(self._loc,-1*self._size),(self._loc,0)])
 	
 class LineChart(Canvas):
-	lines = {}
-	
 	__gsignals__ = {
 		'select' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
 		'select-range' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT))
 	}
 	
-	def __init__(self,select=True,title=""):
+	def __init__(self,select=True,title="", label_x="", label_y=""):
 		Canvas.__init__(self)
 		self.connect("size-allocate",self._resize)
 		#self.connect("motion-notify-event",self.mousemove)
 		self.props.anchor = gtk.ANCHOR_SW
-		self._y_axis = Axis(Axis.VERTICAL)
+		self._y_axis = Axis(Axis.VERTICAL, label_y)
 		left,top,right,bottom = self.get_bounds()
 		#self._y_axis.translate(50,bottom-50)
-		self._x_axis = Axis(Axis.HORIZONTAL)
+		self._x_axis = Axis(Axis.HORIZONTAL, label_x)
 		#self._x_axis.translate(50,bottom-50)
 		self.root = self.get_root_item()
 		self.title = Text(text=title)
 		self.title.props.anchor = gtk.ANCHOR_NORTH
 		self.root.add_child(self.title)
-		self.root.translate(50,bottom-50)
+		self.root.translate(70,bottom-50)
 		self.root.add_child(self._y_axis)
 		self.root.add_child(self._x_axis)
 		
@@ -478,6 +491,8 @@ class LineChart(Canvas):
 		
 		self.static_x_bounds = False
 		self.static_y_bounds = False
+		
+		self.lines = {}
 	
 	def add(self, title, data, notes, color="#ffffffffffff", line_dash=None):
 		line = polyline_new_line(self.root,0,0,0,0)
@@ -575,7 +590,7 @@ class LineChart(Canvas):
 		w,h = allocation.width,allocation.height
 		self.set_bounds(0,0,w,h)
 		
-		self.root.set_simple_transform(50,h-50,1,0)
+		self.root.set_simple_transform(70,h-50,1,0)
 		
 		self.title.props.x = w/2-50
 		self.title.props.y = -1*(h-50)
@@ -598,21 +613,21 @@ class LineChart(Canvas):
 		print event.get_coords()
 
 class BarChart(Canvas):
-	def __init__(self, timeline, color="#ffffffffffff", title=""):
+	def __init__(self, timeline, color="#fff000fff", title="", label_x="", label_y=""):
 		Canvas.__init__(self)
 		self.connect("size-allocate",self._resize)
 		#self.connect("motion-notify-event",self.mousemove)
 		self.props.anchor = gtk.ANCHOR_SW
-		self._y_axis = Axis(Axis.VERTICAL)
+		self._y_axis = Axis(Axis.VERTICAL, label_y)
 		left,top,right,bottom = self.get_bounds()
 		#self._y_axis.translate(50,bottom-50)
-		self._x_axis = Axis(Axis.HORIZONTAL)
+		self._x_axis = Axis(Axis.HORIZONTAL, label_x)
 		#self._x_axis.translate(50,bottom-50)
 		self.root = self.get_root_item()
 		self.title = Text(text=title)
 		self.title.props.anchor = gtk.ANCHOR_NORTH
 		self.root.add_child(self.title)
-		self.root.translate(50,bottom-50)
+		self.root.translate(70,bottom-50)
 		self.root.add_child(self._y_axis)
 		self.root.add_child(self._x_axis)
 		
@@ -629,7 +644,7 @@ class BarChart(Canvas):
 			x1 = self._x_axis.coord(date)
 			x2 = self._x_axis.coord(date+day)
 			y = self._y_axis.coord(timeline[date])
-			rectangle = Rect(x=x1,y=y,width=x2-x1,height=-1*self._y_axis.coord(timeline[date]),fill_color=color,stroke_color=None)
+			rectangle = Rect(x=x1,y=y,width=x2-x1,height=-1*self._y_axis.coord(timeline[date]),fill_color="#8ae234",line_width=0)
 			self.rectangles.append((date, timeline[date], rectangle))
 			self.root.add_child(rectangle)
 	
@@ -659,7 +674,7 @@ class BarChart(Canvas):
 		w,h = allocation.width,allocation.height
 		self.set_bounds(0,0,w,h)
 		
-		self.root.set_simple_transform(50,h-50,1,0)
+		self.root.set_simple_transform(70,h-50,1,0)
 		
 		self.title.props.x = w/2-50
 		self.title.props.y = -1*(h-50)

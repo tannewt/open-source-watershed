@@ -30,6 +30,11 @@ if "--count" in sys.argv:
 	COUNT = True
 	sys.argv.remove("--count")
 
+BINARY = False
+if "--binary" in sys.argv:
+	BINARY = True
+	sys.argv.remove("--binary")
+
 WIDTH = 500
 if "--width" in sys.argv:
   i = sys.argv.index("--width")
@@ -101,6 +106,7 @@ def to_str(t):
     return str(int(t.days/7))+" weeks"
 
 for d in downstream:
+	print d
 	if d.count(":")==2:
 		name, branch, codename = d.split(":")
 		key = "_".join((name,branch,codename))
@@ -134,16 +140,22 @@ for d in downstream:
 		if NOTES:
 			notes = distro.notes
 		graph.add(key,distro.timeline,notes,"#"+"".join(map(to_color,c)),dash)
+	elif BINARY:
+		graph.add(key,distro.bin_obs_timeline,[],"#"+"".join(map(to_color,c)),dash)
 	else:
 		graph.add(key,distro.obs_timeline,[],"#"+"".join(map(to_color,c)),dash)
 
 
 now = datetime.now()
+crawl_start = datetime(2008,10,17)
 d6m = timedelta(weeks=26)
+d1y = timedelta(weeks=54)
 
-graph.set_x_bounds(now-d6m,now)
+graph.set_x_bounds(crawl_start,now)
 if not COUNT:
 	graph.set_y_bounds(timedelta(),timedelta(weeks=36))
+elif BINARY:
+	graph.set_y_bounds(0.0,1.0)
 
 class bounds:
 	width = WIDTH
@@ -156,7 +168,23 @@ if NOTES:
 
 graph._move_points(WIDTH,HEIGHT)
 
-img = cairo.ImageSurface(cairo.FORMAT_ARGB32,WIDTH,HEIGHT)
-context = cairo.Context(img)
-graph.render(context,None,1.0)
-img.write_to_png(FILENAME)
+if FILENAME.endswith(".png"):
+	img = cairo.ImageSurface(cairo.FORMAT_ARGB32,WIDTH,HEIGHT)
+	context = cairo.Context(img)
+	graph.render(context,None,1.0)
+	img.write_to_png(FILENAME)
+elif FILENAME.endswith(".svg"):
+	img = cairo.SVGSurface(FILENAME,WIDTH,HEIGHT)
+	context = cairo.Context(img)
+	graph.render(context,None,1.0)
+elif FILENAME.endswith(".eps"):
+	img = cairo.PSSurface(FILENAME,WIDTH,HEIGHT)
+	img.set_eps(True)
+	context = cairo.Context(img)
+	graph.render(context,None,1.0)
+elif FILENAME.endswith(".pdf"):
+	img = cairo.PDFSurface(FILENAME,WIDTH,HEIGHT)
+	context = cairo.Context(img)
+	graph.render(context,None,1.0)
+else:
+	print "not rendered: unknown file extension"
