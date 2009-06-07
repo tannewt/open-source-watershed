@@ -11,7 +11,7 @@ from utils.timeline import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-VERBOSE = True
+VERBOSE = False
 VERBOSE_RESULT = False
 
 class PackageHistory:
@@ -85,7 +85,7 @@ class PackageHistory:
 		for version,date in cur:
 			if VERBOSE:
 				print version,date
-			data.append((date, self.name+" "+version))
+			data.append((date, version))
 		
 		self.timeline = Timeline(data)
 		self.count = DayTimeline(data,default=[])
@@ -227,7 +227,7 @@ class DistroHistory:
 	def _compute_package_age(self, upstream, downstream):
 		ms = timedelta(microseconds=1)
 		versions = VersionTree()
-		age = ConnectedTimeline()
+		age = ConnectedTimeline(default=timedelta())
 		greatest_downstream = "0"
 		u = 0
 		d = 0
@@ -327,10 +327,13 @@ def get_upstream():
 	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 	cur = con.cursor()
 	result = []
-	cur.execute("SELECT DISTINCT name FROM packages, releases WHERE releases.package_id = packages.id AND releases.repo_id IS NULL")
+	q = cur.execute("SELECT DISTINCT name FROM packages, releases WHERE releases.package_id = packages.id AND releases.repo_id IS NULL")
+	total = q
+	i = 0
 	for pkg in cur:
-		print pkg[0]
+		print pkg[0],i,"/",total
 		result.append(PackageHistory(pkg[0]))
+		i += 1
 	con.close()
 	return result
 

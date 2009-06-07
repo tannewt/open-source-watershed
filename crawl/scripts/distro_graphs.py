@@ -121,6 +121,7 @@ for COUNT, BINARY, PREFIX, xlabel, ylabel in graphs:
 	
 	now = datetime.now()
 	crawl_start = datetime(2008,10,17)
+	pre_crawl_start = datetime(2008,10,16)
 	d6m = timedelta(weeks=26)
 	d1y = timedelta(weeks=54)
 	
@@ -140,11 +141,12 @@ for COUNT, BINARY, PREFIX, xlabel, ylabel in graphs:
 			notes = []
 			if NOTES:
 				notes = distro.notes
-			graph.add(key,distro.timeline[crawl_start:now],notes,distro.color,dash)
+			graph.add(key,distro.timeline[pre_crawl_start:now],notes,distro.color,dash)
 		elif BINARY:
-			graph.add(key,distro.bin_obs_timeline[crawl_start:now],[],distro.color,dash)
+			graph.add(key,distro.bin_obs_timeline[pre_crawl_start:now],[],distro.color,dash)
 		else:
-			graph.add(key,distro.obs_timeline[crawl_start:now],[],distro.color,dash)
+			print distro.obs_timeline[pre_crawl_start:now]
+			graph.add(key,distro.obs_timeline[pre_crawl_start:now],[],distro.color,dash)
 	
 	
 	graph.set_x_bounds(crawl_start,now)

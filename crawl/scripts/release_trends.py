@@ -62,7 +62,7 @@ now = datetime.datetime.now()
 crawl_start = datetime.datetime(2008,10,17)
 d6m = datetime.timedelta(weeks=26)
 d1y = datetime.timedelta(weeks=54)
-cumulativeTimeline = cumulativeTimeline[crawl_start:now]
+cumulativeTimeline = cumulativeTimeline[now-d1y:now]
 print cumulativeTimeline
 countTimeline = DayTimeline()
 for key in cumulativeTimeline:
@@ -71,7 +71,7 @@ for key in cumulativeTimeline:
 graph = chart.BarChart(countTimeline, label_x="Date", label_y="Releases")
 graph.show()
 
-graph.set_x_bounds(crawl_start,now)
+graph.set_x_bounds(now-d1y,now)
 
 class bounds:
 	width = WIDTH

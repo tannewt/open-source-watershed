@@ -686,8 +686,12 @@ class BarChart(Canvas):
 		
 		
 		#map(lambda k: self.lines[k][0].set_simple_transform(50,h-50,1,0),self.lines.keys())
+		day = datetime.timedelta(days=1)
 		for date,val,rect in self.rectangles:
-			rect.props.x = self._x_axis.coord(date)
+			x1 = self._x_axis.coord(date)
+			x2 = self._x_axis.coord(date+day)
+			rect.props.x = x1
 			rect.props.y = self._y_axis.coord(val)
 			rect.props.height = -1*rect.props.y
+			rect.props.width = x2 - x1
 		
