@@ -29,7 +29,7 @@ def explore(last_crawl, url, good, fn_remove, badv, depth, dead):
 	if info==None:
 		return []
 	for d,name,date in info:
-		if last_crawl!=None and depth<2 and date<last_crawl:
+		if last_crawl!=None and date!=None and depth<2 and date<last_crawl:
 			continue
 		if d and name not in dead and depth>0:
 			if not name.endswith("/"):
