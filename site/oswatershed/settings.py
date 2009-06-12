@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 # Django settings for oswatershed project.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
