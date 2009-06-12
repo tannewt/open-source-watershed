@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .utils import helper
 from .utils import parsers
 
@@ -12,7 +13,7 @@ def get_releases(last_crawl=None):
     return []
   for d,name,date in info:
     if d and (last_crawl==None or date>last_crawl):
-      print name
+      #print name
       p_info = helper.open_dir(MIRROR+name)
       if p_info == None:
         continue
