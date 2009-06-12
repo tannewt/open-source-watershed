@@ -27,6 +27,7 @@ import upstream.single_dir
 import upstream.kde
 import upstream.firefox
 import upstream.php
+import upstream.explore
 
 from utils.cache import Cache
 
@@ -53,7 +54,8 @@ UPSTREAM = {"subversion": upstream.subversion,
 						"single_dir": upstream.single_dir,
 						"kde"				: upstream.kde,
 						"firefox"		: upstream.firefox,
-						"php"				: upstream.php}
+						"php"				: upstream.php,
+						"explore"		: upstream.explore}
 						#"apache"		 : upstream.apache}
 
 import utils.helper
