@@ -147,9 +147,10 @@ for d in downstream:
 
 
 now = datetime.now()
-crawl_start = datetime(2008,10,17)
+#crawl_start = datetime(2008,10,17)
 d6m = timedelta(weeks=26)
 d1y = timedelta(weeks=54)
+crawl_start = now - d6m
 
 graph.set_x_bounds(crawl_start,now)
 if not COUNT:

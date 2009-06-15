@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import cairo
 
 class Group:
@@ -70,6 +71,7 @@ class Text:
 		self.args = kwargs
 		self.props = TextProps()
 		self.group = False
+		self.rotation = 0
 	
 	def get_parent(self):
 		return self.parent
@@ -93,7 +95,12 @@ class Text:
 			y -= height
 		
 		context.move_to(x, y)
+		context.rotate(self.rotation)
 		context.show_text(text)
+		context.rotate(-1*rotation)
+	
+	def rotate(self, deg, x, y):
+		self.rotation = deg
 
 class Rect:
 	pass
