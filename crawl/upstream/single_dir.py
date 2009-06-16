@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 try:
   from .utils import helper
   from .utils import parsers
@@ -85,7 +86,11 @@ SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shadow"],[]]
            "ftp://ftp.tin.org/pub/news/clients/tin/stable/": [["tin"],["current"]],
            "ftp://ftp.tin.org/pub/news/clients/tin/unstable/": [["tin"],[]],
            "http://kernel.org/pub/software/scm/git/": [["git", "git-core", "git-htmldocs", "git-manpages"],[]],
-           "ftp://invisible-island.net/xterm/": [["xterm"],[]]
+           "ftp://invisible-island.net/xterm/": [["xterm"],[]],
+					 "ftp://download.nvidia.com/XFree86/nvidia-settings/": [["nvidia-settings"],[]],
+					 "http://quassel-irc.org/pub/": [["quassel"],[]],
+					 "http://elinks.or.cz/download/": [["elinks"],[]],
+					 "http://releases.0x539.de/gobby/": [["gobby"],["stable", "latest"]]
           }
 
 def get_releases(last_crawl=None):
