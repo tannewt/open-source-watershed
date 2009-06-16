@@ -195,6 +195,12 @@ class Timeline(UserDict.DictMixin):
 		for date in self._dates:
 			result.append(" ".join((str(date),str(self._values[date]))))
 		return "\n".join(result)
+	
+	def values(self):
+		v = []
+		for d in self._dates:
+			v.append(self._values[d])
+		return v
 
 class StepTimeline(Timeline):
 	def __getitem__(self, date):

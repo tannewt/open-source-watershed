@@ -323,7 +323,7 @@ class DistroHistory:
 			print
 		return age
 
-def get_upstream():
+def get_upstream(history=True):
 	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 	cur = con.cursor()
 	result = []
@@ -331,8 +331,28 @@ def get_upstream():
 	total = q
 	i = 0
 	for pkg in cur:
-		print pkg[0],i,"/",total
-		result.append(PackageHistory(pkg[0]))
+		#print pkg[0],i,"/",total
+		if history:
+			result.append(PackageHistory(pkg[0]))
+		else:
+			result.append(pkg[0])
+		i += 1
+	con.close()
+	return result
+
+def get_all(history=True):
+	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+	cur = con.cursor()
+	result = []
+	q = cur.execute("SELECT name FROM packages")
+	total = q
+	i = 0
+	for pkg in cur:
+		#print pkg[0],i,"/",total
+		if history:
+			result.append(PackageHistory(pkg[0]))
+		else:
+			result.append(pkg[0])
 		i += 1
 	con.close()
 	return result
