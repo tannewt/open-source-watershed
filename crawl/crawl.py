@@ -86,12 +86,7 @@ def crawl_distro(target, last=True):
 
 	dist = (repos[0][0],)
 	#check distro existance
-	try:
-		cur.execute("insert into distros(name) values (%s);",dist)
-		cur.execute("select last_insert_id();");
-	except mysql.IntegrityError:
-		#print "found"
-		cur.execute("select id from distros where name=%s", dist)
+
 		
 	distro_id = cur.fetchone()[0]
 	#print "created:",distro_id
@@ -282,7 +277,7 @@ if len(sys.argv)>1:
 		sys.argv.remove("upstream")
 		for u in UPSTREAM.keys():
 			try:
-				stats.append((u,crawl_upstream(UPSTREAM[u],last)))
+				stats.append((u,UPSTREAM[u].crawl()))
 			except:
 				print "error from upstream:",u
 				print traceback.format_exc()
@@ -291,7 +286,7 @@ if len(sys.argv)>1:
 		sys.argv.remove("downstream")
 		for d in DISTROS.keys():
 			try:
-				stats.append((d,crawl_distro(DISTROS[d],last)))
+				stats.append((d,DISTROS[d].crawl()))
 			except:
 				print "error from upstream:",d
 				print traceback.format_exc()
@@ -299,7 +294,7 @@ if len(sys.argv)>1:
 	for crawl in sys.argv[1:]:
 		if DISTROS.has_key(crawl):
 			try:
-				stats.append((crawl,crawl_distro(DISTROS[crawl],last)))
+				stats.append((crawl,DISTROS[crawl].crawl()))
 			except:
 				print "error from distro:",crawl
 				print traceback.format_exc()
@@ -307,7 +302,7 @@ if len(sys.argv)>1:
 			continue
 		if UPSTREAM.has_key(crawl):
 			try:
-				crawl_upstream(UPSTREAM[crawl],last)
+				UPSTREAM[crawl].crawl()
 			except:
 				print "error from upstream:",crawl
 				print traceback.format_exc()
@@ -318,14 +313,14 @@ else:
 	print "no args - running all"
 	for d in DISTROS.keys():
 		try:
-			stats.append((d,crawl_distro(DISTROS[d], last)))
+			stats.append((d,DISTROS[d].crawl()))
 		except:
 			print "error from distro:",d
 			print traceback.format_exc()
 		gc.collect()
 	for u in UPSTREAM.keys():
 		try:
-			stats.append((u,crawl_upstream(UPSTREAM[u], last)))
+			stats.append((u,UPSTREAM[u].crawl()))
 		except:
 			print "error from upstream:",u
 			print traceback.format_exc()
