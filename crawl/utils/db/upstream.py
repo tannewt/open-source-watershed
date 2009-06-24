@@ -21,14 +21,15 @@ def source(name, description, user_id=1):
 
 def add_releases(source_id, rels):
 	pkgs = {}
-	total_new = 0
-	cur = get_cursor()
 	for rel in rels:
-		print rel, pkgs
 		if rel.package in pkgs:
 			rel.package = pkgs[rel.package]
 		else:
 			rel.package = core.package(rel.package)
+	
+	total_new = 0
+	cur = get_cursor()
+	for rel in rels:
 		try:
 			cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
 			total_new += 1

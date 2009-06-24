@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-class Distro:
-	def __init__(self):
-		self.id = None
-
 class Repo:
 	def __init__(self):
 		self.id = None
-		self.distro = None
+		self.distro_id = None
 		self.codename = None
 		self.component = None
 		self.architecture = None
+		self.last_crawl = None
 
 class Release:
 	def __init__(self):
 		self.package = None
 		self.version = None
-		self.revision = None
+		self.revision = 0
 		self.released = None
 	
 	def __str__(self):
@@ -29,4 +26,4 @@ class UpstreamRelease(Release):
 class DownstreamRelease(Release):
 	def __init__(self):
 		Release.__init__(self)
-		self.repo = None
+		self.repo_id = None

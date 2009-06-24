@@ -41,6 +41,7 @@ distro_id INT NOT NULL REFERENCES distros(id),
 codename VARCHAR(255) NOT NULL,
 component VARCHAR(255) NOT NULL,
 architecture VARCHAR(16),
+last_crawl TIMESTAMP,
 PRIMARY KEY (id)
 )""")
 
