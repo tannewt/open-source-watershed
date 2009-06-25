@@ -17,6 +17,8 @@ TESTS = [(None,"basic"),
 
 # text only version strings
 VER_TEXT = ["alpha","beta","BETA"]
+IGNORE = ["src", "source"]
+
 def has_alpha(s):
 	for c in s:
 		if c.isalpha():
@@ -50,7 +52,7 @@ def parse_filename(fn,sep="-",legacy=False):
 			ver.append(bit)
 		elif past_ver and (has_num(bit) or bit in VER_TEXT):
 			ver.append(bit)
-		elif bit!="src":
+		elif bit not in IGNORE:
 			pkg.append(bit)
 	
 	if len(ver)==0:
