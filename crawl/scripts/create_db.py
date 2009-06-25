@@ -139,12 +139,16 @@ UNIQUE (package_id, version, revision, usource_id)
 # explore tables
 cur.execute("""CREATE TABLE explore (
 id SERIAL NOT NULL PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
 url TEXT NOT NULL,
-target_depth SMALLINT NOT NULL DEFAULT 0 CHECK (target_depth >= 0),
-user_id INT NOT NULL REFERENCES users(id),
-packages VARCHAR(255)[],
+target_depth SMALLINT,
+good_packages VARCHAR(255)[],
+bad_packages VARCHAR(255)[],
 bad_tokens VARCHAR(255)[],
-deadends VARCHAR(255)[]
+bad_versions VARCHAR(255)[],
+deadends VARCHAR(255)[],
+user_id INT NOT NULL REFERENCES users(id),
+last_crawl TIMESTAMP
 )""")
 
 cur.execute("""CREATE TABLE explore_releases (
