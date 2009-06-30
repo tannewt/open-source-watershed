@@ -14,11 +14,11 @@ import traceback
 
 import upstream.subversion
 import upstream.sf
-import upstream.single_dir
 import upstream.php
 import upstream.explore
 
 from utils.cache import Cache
+from utils.db import downstream
 
 DISTROS = {"slackware": distros.slackware,
 					 "debian"		: distros.debian,
@@ -32,7 +32,6 @@ DISTROS = {"slackware": distros.slackware,
 
 UPSTREAM = {"subversion": upstream.subversion,
 						"sf"				: upstream.sf,
-						"single_dir": upstream.single_dir,
 						"php"				: upstream.php,
 						"explore"		: upstream.explore}
 
@@ -44,7 +43,18 @@ import sys
 import cPickle as pickle
 
 gc.enable()
-stats = []
+
+def crawl(mod):
+	repos = mod.get_repos()
+	i = 0
+	for repo in repos:
+		#print str(i)+"/"+str(len(repos)),repo
+		if not last:
+			repo.last_crawl = None
+		last_crawl, rels = mod.crawl_repo(repo)
+		downstream.add_releases(repo, rels)
+		downstream.set_last_crawl(repo, last_crawl)
+		i += 1
 
 if "--ignore-last" in sys.argv:
 	sys.argv.remove("--ignore-last")
@@ -52,59 +62,44 @@ if "--ignore-last" in sys.argv:
 else:
 	last = True
 
+downstream_targets = []
+upstream_targets = []
 if len(sys.argv)>1:
 	if "upstream" in sys.argv:
 		sys.argv.remove("upstream")
-		for u in UPSTREAM.keys():
-			try:
-				stats.append((u,UPSTREAM[u].crawl()))
-			except:
-				print "error from upstream:",u
-				print traceback.format_exc()
-			gc.collect()
+		upstream_targets = UPSTREAM.keys()
 	if "downstream" in sys.argv:
 		sys.argv.remove("downstream")
-		for d in DISTROS.keys():
-			try:
-				stats.append((d,DISTROS[d].crawl()))
-			except:
-				print "error from upstream:",d
-				print traceback.format_exc()
-			gc.collect()
-	for crawl in sys.argv[1:]:
-		if DISTROS.has_key(crawl):
-			try:
-				stats.append((crawl,DISTROS[crawl].crawl()))
-			except:
-				print "error from distro:",crawl
-				print traceback.format_exc()
-			gc.collect()
+		downstream_targets = DISTROS.keys()
+	for t in sys.argv[1:]:
+		if DISTROS.has_key(t):
+			downstream_targets.append(t)
 			continue
-		if UPSTREAM.has_key(crawl):
-			try:
-				UPSTREAM[crawl].crawl()
-			except:
-				print "error from upstream:",crawl
-				print traceback.format_exc()
-			gc.collect()
+		if UPSTREAM.has_key(t):
+			upstream_targets.append(t)
 			continue
-		print "unknown",crawl
+		print "unknown",t
 else:
 	print "no args - running all"
-	for d in DISTROS.keys():
-		try:
-			stats.append((d,DISTROS[d].crawl()))
-		except:
-			print "error from distro:",d
-			print traceback.format_exc()
-		gc.collect()
-	for u in UPSTREAM.keys():
-		try:
-			stats.append((u,UPSTREAM[u].crawl()))
-		except:
-			print "error from upstream:",u
-			print traceback.format_exc()
-		gc.collect()
+	upstream_targets = UPSTREAM.keys()
+	downstream_targets = DISTROS.keys()
+
+stats = []
+for d in downstream_targets:
+	try:
+		stats.append((d,crawl(DISTROS[d])))
+	except:
+		print "error from distro:",d
+		print traceback.format_exc()
+	gc.collect()
+
+for u in upstream_targets:
+	try:
+		stats.append((u,UPSTREAM[u].crawl()))
+	except:
+		print "error from upstream:",u
+		print traceback.format_exc()
+	gc.collect()
 
 cache = Cache()
 cache.evict([(None, None)])

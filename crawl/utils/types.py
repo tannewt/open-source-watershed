@@ -7,6 +7,9 @@ class Repo:
 		self.component = None
 		self.architecture = None
 		self.last_crawl = None
+	
+	def __str__(self):
+		return " ".join(map(str, (self.codename, self.component, self.architecture)))
 
 class Release:
 	def __init__(self):

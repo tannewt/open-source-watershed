@@ -11,6 +11,7 @@ sys.path.append("")
 from utils import helper
 from utils.db import users
 from utils.db import explore
+from utils.db import sf
 
 OLD_DATABASE = "watershed"
 HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
@@ -38,7 +39,14 @@ new_cur.execute("ALTER SEQUENCE distros_id_seq RESTART WITH %s", (v,))
 print "migrate repos"
 old_cur.execute("""SELECT DISTINCT distro_id, codename, component, architecture FROM repos""")
 for row in old_cur:
-	new_cur.execute("""INSERT INTO repos (distro_id, codename, component, architecture) VALUES (%s, %s, %s, %s)""", row)
+	old_cur2.execute("""SELECT MIN(time) FROM crawls, repos WHERE crawls.repo_id = repos.id AND distro_id = %s AND codename = %s AND component = %s AND architecture = %s""",row)
+	row2 = old_cur2.fetchone()
+	if row2==None:
+		last_crawl = None
+	else:
+		last_crawl = row2[0]
+	
+	new_cur.execute("""INSERT INTO repos (distro_id, codename, component, architecture, last_crawl) VALUES (%s, %s, %s, %s, %s)""", list(row) + [last_crawl])
 	new_cur.execute("SELECT lastval()")
 	repo_id = new_cur.fetchone()[0]
 	old_cur2.execute("""SELECT branch, discovered FROM repos WHERE distro_id = %s AND codename = %s AND component = %s AND architecture = %s""", row)
@@ -125,6 +133,7 @@ EXPLORE_SOURCES =	{"abiword": ["http://www.abisource.com/downloads/abiword/", ["
 						#"apache": ["http://archive.apache.org/dist/", ["apache", "mod_python", "activemq-cpp", "apr", "apr-iconv", "apr-util", "cocoon", "hadoop", "lucene", "nutch", "maven", "mina", "mod_perl", "Mail-SpamAssassin", "tapestry"], None, [], [], None, []],
 						"db": ["http://download-west.oracle.com/berkeley-db/", ["db"], None, [], [], None, []] #not working, wrong url
 						}
+
 for k in EXPLORE_SOURCES:
 	v = EXPLORE_SOURCES[k]
 	explore.add_explore_target(k, v[0], v[5], v[1], v[2], v[3], v[4], v[6])
@@ -215,3 +224,88 @@ SINGLE_SOURCES = {"ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/": [["shado
 for k in SINGLE_SOURCES:
 	v = SINGLE_SOURCES[k]
 	explore.add_explore_target(v[0][0], k, 0, v[0], None, [], v[1], [])
+
+print "migrate sourceforge sources"
+#name, project_num, packages, bad_tokens, bad_versions
+SF_SOURCES = [["aa-project", 20003, ["aalib"], [], []],
+							["acpid", 33140, ["acpid"], [], []],
+							["afterstep", 30, ["libAfterImage", "AfterStep", "libAfter", "libAfterBase"], ["noimages"], []],
+							["audacity", 6235, ["audacity"], ["linux-i386","debian"], []],
+							["blackbox", 40696, ["blackbox"], [], []],
+							["bridge-utils", 26089, ["bridge-utils"], [], []],
+							["cdrdao", 2171, ["cdrdao"], [], []],
+							["cscope", 4664, ["cscope"], [], []],
+							["digikam", 42641, ["digikam"], [], []],
+							["dosbox", 52551, ["dosbox"], ["linux-x86"], []],
+							["e2fsprogs", 2406, ["e2fsprogs", "e2fsprogs-libs"], ["WIP"], []],
+							["flac", 13478, ["flac"], [], []],
+							["flex", 97492, ["flex"], [], []],
+							["fluxbox", 35398, ["fluxbox"], [], []],
+							["fontforge", 103338, ["fontforge_full"], [], []],
+							["freetype", 3157, ["freetype"], [], []],
+							["fuse", 121684, ["fuse"], [], []],
+							["icewm", 31, ["icewm"], [], []],
+							["ghostscript", 1897, ["ghostscript"], [], []],
+							["gkernel", 3242, ["ethtool"], [], []],
+							["gnucash", 192, ["gnucash"], [], []],
+							["gparted", 115843, ["gparted"], [], []],
+							["gnuplot", 2055, ["gnuplot"], [], []],
+							["gqview", 4050, ["gqview"], [], []],
+							["gutenprint", 1537, ["gutenprint"], [], []],
+							["hdparm", 136732, ["hdparm"], [], []],
+							["hplip", 149981, ["hplip"], [], []],
+							["imagemagick", 24099, ["ImageMagick"], [], []],
+							["inkscape", 93438, ["inkscape"], [], ["0.39-1.slack.i386"]],
+							["joe", 23475, ["joe"], [], []],
+							["lcms", 26279, ["lcms"], [], []],
+							["libcddb", 65237, ["libcddb"], [], []],
+							["libexif", 12272, ["libexif"], [], []],
+							["libgphoto2", 8874, ["libgphoto2"], [], []],
+							["libgpod", 67873, ["gtkpod", "libgpod"], [], []],
+							["libmng", 5635, ["libmng"], [], []],
+							["libnjb", 32528, ["libnjb"], [], []],
+							["libmtp", 158745, ["libmtp"], [], []],
+							["libieee1284", 29314, ["libieee1284"], [], []],
+							["libusb", 1674, ["libusb"], [], []],
+							["libvisual", 106542, ["libvisual", "libvisual-plugins"], [], []],
+							["libwmf", 10501, ["libwmf"], [], []],
+							["libwpd", 62662, ["libwpd"], [], []],
+							["liferea", 87005, ["liferea"], [], []],
+							["k3b", 26138, ["k3b"], [], []],
+							["kaffeine", 86937, ["kaffeine"], [], []],
+							["krecipes", 80184, ["krecipes"], [], []],
+							["mad", 12349, ["libid3tag", "libmad", "madplay"], [], []],
+							["mailx", 106236, ["mailx"], [], []],
+							["mhash", 4286, ["mhash"], [], []],
+							["mtx", 4626, ["mtx"], [], []],
+							["mutt", 195, ["mutt"], [], []],
+							["nasm", 6208, ["nasm"], [], []],
+							["nfs-utils", 14, ["nfs-utils"], [], []],
+							["ndiswrapper", 93482, ["ndiswrapper"], [], []],
+							["netatalk", 8642, ["netatalk"], [], []],
+							["net-snmp", 12694, ["net-snmp"], [], []],
+							["netpbm", 5128, ["netpbm"], [], []],
+							["ntfsprogs", 13956, ["ntfsprogs"], [], []],
+							["obexftp", 8960, ["obexftp"], [], []],
+							["pidgin", 235, ["pidgin"], ["gtk"], []],
+							["rdesktop", 24366, ["rdesktop"], [], []],
+							["scim", 108454, ["skim", "scim-qtimm", "scim-pinyin", "scim-tables", "scim-hangul", "scim-input-pad", "scim-m17n", "scim-uim", "scim-bridge", "scim"], ["fcitx"], []],
+							["screem", 142, ["screem"], [], []],
+							["slrn", 7768, ["slrn"], [], []],
+							["smartmontools", 64297, ["smartmontools"], [], []],
+							["sox", 10706, ["sox"], [], []],
+							["squirrelmail", 311, ["squirrelmail"], ["old","_","ar-","locales","ug-","ka-","fy-"], []],
+							["strace", 2861, ["strace"], [], []],
+							["sysfsutils", 44427, ["sysfsutils"], [], []],
+							["tuxpaint", 66938, ["tuxpaint"], [], []],
+							["usbutils", 3581, ["usbutils"], [], []],
+							["webmin", 17457, ["usermin", "webmin"], [], []],
+							["xdtv", 67268, ["xdtv"], [".orig.","patch"], []],
+							["xfce", 19869, ["xfce"], ["menushadow","rpm"], []],
+							["xine-lib", 9655, ["xine-lib", "xine-plugin", "gxine", "xine-ui"], [], []],
+							["psmisc", 15273, ["psmisc"], [], []],
+							["scribus", 125235, ["scribus"], [], []]
+							]
+
+for t in SF_SOURCES:
+	sf.add_sf_target(*t)

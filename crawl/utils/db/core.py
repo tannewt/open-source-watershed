@@ -8,7 +8,6 @@ def package(p):
 	cur.execute("select id from packages where name=%s", (p,))
 	row = cur.fetchone()
 	if row==None:
-		print "insert package",p
 		cur.execute("insert into packages(name) values (%s);",(p,))
 		cur.execute("select lastval();");
 		i = cur.fetchone()[0]
@@ -17,9 +16,6 @@ def package(p):
 	
 	close_cursor(cur)
 	return i
-
-def repo(repo):
-	pass
 
 def distro(distro):
 	cur = get_cursor()

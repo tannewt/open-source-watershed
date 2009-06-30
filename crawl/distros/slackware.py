@@ -137,11 +137,4 @@ def crawl_repo(repo):
 			else:
 				pkg[name] = value.strip()
 	
-	downstream.set_last_crawl(repo, this_crawl_time)
-	return rels
-
-def crawl():
-	repos = get_repos()
-	for repo in repos:
-		rels = crawl_repo(repo)
-		downstream.add_releases(repo, rels)
+	return (this_crawl_time, rels)

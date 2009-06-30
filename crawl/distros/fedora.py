@@ -4,6 +4,10 @@ import datetime
 import gzip
 import time
 from .utils import helper
+from .utils.db import downstream
+from .utils.types import Repo, DownstreamRelease
+
+distro_id = downstream.distro("fedora", "", "A popular binary distribution by RedHat.", "http://www.fedoraproject.org")
 
 MIRROR = "mirrors.kernel.org"
 HTTP_START_DIR = "fedora"
@@ -31,37 +35,64 @@ def get_repos():
 		else:
 			branch="past"
 		for arch in ARCHES:
-			repos.append(["fedora", branch, str(rel), "Everything", arch, None, None])
-			repos.append(["fedora", branch, str(rel), "Testing", arch, None, None])
+			r = Repo()
+			r.distro_id = distro_id
+			r.codename = str(rel)
+			r.component = "Everything"
+			r.architecture = arch
+			r.development = False
+			downstream.repo(r)
+			downstream.add_branch(r, branch)
+			repos.append(r)
+			
+			r = Repo()
+			r.distro_id = distro_id
+			r.codename = str(rel)
+			r.component = "Testing"
+			r.architecture = arch
+			r.development = False
+			downstream.repo(r)
+			downstream.add_branch(r, branch)
+			repos.append(r)
 	
 	for arch in ARCHES:
-		repos.append(["fedora", "future", str(max(releases)+1), "Everything", arch, None, None])
+		r = Repo()
+		r.distro_id = distro_id
+		r.codename = str(max(releases)+1)
+		r.component = "Everything"
+		r.architecture = arch
+		r.development = True
+		downstream.repo(r)
+		downstream.add_branch(r, "future")
+		repos.append(r)
 
 	return repos
 
 # return a list of [name, version, revision, time, extra]
 def crawl_repo(repo):
-	name, branch, codename, comp, arch, last_crawl, new = repo
-	
 	primaries = []
 	url_tail = "repodata/primary.xml.gz"
 	url_start = "/".join(["http:/",MIRROR,HTTP_START_DIR])
 	this_time =	str(time.mktime(datetime.datetime.now().timetuple()))
 	file_end = "primary.xml.gz"
 	file_start = "files/fedora/"
-	if branch == "future":
-		site_branches = ["development/%s/os"%(arch)]
-	elif comp == "Everything":
-		site_branches = ["releases/%s/Everything/%s/os"%(codename,arch), "updates/%s/%s"%(codename,arch)]
-	elif comp == "Testing":
-		site_branches = ["updates/testing/%s/%s"%(codename,arch)]
+	if repo.development:
+		site_branches = ["development/%s/os"%(repo.architecture)]
+	elif repo.component == "Everything":
+		site_branches = ["releases/%s/Everything/%s/os"%(repo.codename, repo.architecture), "updates/%s/%s"%(repo.codename, repo.architecture)]
+	elif repo.component == "Testing":
+		site_branches = ["updates/testing/%s/%s"%(repo.codename, repo.architecture)]
 	else:
 		site_branches = []
 	
+	last_crawl = None
 	for site_branch in site_branches:
 		filename = file_start+"-".join([this_time,site_branch.replace("/","_"),"repomd.xml"])
 		url = "/".join([url_start,site_branch,"repodata/repomd.xml",])
-		repomd = helper.open_url(url,filename,last_crawl)
+		repomd = helper.open_url(url,filename,repo.last_crawl)
+		
+		if last_crawl == None or (repomd != None and last_crawl < repomd):
+			last_crawl = repomd
 		if repomd:
 			f = open(filename)
 			repomd_tree = xml.parse(f)
@@ -79,9 +110,9 @@ def crawl_repo(repo):
 			if fn:
 				primaries.append(("/".join([url_start,site_branch,fn]),file_start+"-".join([this_time,site_branch.replace("/","_"),file_end])))
 	
-	pkgs = []
+	rels = []
 	for p,filename in primaries:
-		t = helper.open_url(p,filename,last_crawl)
+		t = helper.open_url(p,filename,repo.last_crawl)
 		if t==None:
 			continue
 		gzp = gzip.open(filename)
@@ -96,11 +127,14 @@ def crawl_repo(repo):
 			rel_time = e.find(NAMESPACE + "time").attrib["file"]
 			version = v["ver"]
 			revision = v["rel"]
-			epoch = v["epoch"]
 			rel_time = datetime.datetime.fromtimestamp(float(rel_time))
-			
-			pkgs.append([name, version, revision, epoch, rel_time, xml.tostring(e)])
+			rel = DownstreamRelease()
+			rel.repo_id = repo.id
+			rel.version = version
+			rel.package = name
+			rel.revision = revision
+			rel.released = rel_time
+			rels.append(rel)
 		del i
 		del primary_tree
-	return pkgs
-	
+	return (last_crawl, rels)

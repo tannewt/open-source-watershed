@@ -5,8 +5,10 @@ sys.path.append(".")
 
 from utils import helper
 from utils import parsers
+from utils.db import upstream
 
 NAME="php"
+source_id = upstream.source("php", "custom php crawler")
 
 MIRROR="http://us3.php.net"
 
@@ -104,12 +106,18 @@ def get_releases(last_crawl=None):
 		
 		for date,fn in f:
 			rel = parsers.parse_filename(fn)
-			if rel!=None and "pl" not in rel[2]:
-				rel[3] = date
+			if rel!=None and "pl" not in rel.version:
+				rel.released = date
 				pkgs.append(rel)
 	return pkgs
+
+def crawl():
+	last_crawl = upstream.last_crawl(source_id)
+	rels = get_releases(last_crawl)
+	count, max_date = upstream.add_releases(source_id, rels)
+	upstream.set_last_crawl(source_id, max_date)
 
 if __name__=="__main__":
 	pkgs = get_releases()
 	for p in pkgs:
-		print p[0], p[2], p[3]
+		print p

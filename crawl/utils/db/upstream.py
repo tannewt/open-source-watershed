@@ -16,12 +16,14 @@ def source(name, description, user_id=1):
 		i = row[0]
 	close_cursor(cur)
 	
-	print "source:",i
 	return i
 
 def add_releases(source_id, rels):
 	pkgs = {}
+	max_date = None
 	for rel in rels:
+		if max_date==None or max_date < rel.released:
+			max_date = rel.released
 		if rel.package in pkgs:
 			rel.package = pkgs[rel.package]
 		else:
@@ -37,7 +39,7 @@ def add_releases(source_id, rels):
 			pass
 		commit()
 	close_cursor(cur)
-	return total_new
+	return (total_new, max_date)
 	
 def last_crawl(source_id):
 	cur = get_cursor()

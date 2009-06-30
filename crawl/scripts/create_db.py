@@ -165,10 +165,14 @@ FOREIGN KEY (user_id) REFERENCES users(id)
 # sourceforge tables
 cur.execute("""CREATE TABLE sf (
 id SERIAL NOT NULL PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
 project_num INT NOT NULL,
-user_id INT REFERENCES users(id),
 packages VARCHAR(255)[],
-bad_tokens VARCHAR(255)[]
+bad_tokens VARCHAR(255)[],
+bad_versions VARCHAR(255)[],
+user_id INT REFERENCES users(id),
+last_crawl TIMESTAMP,
+UNIQUE (name)
 )""")
 
 cur.execute("""CREATE TABLE sf_releases (

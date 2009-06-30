@@ -32,10 +32,10 @@ def open_url(url, filename, last_crawl=None):
   datastream = opener.open(request)
   
   if datastream.status == 404:
-    #print datastream.status,#url,
+    print datastream.status,#url,
     return None
   elif datastream.status:
-    #print datastream.status,#last_crawl,
+    print datastream.status,#last_crawl,
     return None
   else:
     out = open(filename, "w")
