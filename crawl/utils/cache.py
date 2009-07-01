@@ -48,7 +48,7 @@ class Cache:
 		cur = self.db.cursor()
 		cur.execute("SELECT v FROM cache WHERE k = %s",(key,))
 		self.db.commit()
-		value = cur.fetchone()[0]
+		value = str(cur.fetchone()[0])
 		if value != None:
 			value = pickle.loads(value)
 			return value
@@ -60,10 +60,11 @@ class Cache:
 		value = pickle.dumps(value)
 		try:
 			cur.execute("INSERT INTO cache (k, v, cached) VALUES (%s, %s, NOW())",(key,value))
-			cur.execute("SELECT LAST_INSERT_ID();")
+			cur.execute("SELECT lastval();")
 			self.db.commit()
 			cache_id = cur.fetchone()[0]
 		except:
+			self.db.commit()
 			cur.execute("SELECT id FROM cache WHERE k = %s",(key,))
 			cache_id = cur.fetchone()[0]
 			cur.execute("UPDATE cache SET v = %s, status = %s, cached = NOW() WHERE id = %s", (value, Cache.FRESH, cache_id))

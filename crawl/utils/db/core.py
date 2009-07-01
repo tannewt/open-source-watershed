@@ -31,3 +31,19 @@ def distro(distro):
 	finally:
 		close_cursor(cur)
 	return i
+
+def get_downstream_releases(distro_id, packages, branch, revisions):
+	if revisions:
+		rev = ", revision"
+	else:
+		rev = ""
+	
+	q = "SELECT version"+rev+", MIN(released) FROM ( SELECT version"+rev+", GREATEST(released, start) AS released FROM dreleases, repos, branches WHERE ("+ " OR ".join(("dreleases.package_id=%s",)*len(packages)) + ") AND dreleases.repo_id=repos.id AND repos.distro_id=%s AND dreleases.version!='9999' AND repos.id = branches.repo_id AND branches.branch = %s) t GROUP BY version"+rev+" ORDER BY MIN(released), version"+rev
+	print q,packages+[distro_id, branch]
+	cur = get_cursor()
+	cur.execute(q,packages+[distro_id, branch])
+	releases = []
+	for row in cur:
+		releases.append(tuple(row))
+	close_cursor(cur)
+	return releases

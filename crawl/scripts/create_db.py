@@ -119,6 +119,9 @@ FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
 PRIMARY KEY (id)
 ) INHERITS (releases)""")
 
+# 1110 ms -> ~10 ms
+cur.execute("CREATE INDEX dreleases_pkg_idx ON dreleases (package_id, repo_id, released)")
+
 # for every upstream release
 cur.execute("""CREATE TABLE usources (
 id SERIAL NOT NULL PRIMARY KEY,
@@ -135,6 +138,8 @@ FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
 PRIMARY KEY (id),
 UNIQUE (package_id, version, revision, usource_id)
 ) INHERITS (releases)""")
+
+cur.execute("CREATE INDEX ureleases_pkg_idx ON ureleases (package_id, released)")
 
 # explore tables
 cur.execute("""CREATE TABLE explore (

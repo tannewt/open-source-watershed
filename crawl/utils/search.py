@@ -1,4 +1,5 @@
-import MySQLdb as mysql
+# -*- coding: utf-8 -*-
+import psycopg2 as db
 import sys
 import os
 import datetime
@@ -12,10 +13,10 @@ HOST, USER, PASSWORD, DB = helper.mysql_settings()
 class Search:
   def __init__(self, search, basic=False):
     self.search = search
-    con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+    con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
     cur = con.cursor()
     
-    cur.execute("SELECT name, description FROM packages WHERE name LIKE %s ORDER BY LENGTH(name) ASC, name",("%"+search+"%",))
+    cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE name LIKE %s ORDER BY LENGTH(name) ASC, name",("%"+search+"%",))
     self.results = []
     for row in cur:
       if basic:
@@ -32,7 +33,7 @@ class Search:
         line[-1] += "*"
       if line[0]==line[1]:
         line[1] = "-"
-      result.append(" ".join(line))
+      result.append(" ".join(map(str, line)))
     return "\n".join(result)
 
 if __name__=="__main__":

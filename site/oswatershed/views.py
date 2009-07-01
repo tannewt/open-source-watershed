@@ -9,13 +9,17 @@ from utils.history import PackageHistory
 from utils.stats import DataStats, PackageStats
 from utils.crawlhistory import CrawlHistory
 from utils.search import Search
+from utils.errors import *
 
 def index(request):
 	s = DataStats()
 	upstream = CrawlHistory()
 	rest = []
 	for distro in ["arch","debian", "fedora", "funtoo", "gentoo", "opensuse", "sabayon", "slackware", "ubuntu"]:
-		ch = CrawlHistory(None,distro)
+		try:
+			ch = CrawlHistory(None,distro)
+		except UnknownDistroError:
+			continue
 		rest.append((distro,ch.today,ch.releases[:5]))
 	
 	return render_to_response('index.html',
@@ -45,7 +49,7 @@ def pkg(request, pkg):
 		history.insert(0, (d, h[d]))
 	return render_to_response('pkg.html',
 		{"stats": s,
-		"pkg_stats":map(lambda x: ps.for_distro(*x),STAT_DISTROS),
+		"pkg_stats":filter(lambda x: x!=None, map(lambda x: ps.for_distro(*x),STAT_DISTROS)),
 		"name" : pkg,
 		"description" : ps.hist.description,
 		"history" : history,

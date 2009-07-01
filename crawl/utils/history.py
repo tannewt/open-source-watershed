@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import MySQLdb as mysql
+import psycopg2 as db
 import sys
 import os
 import datetime
@@ -8,6 +8,8 @@ sys.path.append(os.getcwd())
 from utils import helper
 from utils.version import VersionTree
 from utils.timeline import *
+from utils.db import core
+from utils.errors import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
@@ -15,10 +17,10 @@ VERBOSE = False
 VERBOSE_RESULT = False
 
 class PackageHistory:
-	def __init__(self, name, threshold = 255, force_approx = False):
+	def __init__(self, name, force_approx = False):
 		self.name = name
 		# find the package name aliases
-		con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 		cur = con.cursor()
 		
 		cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
@@ -29,13 +31,13 @@ class PackageHistory:
 			sid = result[0]
 		
 		while True:
-			cur.execute("SELECT package_id1 FROM links WHERE package_id2 = %s AND strength >= %s",(sid,threshold))
+			cur.execute("SELECT package_tgt FROM links WHERE package_src = %s",(sid,))
 			row = cur.fetchone()
 			if row==None:
 				break
 			sid = row[0]
 		
-		cur.execute("SELECT name, description FROM packages WHERE id = %s",(sid,))
+		cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE packages.id = %s",(sid,))
 		sname, self.description = cur.fetchone()
 		
 		if VERBOSE:
@@ -43,11 +45,11 @@ class PackageHistory:
 		self.name = sname
 		
 		explore = [sid]
-		aliases = [self.name]
+		aliases = [sid]
 		while len(explore)>0:
 			tmp = []
 			for sid in explore:
-				cur.execute("SELECT package_id2, packages.name FROM packages,links WHERE package_id1 = %s AND package_id2=packages.id AND strength >= %s",(sid,threshold))
+				cur.execute("SELECT package_src, packages.id FROM packages, links WHERE package_tgt = %s AND package_tgt=packages.id",(sid,))
 				for row in cur:
 					aliases.append(row[1])
 					tmp.append(row[0])
@@ -57,7 +59,7 @@ class PackageHistory:
 		
 		distro_aliases = {}
 		for alias in aliases:
-			cur.execute("SELECT DISTINCT distros.name FROM releases,packages,repos,distros WHERE packages.id = releases.package_id AND releases.repo_id = repos.id AND distros.id = repos.distro_id AND packages.name = %s",(alias,))
+			cur.execute("SELECT DISTINCT distros.id FROM dreleases, repos, distros WHERE dreleases.repo_id = repos.id AND distros.id = repos.distro_id AND dreleases.package_id = %s",(alias,))
 			for row in cur:
 				if row[0] not in distro_aliases:
 					distro_aliases[row[0]] = [alias]
@@ -70,13 +72,13 @@ class PackageHistory:
 		self.ish = False
 		#print "query upstream"
 		if not force_approx:
-			q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND releases.version!='9999' AND releases.repo_id IS NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
+			q = "SELECT ureleases.version, MIN(ureleases.released) FROM ureleases, packages WHERE ureleases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND ureleases.version!='9999' GROUP BY ureleases.version ORDER BY MIN(ureleases.released), ureleases.version"
 			cur.execute(q,aliases)
 		if cur.rowcount == 0 or force_approx:
 			if VERBOSE:
 				print "falling back to approximate upstream"
 			self.ish = True
-			q = "SELECT releases.version, MIN(releases.released) FROM releases, packages WHERE releases.package_id = packages.id AND packages.name=%s AND releases.version!='9999' AND releases.repo_id IS NOT NULL GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
+			q = "SELECT dreleases.version, MIN(dreleases.released) FROM dreleases, packages WHERE dreleases.package_id = packages.id AND packages.name=%s AND dreleases.version!='9999' GROUP BY dreleases.version ORDER BY MIN(dreleases.released), dreleases.version"
 			cur.execute(q,(self.name,))
 		
 		data = []
@@ -115,10 +117,14 @@ class DistroHistory:
 		self.branch = branch
 		self.codename = codename
 		
-		con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 		cur = con.cursor()
-		cur.execute("SELECT id, color FROM distros WHERE name = %s",(name))
-		self.id, self.color = cur.fetchone()
+		cur.execute("SELECT id, color FROM distros WHERE name = %s",(name,))
+		row = cur.fetchone()
+		if row==None:
+			raise UnknownDistroError(name)
+		
+		self.id, self.color = row
 		con.close()
 		
 		self.arch = arch
@@ -184,38 +190,23 @@ class DistroHistory:
 		self.bin_obs_timeline = self._bin_obs_timeline / self.fcount
 	
 	def get_downstream(self, package, revisions=False):
-		con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 		cur = con.cursor()
-		if self.name not in package.aliases:
+		if self.id not in package.aliases:
 			return Timeline()
-		if revisions:
-			q_start = "SELECT releases.version, releases.revision, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
-			q_end = "GROUP BY releases.version, releases.revision ORDER BY MIN(releases.released), releases.version, releases.revision"
-		else:
-			q_start = "SELECT releases.version, MIN(releases.released) FROM releases, packages, repos, distros WHERE releases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(package.aliases[self.name])) + ") AND releases.repo_id=repos.id AND repos.distro_id=distros.id AND distros.name=%s AND releases.version!='9999'"
-			q_end = "GROUP BY releases.version ORDER BY MIN(releases.released), releases.version"
-		if self.branch==None and self.arch==None:
-			cur.execute(" ".join((q_start,q_end)),package.aliases[self.name]+[self.name])
-		elif self.branch==None:
-			q = " ".join((q_start,"AND repos.architecture=%s",q_end))
-			cur.execute(q,package.aliases[self.name]+[self.name,self.arch])
-		elif self.arch==None:
-			q = " ".join((q_start,"AND repos.branch=%s",q_end))
-			cur.execute(q,package.aliases[self.name]+[self.name,self.branch])
-		else:
-			q = " ".join((q_start,"AND repos.architecture=%s","AND repos.branch=%s",q_end))
-			cur.execute(q,package.aliases[self.name]+[self.name,self.arch,self.branch])
-
+		
+		releases = core.get_downstream_releases(self.id, package.aliases[self.id], self.branch, revisions)
+		print "get_downstream_releases",releases
 		downstream = Timeline()
 		if VERBOSE:
 			print "downstream"
 		if revisions:
-			for version, revision, date in cur:
+			for version, revision, date in releases:
 				if VERBOSE:
 					print version, revision, date
 				downstream[date] = (version, revision)
 		else:
-			for version, date in cur:
+			for version, date in releases:
 				if VERBOSE:
 					print version, date
 				downstream[date] = version
@@ -327,7 +318,7 @@ def get_upstream(history=True):
 	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 	cur = con.cursor()
 	result = []
-	q = cur.execute("SELECT DISTINCT name FROM packages, releases WHERE releases.package_id = packages.id AND releases.repo_id IS NULL")
+	q = cur.execute("SELECT DISTINCT name FROM packages, ureleases WHERE releases.package_id = packages.id")
 	total = q
 	i = 0
 	for pkg in cur:
@@ -359,23 +350,20 @@ def get_all(history=True):
 
 if __name__=="__main__":
 	if len(sys.argv)<2:
-		print sys.argv[0],"<package>","[threshold]","[distro]","[branch]"
+		print sys.argv[0],"<package>","[distro]","[branch]"
 		sys.exit(1)
 	#VERBOSE = True
 	p = sys.argv[1]
-	t = 255
 	d = None
 	b = "current"
+	
 	if len(sys.argv)>2:
-		t = sys.argv[2]
+		d = sys.argv[2]
 	
 	if len(sys.argv)>3:
-		d = sys.argv[3]
-	
-	if len(sys.argv)>4:
-		b = sys.argv[4]
+		b = sys.argv[3]
 
-	p = PackageHistory(p,t)
+	p = PackageHistory(p)
 	print p
 	
 	if d != None:
