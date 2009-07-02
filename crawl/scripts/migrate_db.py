@@ -104,7 +104,9 @@ for row in rows:
 		if row2[2]==None:
 			row2[2] = '0'
 		new_cur2.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)", row2+[row[0]])
+	ncon.commit()
 	new_cur2.execute("VACUUM ANALYZE")
+	ncon.commit()
 	i += 1
 
 new_cur2.close()
