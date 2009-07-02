@@ -55,9 +55,10 @@ def explore(url, depth, good, bad, fn_remove, badv, dead, last_crawl):
 def crawl():
 	sources = explore_module.get_explore_targets()
 	for target in sources:
-		print "exploring",target[1]
+		print target[1]
 		rels = explore(*target[2:])
 		count, max_date = explore_module.add_releases(source_id, target[0], rels)
+		print "\t"+str(count),"new releases"
 		explore_module.set_last_crawl(target[0], max_date)
 
 if __name__=="__main__":

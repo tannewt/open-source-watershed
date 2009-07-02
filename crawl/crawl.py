@@ -48,11 +48,12 @@ def crawl(mod):
 	repos = mod.get_repos()
 	i = 0
 	for repo in repos:
-		#print str(i)+"/"+str(len(repos)),repo
+		print str(i)+"/"+str(len(repos)),repo
 		if not last:
 			repo.last_crawl = None
 		last_crawl, rels = mod.crawl_repo(repo)
-		downstream.add_releases(repo, rels)
+		total_new = downstream.add_releases(repo, rels)
+		print "\t"+str(total_new),"new releases"
 		downstream.set_last_crawl(repo, last_crawl)
 		i += 1
 

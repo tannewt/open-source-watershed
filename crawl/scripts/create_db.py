@@ -21,6 +21,13 @@ id SERIAL NOT NULL,
 handle VARCHAR(255) NOT NULL UNIQUE,
 pswhash TEXT NOT NULL,
 email VARCHAR(255) NOT NULL UNIQUE,
+public_email BOOL,
+joined TIMESTAMP,
+bio TEXT,
+pic BYTEA,
+first_name VARCHAR(255),
+last_name VARCHAR(255),
+website VARCHAR(255),
 PRIMARY KEY (id)
 )""")
 

@@ -104,9 +104,11 @@ def get_releases(last_crawl=None):
 	return pkgs
 
 def crawl():
+	print "subversion"
 	last_crawl = upstream.last_crawl(source_id)
 	rels = get_releases(last_crawl)
 	count, max_date = upstream.add_releases(source_id, rels)
+	print "\t"+str(count),"new releases"
 	upstream.set_last_crawl(source_id, max_date)
 
 if __name__=="__main__":

@@ -64,13 +64,14 @@ def crawl(test=False):
 	all_rels = []
 	total_new = 0
 	for target in sources:
-		print "exploring",target[1]
+		print target[1]
 		rels = get_releases(*target[2:])
 		all_rels += rels
 		
 		if not test:
 			count, max_date = sf_module.add_releases(source_id, target[0], rels)
 			total_new += count
+			print "\t"+str(count),"new releases"
 			sf_module.set_last_crawl(target[0], max_date)
 	return (total_new, all_rels)
 
