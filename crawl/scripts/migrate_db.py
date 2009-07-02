@@ -40,7 +40,7 @@ new_cur.execute("ALTER SEQUENCE distros_id_seq RESTART WITH %s", (v,))
 print "migrate repos"
 old_cur.execute("""SELECT DISTINCT distro_id, codename, component, architecture FROM repos""")
 for row in old_cur:
-	old_cur2.execute("""SELECT MIN(time) FROM crawls, repos WHERE crawls.repo_id = repos.id AND distro_id = %s AND codename = %s AND component = %s AND architecture = %s""",row)
+	old_cur2.execute("""SELECT MAX(time) FROM crawls, repos WHERE crawls.repo_id = repos.id AND distro_id = %s AND codename = %s AND component = %s AND architecture = %s""",row)
 	row2 = old_cur2.fetchone()
 	if row2==None:
 		last_crawl = None
