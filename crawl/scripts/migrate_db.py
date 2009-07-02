@@ -4,6 +4,7 @@
 
 import MySQLdb as mysql
 import psycopg2 as pg
+import subprocess
 import sys
 sys.path.append("")
 
@@ -88,6 +89,9 @@ for row in old_cur:
 ncon.commit()
 new_cur2 = ncon.cursor()
 
+
+f = open("/home/tannewt/open-source-watershed/crawl/scripts/db_maintain.sql")
+
 # migrate downstream releases
 print "migrate downstream releases"
 new_cur.execute("SELECT id, distro_id, codename, component, architecture FROM repos")
@@ -105,10 +109,10 @@ for row in rows:
 			row2[2] = '0'
 		new_cur2.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)", row2+[row[0]])
 	ncon.commit()
-	new_cur2.execute("VACUUM ANALYZE")
-	ncon.commit()
+	subprocess.call(["psql",DATABASE], stdin=f)
 	i += 1
 
+f.close()
 new_cur2.close()
 
 # close all cursors
