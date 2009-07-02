@@ -35,6 +35,7 @@ def get_repos(test):
 	repos = []
 	f = open(STORAGE+"profiles/arch.list")
 	arches = map(lambda s: s.strip(),f.readlines())
+	arches = arches[:arches.index("")]
 	f.close()
 	for c,b in [("stable","current"),("unstable","future")]:
 		for a in arches:
