@@ -72,13 +72,13 @@ def crawl_repo(repo):
 	rels = []
 	
 	if this_time==None:
-		return rels
+		return (repo.last_crawl, rels)
 	
 	this_crawl_time = this_time
 	
 	#check to see if things have changed
 	if repo.last_crawl and this_time<repo.last_crawl:
-		return rels
+		return (repo.last_crawl, rels)
 	
 	if repo.component == "slackware":
 		k_filename = "files/slackware/VERSIONS-" + repo.codename + "-" + str(time.mktime(this_time.timetuple())) + ".TXT"
