@@ -17,12 +17,12 @@ def get_repos(test):
 	arches = map(lambda s: s.strip(),f.readlines())
 	arches = arches[:arches.index("")]
 	f.close()
-	for c,b in [("","current"),("~","future")]:
+	for c,b in [("stable","current"),("unstable","future")]:
 		for a in arches:
 			repo = Repo()
 			repo.distro_id = distro_id
-			repo.codename = c
-			repo.component = ""
+			repo.codename = ""
+			repo.component = c
 			repo.architecture = a
 			downstream.repo(repo, test)
 			downstream.add_branch(repo, b, test)
