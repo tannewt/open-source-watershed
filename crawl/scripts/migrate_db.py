@@ -91,7 +91,10 @@ new_cur2 = ncon.cursor()
 # migrate downstream releases
 print "migrate downstream releases"
 new_cur.execute("SELECT id, distro_id, codename, component, architecture FROM repos")
-for row in new_cur:
+rows = new_cur.fetchall()
+i = 0
+for row in rows:
+	print i,"/",len(rows)
 	row = list(row)
 	if row[2]==None:
 		row[2] = '0'
@@ -101,6 +104,8 @@ for row in new_cur:
 		if row2[2]==None:
 			row2[2] = '0'
 		new_cur2.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)", row2+[row[0]])
+	new_cur2.execute("VACUUM ANALYZE")
+	i += 1
 
 new_cur2.close()
 

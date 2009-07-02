@@ -45,16 +45,16 @@ import cPickle as pickle
 gc.enable()
 
 def crawl(mod):
-	repos = mod.get_repos()
+	repos = mod.get_repos(test)
 	i = 0
 	for repo in repos:
 		print str(i)+"/"+str(len(repos)),repo
 		if not last:
 			repo.last_crawl = None
 		last_crawl, rels = mod.crawl_repo(repo)
-		total_new = downstream.add_releases(repo, rels)
+		total_new = downstream.add_releases(repo, rels, test)
 		print "\t"+str(total_new),"new releases"
-		downstream.set_last_crawl(repo, last_crawl)
+		downstream.set_last_crawl(repo, last_crawl, test)
 		i += 1
 
 if "--ignore-last" in sys.argv:
@@ -62,6 +62,12 @@ if "--ignore-last" in sys.argv:
 	last = False
 else:
 	last = True
+
+if "--test" in sys.argv:
+	sys.argv.remove("--test")
+	test = True
+else:
+	test = False
 
 downstream_targets = []
 upstream_targets = []

@@ -2,15 +2,17 @@
 from . import db, get_cursor, close_cursor
 import random
 
-def package(p):
+def package(p, test=False):
 	cur = get_cursor()
 	i = None
 	cur.execute("select id from packages where name=%s", (p,))
 	row = cur.fetchone()
-	if row==None:
+	if row==None and not test:
 		cur.execute("insert into packages(name) values (%s);",(p,))
 		cur.execute("select lastval();");
 		i = cur.fetchone()[0]
+	elif row==None:
+		print "new package:",p
 	else:
 		i = row[0]
 	

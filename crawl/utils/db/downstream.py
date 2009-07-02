@@ -36,23 +36,30 @@ def add_branch(repo, branch):
 		cur.execute("INSERT INTO branches (repo_id, branch, start) VALUES (%s, %s, NOW())", (repo.id, branch))
 	close_cursor(cur)
 
-def add_releases(repo, rels):
+def add_releases(repo, rels, test=False):
 	pkgs = {}
 	for rel in rels:
 		if rel.package in pkgs:
 			rel.package = pkgs[rel.package]
 		else:
-			rel.package = core.package(rel.package)
+			rel.package = core.package(rel.package, test)
 	
 	total_new = 0
 	cur = get_cursor()
-	for rel in rels:
-		try:
-			cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
-			total_new += 1
-		except db.IntegrityError:
-			pass
-		commit()
+	if test:
+		for rel in rels:
+			cur.execute("SELECT id FROM dreleases WHERE package_id = %s AND version = %s AND revision = %s AND repo_id = %s",(rel.package, rel.version, rel.revision, repo.id))
+			if cur.fetchone()==None:
+				print "new", rel
+				total_new += 1
+	else:
+		for rel in rels:
+			try:
+				cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
+				total_new += 1
+			except db.IntegrityError:
+				pass
+			commit()
 	close_cursor(cur)
 	return total_new
 
