@@ -42,7 +42,7 @@ class DataStats:
 		cur.execute("SELECT COUNT( DISTINCT package_id ) FROM ureleases")
 		self.upstream_count = cur.fetchone()[0]
 		
-		cur.execute("SELECT COUNT(*) FROM ( SELECT DISTINCT package_id, version, revision, repo_id FROM dreleases) t");
+		cur.execute("SELECT COUNT(*) FROM ( SELECT DISTINCT package_id, version, revision FROM releases) t");
 		self.release_count = cur.fetchone()[0]
 		con.close()
 		

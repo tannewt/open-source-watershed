@@ -123,7 +123,8 @@ PRIMARY KEY (id)
 cur.execute("""CREATE TABLE dreleases (
 repo_id INT NOT NULL REFERENCES repos(id),
 FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
-PRIMARY KEY (id)
+PRIMARY KEY (id),
+UNIQUE (package_id, version, revision, repo_id)
 ) INHERITS (releases)""")
 
 # 1110 ms -> ~10 ms
@@ -214,7 +215,7 @@ cur.execute("""CREATE TABLE cache (
 id SERIAL NOT NULL PRIMARY KEY,
 cached TIMESTAMP NOT NULL,
 k VARCHAR(255) NOT NULL UNIQUE,
-v BYTEA,
+v TEXT,
 status SMALLINT NOT NULL DEFAULT 1
 )""")
 
