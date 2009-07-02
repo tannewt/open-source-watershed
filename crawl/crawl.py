@@ -102,7 +102,7 @@ for d in downstream_targets:
 
 for u in upstream_targets:
 	try:
-		stats.append((u,UPSTREAM[u].crawl()))
+		stats.append((u,UPSTREAM[u].crawl(test)))
 	except:
 		print "error from upstream:",u
 		print traceback.format_exc()

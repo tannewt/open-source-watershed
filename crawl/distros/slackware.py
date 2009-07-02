@@ -13,7 +13,7 @@ HTTP_START_DIR="/"
 
 distro_id = downstream.distro("slackware", "", "A binary distribution by Patrick Volkerding.", "http://www.slackware.com")
 
-def get_repos():
+def get_repos(test):
 	files = helper.open_dir("ftp://"+MIRROR+"/"+FTP_START_DIR)
 	releases = []
 	for d,fn,date in files:
@@ -49,14 +49,14 @@ def get_repos():
 				repo.architecture = "x86_64"
 			repos.append(repo)
 			
-			downstream.repo(repo)
+			downstream.repo(repo,test)
 			
 			if branch == "future":
-				downstream.add_branch(repo, "future")
+				downstream.add_branch(repo, "future", test)
 			elif branch == "current":
-				downstream.add_branch(repo, "current")
+				downstream.add_branch(repo, "current", test)
 			else:
-				downstream.add_branch(repo, "past")
+				downstream.add_branch(repo, "past", test)
 	
 	return repos
 	

@@ -10,7 +10,7 @@ CACHE_FN = "cache.pickle"
 
 # git clone git://github.com/funtoo/portage.git
 
-def get_repos():
+def get_repos(test):
 	repos = []
 	print "funtoo repos"
 	f = open(STORAGE+"profiles/arch.list")
@@ -24,9 +24,8 @@ def get_repos():
 			repo.codename = c
 			repo.component = ""
 			repo.architecture = a
-			print repo
-			downstream.repo(repo)
-			downstream.add_branch(repo, b)
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, b, test)
 			repos.append(repo)
 	return repos
 

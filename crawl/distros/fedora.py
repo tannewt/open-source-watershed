@@ -19,7 +19,7 @@ REPO_NAMESPACE = "{http://linux.duke.edu/metadata/repo}"
 ARCHES = ["i386", "ppc", "ppc64", "x86_64"]
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
-def get_repos():
+def get_repos(test):
 	#list dirs in /releases
 	repos = []
 	files = map(lambda s: s[1][:-1],helper.open_dir("http://"+MIRROR+"/"+HTTP_START_DIR+"/releases"))
@@ -41,8 +41,8 @@ def get_repos():
 			r.component = "Everything"
 			r.architecture = arch
 			r.development = False
-			downstream.repo(r)
-			downstream.add_branch(r, branch)
+			downstream.repo(r, test)
+			downstream.add_branch(r, branch, test)
 			repos.append(r)
 			
 			r = Repo()
@@ -51,8 +51,8 @@ def get_repos():
 			r.component = "Testing"
 			r.architecture = arch
 			r.development = False
-			downstream.repo(r)
-			downstream.add_branch(r, branch)
+			downstream.repo(r, test)
+			downstream.add_branch(r, branch, test)
 			repos.append(r)
 	
 	for arch in ARCHES:
@@ -62,8 +62,8 @@ def get_repos():
 		r.component = "Everything"
 		r.architecture = arch
 		r.development = True
-		downstream.repo(r)
-		downstream.add_branch(r, "future")
+		downstream.repo(r, test)
+		downstream.add_branch(r, "future", test)
 		repos.append(r)
 
 	return repos

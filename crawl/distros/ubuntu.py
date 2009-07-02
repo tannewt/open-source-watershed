@@ -44,7 +44,7 @@ FTP_START_DIR = "pub/ubuntu/dists/"
 
 HTTP_START_DIR = "ubuntu/dists/"
 
-def get_repos():
+def get_repos(test):
 	repos = []
 	# find the codenames
 	u = "".join(("http://",MIRROR,"/",HTTP_START_DIR))
@@ -76,8 +76,8 @@ def get_repos():
 					r.codename = codename
 					r.component = component
 					r.architecture = arch
-					downstream.repo(r)
-					downstream.add_branch(r, branch)
+					downstream.repo(r, test)
+					downstream.add_branch(r, branch, test)
 					repos.append(r)
 
 	return repos

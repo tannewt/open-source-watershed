@@ -20,7 +20,7 @@ FUTURE = "5"
 ARCHES = ["amd64", "x86"]
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
-def get_repos():
+def get_repos(test):
 	repos = []
 	for v in VERSIONS:
 		for a in ARCHES:
@@ -34,8 +34,8 @@ def get_repos():
 			repo.codename = v
 			repo.component = ""
 			repo.architecture = a
-			downstream.repo(repo)
-			downstream.add_branch(repo, branch)
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, branch, test)
 			repos.append(repo)
 	return repos
 

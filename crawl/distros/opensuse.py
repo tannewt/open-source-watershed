@@ -17,7 +17,7 @@ def to_num(s):
 		return s.split("-")[0]
 	return s
 
-def get_repos():
+def get_repos(test):
 	dists = helper.open_dir("http://"+MIRROR+"/distribution/")
 	repos = []
 	dists = filter(lambda x: x[0] and not x[1].startswith("openSUSE"), dists)
@@ -34,14 +34,14 @@ def get_repos():
 				repo.codename = codename
 				repo.component = c
 				repo.architecture = arch
-				downstream.repo(repo)
+				downstream.repo(repo, test)
 				repos.append(repo)
 				if to_num(codename)==CURRENT:
-					downstream.add_branch(repo, "current")
+					downstream.add_branch(repo, "current", test)
 				elif to_num(codename)==FUTURE:
-					downstream.add_branch(repo, "future")
+					downstream.add_branch(repo, "future", test)
 				else:
-					downstream.add_branch(repo, "past")
+					downstream.add_branch(repo, "past", test)
 	for c in COMPONENTS:
 		arches = helper.open_dir("http://"+MIRROR+"/factory/repo/"+c+"/suse/")
 		for ad,an,at in filter(lambda x: x[0] and x[1]!="repodata/" and x[1]!="setup/",arches):
@@ -51,9 +51,9 @@ def get_repos():
 			repo.codename = "factory"
 			repo.component = c
 			repo.architecture = arch
-			downstream.repo(repo)
+			downstream.repo(repo, test)
 			repos.append(repo)
-			downstream.add_branch(repo, "experimental")
+			downstream.add_branch(repo, "experimental", test)
 	return repos
 		
 	

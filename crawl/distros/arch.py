@@ -16,7 +16,7 @@ ARCHES = ["i686","x86_64"]
 distro_id = downstream.distro("arch", "", "A rolling release binary distribution.", "http://www.archlinx.org")
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
-def get_repos():
+def get_repos(test):
 	repos = []
 	for comp in ["core","extra"]:
 		for a in ARCHES:
@@ -26,8 +26,8 @@ def get_repos():
 			repo.architecture = a
 			repo.codename = ""
 			repos.append(repo)
-			downstream.repo(repo)
-			downstream.add_branch(repo, "current")
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, "current", test)
 	
 	for comp in ["testing"]:
 		for a in ARCHES:
@@ -37,8 +37,8 @@ def get_repos():
 			repo.architecture = a
 			repo.codename = ""
 			repos.append(repo)
-			downstream.repo(repo)
-			downstream.add_branch(repo, "future")
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, "future", test)
 	
 	for comp in ["community"]:
 		for a in ARCHES:
@@ -48,8 +48,8 @@ def get_repos():
 			repo.architecture = a
 			repo.codename = ""
 			repos.append(repo)
-			downstream.repo(repo)
-			downstream.add_branch(repo, "experimental")
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, "experimental", test)
 	
 	return repos
 

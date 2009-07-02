@@ -31,28 +31,28 @@ MONTHS = {"Jan":"Jan",
 					"Dec":"Dec"}
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
-def get_repos():
+def get_repos(test):
 	repos = []
 	f = open(STORAGE+"profiles/arch.list")
 	arches = map(lambda s: s.strip(),f.readlines())
 	f.close()
-	for c,b in [("","current"),("~","future")]:
+	for c,b in [("stable","current"),("unstable","future")]:
 		for a in arches:
 			repo = Repo()
 			repo.distro_id = distro_id
 			repo.codename = c
 			repo.component = ""
 			repo.architecture = a
-			downstream.repo(repo)
-			downstream.add_branch(repo, b)
+			downstream.repo(repo, test)
+			downstream.add_branch(repo, b, test)
 			repos.append(repo)
 	repo = Repo()
 	repo.distro_id = distro_id
 	repo.codename = ""
 	repo.component = "unknown"
 	repo.architecture = "unknown"
-	downstream.repo(repo)
-	downstream.add_branch(repo, "past")
+	downstream.repo(repo, test)
+	downstream.add_branch(repo, "past", test)
 	repos.append(repo)
 	return repos
 

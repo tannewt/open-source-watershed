@@ -37,7 +37,7 @@ MIRROR = "debian.osuosl.org"
 
 START_DIR = "debian/dists/"
 
-def get_repos():
+def get_repos(test):
 	repos = []
 	codename = None
 	architectures = None
@@ -83,8 +83,8 @@ def get_repos():
 						repo.codename = codename
 						repo.component = comp
 						repo.architecture = arch
-						downstream.repo(repo)
-						downstream.add_branch(repo, BRANCHES[codename])
+						downstream.repo(repo, test)
+						downstream.add_branch(repo, BRANCHES[codename], test)
 						repos.append(repo)
 	
 	#print distros

@@ -15,7 +15,7 @@ def distro(name, color=None, description=None, website=None):
 	close_cursor(cur)
 	return i
 
-def repo(repo):
+def repo(repo, test):
 	cur = get_cursor()
 	cur.execute("SELECT id, last_crawl FROM repos WHERE distro_id = %s AND codename = %s AND component = %s AND architecture = %s", (repo.distro_id, repo.codename, repo.component, repo.architecture))
 	row = cur.fetchone()
@@ -23,17 +23,23 @@ def repo(repo):
 		cur.execute("INSERT INTO repos (distro_id, codename, component, architecture) VALUES (%s, %s, %s, %s)", (repo.distro_id, repo.codename, repo.component, repo.architecture))
 		cur.execute("SELECT lastval()")
 		repo.id = cur.fetchone()[0]
+		if test:
+			print "new repo, id:",repo.id,"-",repo
 	else:
 		repo.id, repo.last_crawl = row
 	close_cursor(cur)
 
-def add_branch(repo, branch):
+def add_branch(repo, branch, test):
 	cur = get_cursor()
 	cur.execute("SELECT id FROM branches WHERE repo_id = %s AND branch = %s", (repo.id, branch))
 	row = cur.fetchone()
 	
 	if row == None:
 		cur.execute("INSERT INTO branches (repo_id, branch, start) VALUES (%s, %s, NOW())", (repo.id, branch))
+		cur.execute("SELECT lastval()")
+		i = cur.fetchone()[0]
+		if test:
+			print "new branch, id:", i, "-", branch
 	close_cursor(cur)
 
 def add_releases(repo, rels, test=False):
