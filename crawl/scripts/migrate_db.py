@@ -92,6 +92,9 @@ new_cur2 = ncon.cursor()
 print "migrate downstream releases"
 new_cur.execute("SELECT id, distro_id, codename, component, architecture FROM repos")
 for row in new_cur:
+	row = list(row)
+	if row[2]==None:
+		row[2] = '0'
 	old_cur.execute("""SELECT package_id, version, revision, MIN(released) FROM releases, repos WHERE repo_id = repos.id AND repos.distro_id = %s AND repos.codename =  %s AND repos.component = %s AND repos.architecture = %s GROUP BY package_id, version, revision""", row[1:])
 	for row2 in old_cur:
 		new_cur2.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)", list(row2)+[row[0]])
