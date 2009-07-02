@@ -109,6 +109,7 @@ for row in rows:
 			row2[2] = '0'
 		new_cur2.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)", row2+[row[0]])
 	ncon.commit()
+	f.seek(0)
 	subprocess.call(["psql",DATABASE], stdin=f)
 	i += 1
 
