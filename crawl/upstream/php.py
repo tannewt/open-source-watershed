@@ -111,13 +111,13 @@ def get_releases(last_crawl=None):
 				pkgs.append(rel)
 	return pkgs
 
-def crawl():
+def crawl(test):
 	print "php"
 	last_crawl = upstream.last_crawl(source_id)
 	rels = get_releases(last_crawl)
-	count, max_date = upstream.add_releases(source_id, rels)
+	count, max_date = upstream.add_releases(source_id, rels, test)
 	print "\t"+str(count),"new releases"
-	upstream.set_last_crawl(source_id, max_date)
+	upstream.set_last_crawl(source_id, max_date, test)
 
 if __name__=="__main__":
 	pkgs = get_releases()

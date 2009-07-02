@@ -68,11 +68,10 @@ def crawl(test=False):
 		rels = get_releases(*target[2:])
 		all_rels += rels
 		
-		if not test:
-			count, max_date = sf_module.add_releases(source_id, target[0], rels)
-			total_new += count
-			print "\t"+str(count),"new releases"
-			sf_module.set_last_crawl(target[0], max_date)
+		count, max_date = sf_module.add_releases(source_id, target[0], rels, test)
+		total_new += count
+		print "\t"+str(count),"new releases"
+		sf_module.set_last_crawl(target[0], max_date, test)
 	return (total_new, all_rels)
 
 if __name__=="__main__":

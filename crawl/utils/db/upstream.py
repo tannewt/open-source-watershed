@@ -18,7 +18,7 @@ def source(name, description, user_id=1):
 	
 	return i
 
-def add_releases(source_id, rels):
+def add_releases(source_id, rels, test):
 	pkgs = {}
 	max_date = None
 	for rel in rels:
@@ -31,13 +31,20 @@ def add_releases(source_id, rels):
 	
 	total_new = 0
 	cur = get_cursor()
-	for rel in rels:
-		try:
-			cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
-			total_new += 1
-		except db.IntegrityError:
-			pass
-		commit()
+	if test:
+		for rel in rels:
+			cur.execute("SELECT id FROM ureleases WHERE package_id = %s AND version = %s AND revision = %s AND usource_id = %s",(rel.package, rel.version, rel.revision, source_id))
+			if cur.fetchone()==None:
+				print "new", rel
+				total_new += 1
+	else:
+		for rel in rels:
+			try:
+				cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
+				total_new += 1
+			except db.IntegrityError:
+				pass
+			commit()
 	close_cursor(cur)
 	return (total_new, max_date)
 	
@@ -48,7 +55,9 @@ def last_crawl(source_id):
 	close_cursor(cur)
 	return last_crawl
 
-def set_last_crawl(source_id, last_crawl):
+def set_last_crawl(source_id, last_crawl, test):
+	if test:
+		return
 	cur = get_cursor()
 	cur.execute("UPDATE usources SET last_crawl = %s WHERE id = %s",(last_crawl, source_id))
 	close_cursor(cur)

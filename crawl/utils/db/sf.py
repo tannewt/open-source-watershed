@@ -26,7 +26,7 @@ def get_sf_targets():
 	close_cursor(cur)
 	return result
 
-def add_releases(source_id, target_id, rels):
+def add_releases(source_id, target_id, rels, test):
 	pkgs = {}
 	for rel in rels:
 		if rel.package in pkgs:
@@ -37,19 +37,26 @@ def add_releases(source_id, target_id, rels):
 	total_new = 0
 	cur = get_cursor()
 	max_date = None
-	for rel in rels:
-		if max_date==None or max_date < rel.released:
-			max_date = rel.released
-		
-		try:
-			cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
-			cur.execute("SELECT lastval()")
-			i = cur.fetchone()[0]
-			cur.execute("INSERT INTO sf_releases (sf_id, urelease_id) VALUES (%s, %s)", (target_id, i))
-			total_new += 1
-		except db.IntegrityError:
-			pass
-		commit()
+	if test:
+		for rel in rels:
+			cur.execute("SELECT id FROM ureleases WHERE package_id = %s AND version = %s AND revision = %s AND usource_id = %s",(rel.package, rel.version, rel.revision, source_id))
+			if cur.fetchone()==None:
+				print "new", rel
+				total_new += 1
+	else:
+		for rel in rels:
+			if max_date==None or max_date < rel.released:
+				max_date = rel.released
+			
+			try:
+				cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
+				cur.execute("SELECT lastval()")
+				i = cur.fetchone()[0]
+				cur.execute("INSERT INTO sf_releases (sf_id, urelease_id) VALUES (%s, %s)", (target_id, i))
+				total_new += 1
+			except db.IntegrityError:
+				pass
+			commit()
 	close_cursor(cur)
 	return (total_new, max_date)
 
@@ -60,7 +67,9 @@ def last_crawl(target_id):
 	close_cursor(cur)
 	return last_crawl
 
-def set_last_crawl(target_id, last_crawl):
+def set_last_crawl(target_id, last_crawl, test):
+	if test:
+		return
 	cur = get_cursor()
 	cur.execute("UPDATE sf SET last_crawl = %s WHERE id = %s",(last_crawl, target_id))
 	close_cursor(cur)
