@@ -40,8 +40,8 @@ def get_repos(test):
 		for a in arches:
 			repo = Repo()
 			repo.distro_id = distro_id
-			repo.codename = c
-			repo.component = ""
+			repo.component = c
+			repo.codename = ""
 			repo.architecture = a
 			downstream.repo(repo, test)
 			downstream.add_branch(repo, b, test)
