@@ -69,7 +69,9 @@ def add_releases(repo, rels, test=False):
 	close_cursor(cur)
 	return total_new
 
-def set_last_crawl(repo, last_crawl):
+def set_last_crawl(repo, last_crawl, test):
+	if test:
+		return
 	cur = get_cursor()
 	cur.execute("UPDATE repos SET last_crawl = %s WHERE id = %s",(last_crawl, repo.id))
 	close_cursor(cur)
