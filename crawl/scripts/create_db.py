@@ -226,6 +226,12 @@ distro_id INT REFERENCES distros(id),
 cache_id INT REFERENCES cache(id)
 )""")
 
+cur.execute("GRANT ALL PRIVILEGES ON DATABASE watershed3 TO watershed;")
+cur.execute("GRANT SELECT ON branches, cache, cache_deps, distros, dreleases, explore, explore_releases, explore_review, group_packages, groups, link_reviews, links, package_info, package_notes, packages, releases, repos, reviews, sf, sf_releases, sf_reviews, ureleases, users, usources TO watershed_ro;")
+cur.execute("GRANT INSERT, UPDATE, DELETE ON cache, cache_deps TO watershed_ro;")
+cur.execute("GRANT USAGE ON SCHEMA public TO watershed_ro;")
+cur.execute("GRANT SELECT, UPDATE ON cache_id_seq, cache_deps_id_seq TO watershed_ro;")
+
 con.commit()
 con.close()
 
