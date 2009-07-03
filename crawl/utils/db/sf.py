@@ -19,7 +19,7 @@ def get_sf_target(name):
 
 def get_sf_targets():
 	cur = get_cursor()
-	cur.execute("SELECT name, project_num, packages, bad_tokens, bad_versions, last_crawl FROM sf")
+	cur.execute("SELECT id, name, project_num, packages, bad_tokens, bad_versions, last_crawl FROM sf")
 	result = []
 	for row in cur:
 	 result.append(row)
