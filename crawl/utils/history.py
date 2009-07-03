@@ -196,7 +196,7 @@ class DistroHistory:
 			return Timeline()
 		
 		releases = core.get_downstream_releases(self.id, package.aliases[self.id], self.branch, revisions)
-		print "get_downstream_releases",releases
+		
 		downstream = Timeline()
 		if VERBOSE:
 			print "downstream"
