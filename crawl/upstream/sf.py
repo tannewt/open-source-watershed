@@ -60,7 +60,7 @@ def get_releases(project_num, packages, bad_tokens, bad_versions, last_crawl):
 	return rels
 
 def crawl(test=False):
-	sources = sf_module.get_explore_targets()
+	sources = sf_module.get_sf_targets()
 	all_rels = []
 	total_new = 0
 	for target in sources:

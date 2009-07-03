@@ -26,7 +26,7 @@ def get_explore_targets():
 	close_cursor(cur)
 	return result
 
-def add_releases(source_id, target_id, rels):
+def add_releases(source_id, target_id, rels, test):
 	pkgs = {}
 	for rel in rels:
 		if rel.package in pkgs:
