@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import MySQLdb as mysql
 import sys
 import os
@@ -7,8 +8,6 @@ sys.path.append(os.getcwd())
 from utils import helper
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
-
-import age
 
 try:
 	import gtk
@@ -256,7 +255,6 @@ class AgeView:
 
 if __name__=="__main__":
   if "--verbose" in sys.argv:
-    age.VERBOSE_RESULT = True
     sys.argv.remove("--verbose")
 
   pkgs = []
