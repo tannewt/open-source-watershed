@@ -97,7 +97,7 @@ class Text:
 		context.move_to(x, y)
 		context.rotate(self.rotation)
 		context.show_text(text)
-		context.rotate(-1*rotation)
+		context.rotate(-1*self.rotation)
 	
 	def rotate(self, deg, x, y):
 		self.rotation = deg
