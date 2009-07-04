@@ -11,6 +11,7 @@ import distros.funtoo
 
 import gc
 import traceback
+import time
 
 import upstream.subversion
 import upstream.sf
@@ -49,12 +50,13 @@ def crawl(mod):
 	i = 0
 	for repo in repos:
 		print str(i)+"/"+str(len(repos)),repo
+		s = time.clock()
 		if not last:
 			repo.last_crawl = None
 		last_crawl, rels = mod.crawl_repo(repo)
 		total_new = downstream.add_releases(repo, rels, test)
-		print "\t"+str(total_new),"new releases"
 		downstream.set_last_crawl(repo, last_crawl, test)
+		print "\t"+str(total_new),"new releases","\t\t",time.clock()-s,"secs"
 		i += 1
 
 if "--ignore-last" in sys.argv:
@@ -91,25 +93,32 @@ else:
 	upstream_targets = UPSTREAM.keys()
 	downstream_targets = DISTROS.keys()
 
+total_start = time.clock()
 stats = []
 for d in downstream_targets:
+	s = time.clock()
 	try:
 		stats.append((d,crawl(DISTROS[d])))
 	except:
 		print "error from distro:",d
 		print traceback.format_exc()
 	gc.collect()
+	print time.clock() - s, "distro seconds"
 
 for u in upstream_targets:
+	s = time.clock()
 	try:
 		stats.append((u,UPSTREAM[u].crawl(test)))
 	except:
 		print "error from upstream:",u
 		print traceback.format_exc()
 	gc.collect()
+	print time.clock() - s, "upstream seconds"
 
 cache = Cache()
 cache.evict([(None, None)])
+
+print time.clock()-total_start,"seconds total"
 
 save_to = open("crawl_stats/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)
