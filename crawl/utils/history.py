@@ -72,7 +72,7 @@ class PackageHistory:
 		self.ish = False
 		#print "query upstream"
 		if not force_approx:
-			q = "SELECT ureleases.version, MIN(ureleases.released) FROM ureleases, packages WHERE ureleases.package_id = packages.id AND ("+ " OR ".join(("packages.name=%s",)*len(aliases)) + ") AND ureleases.version!='9999' GROUP BY ureleases.version ORDER BY MIN(ureleases.released), ureleases.version"
+			q = "SELECT version, MIN(released) FROM ureleases WHERE ("+ " OR ".join(("package_id=%s",)*len(aliases)) + ") GROUP BY version ORDER BY MIN(released), version"
 			cur.execute(q,aliases)
 		if cur.rowcount == 0 or force_approx:
 			if VERBOSE:
