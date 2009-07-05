@@ -10,7 +10,7 @@ def parse_packages(parse_version, filename, url, repo):
 	last_modified = helper.open_url(url, filename, repo.last_crawl)
 
 	if last_modified==None:
-		return (last_modified, rels)
+		return (repo.last_crawl, rels)
 	
 	extension = filename.rsplit(".",1)[1]
 	f = None

@@ -137,4 +137,8 @@ def crawl_repo(repo):
 			rels.append(rel)
 		del i
 		del primary_tree
+	
+	if last_crawl==None:
+		last_crawl = repo.last_crawl
+	
 	return (last_crawl, rels)
