@@ -72,6 +72,8 @@ def add_releases(repo, rels, test=False):
 def set_last_crawl(repo, last_crawl, test):
 	if test:
 		return
+	if last_crawl==None:
+		print "WARNING! Setting last_crawl to None."
 	cur = get_cursor()
 	cur.execute("UPDATE repos SET last_crawl = %s WHERE id = %s",(last_crawl, repo.id))
 	close_cursor(cur)
