@@ -48,7 +48,7 @@ def crawl_repo(repo):
 	t = helper.open_url(url,fn+".bz2", repo.last_crawl)
 	
 	if t==None:
-		return []
+		return (repo.last_crawl, [])
 	
 	#print "extract"
 	try:
