@@ -134,9 +134,14 @@ class Polyline:
 		for x,y in points[1:]:
 			context.line_to(x,y)
 		c = self.props.stroke_color[1:]
-		r = int(c[:4],16)
-		g = int(c[4:8],16)
-		b = int(c[8:],16)
+		if len(c) == 12:
+			r = int(c[:4],16)
+			g = int(c[4:8],16)
+			b = int(c[8:],16)
+		elif len(c) == 6:
+			r = int(c[:2],16)
+			g = int(c[2:4],16)
+			b = int(c[4:],16)
 		context.set_source_rgb(*map(lambda x: float(x)/16**4,(r,g,b)))
 		context.stroke()
 
