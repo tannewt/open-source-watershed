@@ -78,7 +78,7 @@ def crawl_repo(repo):
 			continue
 		pkg_lines += lines
 	
-	last_crawl = None
+	last_crawl = repo.last_crawl
 	for d,name,time in pkg_lines:
 		if name=="MD5SUMS":
 			continue

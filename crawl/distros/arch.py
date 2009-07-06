@@ -116,4 +116,6 @@ def crawl_repo(repo):
 			rel.revision = revision
 			rel.released = released
 			rels.append(rel)
+	if t == None:
+		t = repo.last_crawl
 	return (t, rels)
