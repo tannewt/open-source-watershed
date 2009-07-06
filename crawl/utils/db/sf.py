@@ -26,7 +26,7 @@ def get_sf_targets():
 	close_cursor(cur)
 	return result
 
-def add_releases(source_id, target_id, rels, test):
+def add_releases(source_id, target_id, rels, test, cache=None):
 	pkgs = {}
 	for rel in rels:
 		if rel.package in pkgs:
@@ -53,6 +53,8 @@ def add_releases(source_id, target_id, rels, test):
 				cur.execute("SELECT lastval()")
 				i = cur.fetchone()[0]
 				cur.execute("INSERT INTO sf_releases (sf_id, urelease_id) VALUES (%s, %s)", (target_id, i))
+				if cache!=None:
+					cache.evict([(rel.package, None)])
 				total_new += 1
 			except db.IntegrityError:
 				pass

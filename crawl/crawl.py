@@ -46,6 +46,7 @@ import cPickle as pickle
 gc.enable()
 
 def crawl(mod):
+	cache = Cache()
 	repos = mod.get_repos(test)
 	i = 0
 	for repo in repos:
@@ -54,7 +55,9 @@ def crawl(mod):
 		if not last:
 			repo.last_crawl = None
 		last_crawl, rels = mod.crawl_repo(repo)
-		total_new = downstream.add_releases(repo, rels, test)
+		total_new = downstream.add_releases(repo, rels, test, cache)
+		if total_new > 0:
+			cache.evict([(None, repo.distro_id)])
 		downstream.set_last_crawl(repo, last_crawl, test)
 		print "\t"+str(total_new),"new releases","\t\t",time.clock()-s,"secs"
 		i += 1

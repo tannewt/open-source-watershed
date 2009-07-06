@@ -42,7 +42,7 @@ def add_branch(repo, branch, test):
 			print "new branch, id:", i, "-", branch
 	close_cursor(cur)
 
-def add_releases(repo, rels, test=False):
+def add_releases(repo, rels, test=False, cache=None):
 	pkgs = {}
 	for rel in rels:
 		if rel.package in pkgs:
@@ -62,6 +62,8 @@ def add_releases(repo, rels, test=False):
 		for rel in rels:
 			try:
 				cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
+				if cache!=None:
+					cache.evict([(rel.package, repo.distro_id)])
 				total_new += 1
 			except db.IntegrityError:
 				pass

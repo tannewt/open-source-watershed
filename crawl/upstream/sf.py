@@ -9,6 +9,7 @@ import re
 import datetime
 from utils.db import sf as sf_module
 from utils.db import upstream
+from utils.cache import Cache
 
 NAME="sourceforge"
 
@@ -60,6 +61,7 @@ def get_releases(project_num, packages, bad_tokens, bad_versions, last_crawl):
 	return rels
 
 def crawl(test=False):
+	cache = Cache()
 	sources = sf_module.get_sf_targets()
 	all_rels = []
 	total_new = 0
@@ -68,7 +70,7 @@ def crawl(test=False):
 		rels = get_releases(*target[2:])
 		all_rels += rels
 		
-		count, max_date = sf_module.add_releases(source_id, target[0], rels, test)
+		count, max_date = sf_module.add_releases(source_id, target[0], rels, test, cache)
 		total_new += count
 		print "\t"+str(count),"new releases"
 		sf_module.set_last_crawl(target[0], max_date, test)

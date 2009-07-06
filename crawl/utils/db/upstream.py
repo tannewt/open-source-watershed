@@ -18,7 +18,7 @@ def source(name, description, user_id=1):
 	
 	return i
 
-def add_releases(source_id, rels, test):
+def add_releases(source_id, rels, test, cache=None):
 	pkgs = {}
 	max_date = None
 	for rel in rels:
@@ -41,6 +41,8 @@ def add_releases(source_id, rels, test):
 		for rel in rels:
 			try:
 				cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
+				if cache != None:
+					cache.evict([(rel.package, None)])
 				total_new += 1
 			except db.IntegrityError:
 				pass

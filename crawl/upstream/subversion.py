@@ -5,6 +5,7 @@ import time
 import datetime
 from utils.db import upstream
 from utils.types import UpstreamRelease
+from utils.cache import Cache
 
 NAME = "subversion"
 source_id = upstream.source("subversion", "custom subversion crawler")
@@ -105,9 +106,10 @@ def get_releases(last_crawl=None):
 
 def crawl(test):
 	print "subversion"
+	cache = Cache()
 	last_crawl = upstream.last_crawl(source_id)
 	rels = get_releases(last_crawl)
-	count, max_date = upstream.add_releases(source_id, rels, test)
+	count, max_date = upstream.add_releases(source_id, rels, test, cache)
 	print "\t"+str(count),"new releases"
 	upstream.set_last_crawl(source_id, max_date, test)
 
