@@ -26,10 +26,10 @@ CODENAMES = [
 	CN_EXPERIMENTAL]
 
 BRANCHES = {
-	CN_ETCH : "past",
+	CN_ETCH : "lts",
 	CN_LENNY : "current",
 	CN_SARGE : "past",
-	CN_SID : "lts",
+	CN_SID : "experimental",
 	CN_SQUEEZE : "future",
 	CN_EXPERIMENTAL : "experimental"}
 
