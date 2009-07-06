@@ -145,53 +145,68 @@ class DistroHistory:
 			result.append((self._packages[p][1].last(date),self._packages[p][2][date]))
 		return result
 	
+	def get_lag_timeline(self):
+		timeline = ConnectedTimeline(default=timedelta())
+		count = StepTimeline()
+		for package in self._packages:
+			packagehistory, downstream = self._packages[package]
+			upstream = packagehistory.timeline
+			if len(downstream)>0:
+				age = self._compute_package_age(upstream, downstream)
+			else:
+				age = ConnectedTimeline()
+			timeline = timeline + age
+			if len(age.keys())>0:
+				count = count + StepTimeline([(age.keys()[0],1)])
+		
+		timeline = timeline / count
+		return timeline
+	
+	def get_obsoletion_timeline(self):
+		return self._get_obsoletion_timeline()[1]
+		
+	def get_obsoletion_count_timeline(self):
+		return self._get_obsoletion_timeline()[0]
+	
+	def _get_obsoletion_timeline(self):
+		obs_timeline = StepTimeline(default=0.0)
+		bin_obs_timeline = StepTimeline(default=0.0)
+		fcount = StepTimeline()
+		for package in self._packages:
+			packagehistory, downstream = self._packages[package]
+			upstream = packagehistory.timeline
+			if len(downstream)>0:
+				obs = self._compute_package_obsoletion(upstream, downstream)
+				bin_obs = StepTimeline()
+				for date in obs:
+					if obs[date] > 0:
+						bin_obs[date] = 1.0
+					else:
+						bin_obs[date] = 0.0
+			else:
+				obs = StepTimeline()
+				bin_obs = StepTimeline()
+			obs_timeline = obs_timeline + obs
+			bin_obs_timeline = bin_obs_timeline + bin_obs
+
+			if len(obs.keys())>0:
+				fcount = fcount + StepTimeline([(obs.keys()[0],1.0)])
+		
+		obs_timeline = obs_timeline / fcount
+		bin_obs_timeline = bin_obs_timeline / fcount
+		return (obs_timeline, bin_obs_timeline)
+	
 	def get_pkg(self, name):
 		return self._packages[name][1]
 	
 	def add_pkg(self, package):
 		upstream = package.timeline
 		downstream = self.get_downstream(package)
-		if len(downstream)>0:
-			age = self._compute_package_age(upstream, downstream)
-			obs = self._compute_package_obsoletion(upstream, downstream)
-			bin_obs = StepTimeline()
-			for date in obs:
-				if obs[date] > 0:
-					bin_obs[date] = 1.0
-				else:
-					bin_obs[date] = 0.0
-		else:
-			age = ConnectedTimeline()
-			obs = StepTimeline()
-			bin_obs = StepTimeline()
-		self._packages[package.name] = (package,downstream,age,obs)
+	
+		self._packages[package.name] = (package, downstream)
 		self._pkg_order.append(package.name)
-		#print self.timeline
-		#print age
-		self._timeline = self._timeline + age
-		self._obs_timeline = self._obs_timeline + obs
-		self._bin_obs_timeline = self._bin_obs_timeline + bin_obs
-		#print "result",self.timeline
-		#print
-		ms = timedelta(microseconds=1)
-		for date in downstream:
-			d = date + ms
-			note = package.name+": "+downstream[date]
-			if self.notes[d]!=None:
-				self.notes[d] += "\n" + note
-			else:
-				self.notes[date+ms] = note
-		if len(age.keys())>0:
-			self.count = self.count + StepTimeline([(age.keys()[0],1)])
-			self.fcount = self.fcount + StepTimeline([(age.keys()[0],1.0)])
-		
-		self.timeline = self._timeline / self.count
-		self.obs_timeline = self._obs_timeline / self.fcount
-		self.bin_obs_timeline = self._bin_obs_timeline / self.fcount
 	
 	def get_downstream(self, package, revisions=False):
-		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
-		cur = con.cursor()
 		if self.id not in package.aliases:
 			return Timeline()
 		
@@ -368,5 +383,5 @@ if __name__=="__main__":
 	
 	if d != None:
 		d = DistroHistory(d,[p],b)
-		print d.timeline
-		print d.obs_timeline
+		print d.get_lag_timeline()
+		print d.get_obsoletion_timeline()
