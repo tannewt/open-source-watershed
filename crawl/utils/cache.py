@@ -166,15 +166,9 @@ class Cache:
 if __name__=="__main__":
 	c = Cache()
 	if len(sys.argv)==1:
-		c.put("/upstream/latest",["1", 2, 3],[(None, None)])
-		c.dump()
-		
-		v = c.get("/upstream/latest")
-		print v
-		c.dump()
-		
-		c.evict([(None, None)])
-		c.dump()
+		print sys.argv[0], "print"
+		print sys.argv[0], "clear"
+		print sys.argv[0], "evict <pkg> <distro>" 
 	elif sys.argv[1]=="print":
 		c.dump()
 	elif sys.argv[1]=="clear":
