@@ -138,11 +138,12 @@ class Polyline:
 			r = int(c[:4],16)
 			g = int(c[4:8],16)
 			b = int(c[8:],16)
+			context.set_source_rgb(*map(lambda x: float(x)/16**4,(r,g,b)))
 		elif len(c) == 6:
 			r = int(c[:2],16)
 			g = int(c[2:4],16)
 			b = int(c[4:],16)
-		context.set_source_rgb(*map(lambda x: float(x)/16**4,(r,g,b)))
+			context.set_source_rgb(*map(lambda x: float(x)/16**2,(r,g,b)))
 		context.stroke()
 
 class LineDash:

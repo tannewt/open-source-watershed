@@ -70,13 +70,11 @@ def get_lag_graph(downstream, upstream, fn="output.png", width=500, height=300, 
 
 	upstream = filter(lambda x: x != None, map(to_history, upstream))
 
-	graph = chart.LineChart(select=False,title=title)
+	graph = chart.LineChart(select=False,title=title, label_x='Date', label_y='Average Lag')
 	graph.show()
 
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
-		
-		c = distro.color
 		
 		dash = _get_dash(branch)
 		
@@ -116,13 +114,11 @@ def get_obsoletion_graph(downstream, upstream, fn="output.png", width=500, heigh
 
 	upstream = filter(lambda x: x != None, map(to_history, upstream))
 
-	graph = chart.LineChart(select=False,title=title)
+	graph = chart.LineChart(select=False,title=title, label_x='Date', label_y='Fraction Obsolete')
 	graph.show()
 
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
-		
-		c = distro.color
 		
 		dash = _get_dash(branch)
 		
@@ -163,13 +159,11 @@ def get_obsoletion_count_graph(downstream, upstream, fn="output.png", width=500,
 
 	upstream = filter(lambda x: x != None, map(to_history, upstream))
 
-	graph = chart.LineChart(select=False,title=title)
+	graph = chart.LineChart(select=False,title=title, label_x='Date', label_y='Average Number of New Releases')
 	graph.show()
 
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
-		
-		c = distro.color
 		
 		dash = _get_dash(branch)
 		
