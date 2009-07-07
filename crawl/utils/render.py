@@ -47,7 +47,7 @@ def _get_dash(branch):
 		dash = goocanvas.LineDash([10.0,10.0])
 	return dash
 
-def get_lag_graph(downstream, upstream, fn="output.png", prefix="./", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average package lag over time."):
+def get_lag_graph(downstream, upstream, fn="output.png", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average package lag over time."):
 	def to_history(name):
 		try:
 			return PackageHistory(name)
@@ -104,7 +104,7 @@ def get_lag_graph(downstream, upstream, fn="output.png", prefix="./", width=500,
 	
 	return prefix+fn
 
-def get_obsoletion_graph(downstream, upstream, fn="output.png", prefix="./", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average obsoletion over time."):
+def get_obsoletion_graph(downstream, upstream, fn="output.png", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average obsoletion over time."):
 	def to_history(name):
 		try:
 			return PackageHistory(name)
@@ -162,7 +162,7 @@ def get_obsoletion_graph(downstream, upstream, fn="output.png", prefix="./", wid
 	
 	return prefix+fn
 
-def get_obsoletion_count_graph(downstream, upstream, fn="output.png", prefix="./", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average number of newer releases over time."):
+def get_obsoletion_count_graph(downstream, upstream, fn="output.png", width=500, height=300, start_date=datetime(2008,10,17), timespan=None, title="Average number of newer releases over time."):
 	def to_history(name):
 		try:
 			return PackageHistory(name)

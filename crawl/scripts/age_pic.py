@@ -11,6 +11,7 @@ except:
 from datetime import timedelta, datetime
 
 from utils import chart
+from utils import render
 from utils.history import *
 from age_v_time import DISTRO_COLORS
 
@@ -88,104 +89,9 @@ if "--t" in sys.argv[1:]:
 print "upstream",upstream
 print "downstream",downstream
 
-def to_history(name):
-	try:
-		return PackageHistory(name)
-	except:
-		return None
-
-upstream = filter(lambda x: x != None, map(to_history, upstream))
-
-graph = chart.LineChart(select=False,title=title)
-graph.show()
-
-def to_str(t):
-  if t.days<7:
-    return str(t.days)+" days"
-  else:
-    return str(int(t.days/7))+" weeks"
-
-for d in downstream:
-	print d
-	if d.count(":")==2:
-		name, branch, codename = d.split(":")
-		key = "_".join((name,branch,codename))
-		distro = DistroHistory(name,upstream,branch)
-	elif d.count(":")==1:
-		name, branch = d.split(":")
-		key = "_".join((name,branch))
-		distro = DistroHistory(name,upstream,branch)
-	else:
-		name = d
-		distro = DistroHistory(name,upstream,branch)
-	
-	c = DISTRO_COLORS[name]
-	
-	dash = None
-	if branch=="future":
-		dash = goocanvas.LineDash([2.0,2.0])
-	elif branch=="experimental":
-		dash = goocanvas.LineDash([2.0,5.0])
-	elif branch=="lts":
-		dash = goocanvas.LineDash([10.0,2.0])
-	elif branch=="past":
-		dash = goocanvas.LineDash([10.0,10.0])
-	
-	def to_color(c):
-		h = hex(c)[2:]
-		return "0"*(4-len(h))+h
-	
-	if not COUNT:
-		notes = []
-		if NOTES:
-			notes = distro.notes
-		graph.add(key,distro.timeline,notes,"#"+"".join(map(to_color,c)),dash)
-	elif BINARY:
-		graph.add(key,distro.bin_obs_timeline,[],"#"+"".join(map(to_color,c)),dash)
-	else:
-		graph.add(key,distro.obs_timeline,[],"#"+"".join(map(to_color,c)),dash)
-
-
-now = datetime.now()
-#crawl_start = datetime(2008,10,17)
-d6m = timedelta(weeks=26)
-d1y = timedelta(weeks=54)
-crawl_start = now - d6m
-
-graph.set_x_bounds(crawl_start,now)
-if not COUNT:
-	graph.set_y_bounds(timedelta(),timedelta(weeks=36))
+if COUNT:
+	render.get_obsoletion_count_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)
 elif BINARY:
-	graph.set_y_bounds(0.0,1.0)
-
-class bounds:
-	width = WIDTH
-	height = HEIGHT
-	
-graph._resize(None, bounds)
-
-if NOTES:
-  graph.toggle_all_notes()
-
-graph._move_points(WIDTH,HEIGHT)
-
-if FILENAME.endswith(".png"):
-	img = cairo.ImageSurface(cairo.FORMAT_ARGB32,WIDTH,HEIGHT)
-	context = cairo.Context(img)
-	graph.render(context,None,1.0)
-	img.write_to_png(FILENAME)
-elif FILENAME.endswith(".svg"):
-	img = cairo.SVGSurface(FILENAME,WIDTH,HEIGHT)
-	context = cairo.Context(img)
-	graph.render(context,None,1.0)
-elif FILENAME.endswith(".eps"):
-	img = cairo.PSSurface(FILENAME,WIDTH,HEIGHT)
-	img.set_eps(True)
-	context = cairo.Context(img)
-	graph.render(context,None,1.0)
-elif FILENAME.endswith(".pdf"):
-	img = cairo.PDFSurface(FILENAME,WIDTH,HEIGHT)
-	context = cairo.Context(img)
-	graph.render(context,None,1.0)
+	render.get_obsoletion_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)
 else:
-	print "not rendered: unknown file extension"
+	render.get_lag_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)
