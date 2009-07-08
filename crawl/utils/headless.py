@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import cairo
+import math
 
 class Group:
 	def __init__(self):
@@ -77,22 +78,31 @@ class Text:
 		return self.parent
 	
 	def render(self, context):
-		x = self.props.x+self.parent.dx
-		y = self.props.y+self.parent.dy
+		if self.rotation==0:
+			x = self.props.x+self.parent.dx
+			y = self.props.y+self.parent.dy
+		else:
+			x = self.props.y+self.parent.dx
+			y = -1*self.props.x+self.parent.dy
 		text = self.args["text"]
 		
 		x_bearing, y_bearing, width, height, x_advance, y_advance = context.text_extents(text)
-		if self.props.anchor == gtk.ANCHOR_SW:
-			pass
-		elif self.props.anchor == gtk.ANCHOR_NORTH:
-			x -= (width)/2
-			y += height
-		elif self.props.anchor == gtk.ANCHOR_EAST:
-			x -= width
-			y += (height)/2
-		elif self.props.anchor == gtk.ANCHOR_SOUTH:
-			x -= width/2
-			y -= height
+		if self.rotation==0:
+			if self.props.anchor == gtk.ANCHOR_SW:
+				pass
+			elif self.props.anchor == gtk.ANCHOR_NORTH:
+				x -= (width)/2
+				y += height
+			elif self.props.anchor == gtk.ANCHOR_EAST:
+				x -= width
+				y += (height)/2
+			elif self.props.anchor == gtk.ANCHOR_SOUTH:
+				x -= width/2
+				y -= height
+		else:
+			if self.props.anchor == gtk.ANCHOR_SOUTH:
+				x -= height
+				y += width/2
 		
 		context.move_to(x, y)
 		context.rotate(self.rotation)
@@ -100,7 +110,7 @@ class Text:
 		context.rotate(-1*self.rotation)
 	
 	def rotate(self, deg, x, y):
-		self.rotation = deg
+		self.rotation = deg/360.0*2*math.pi
 
 class Rect:
 	pass
