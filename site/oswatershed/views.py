@@ -41,8 +41,15 @@ STAT_DISTROS = [("arch","current"),("arch","future"),
 								("ubuntu","current"),("ubuntu","future")
 ]
 def pkg(request, pkg):
-	ps = PackageStats(pkg)
 	s = DataStats()
+	try:
+		ps = PackageStats(pkg)
+	except UnknownPackageError:
+		return render_to_response('unknown_pkg.html',
+		{"stats": s,
+		 "name" : pkg
+		}
+	)
 	h = ps.hist.timeline[-10:]
 	history = []
 	for d in h:

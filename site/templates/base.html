@@ -16,7 +16,7 @@ function searchWatershed()
   </head>
   <body>
     <div class="center_column">
-      {% block bar %}<div id="bar">{{ stats.distro_count|intcomma }} Distributions &nbsp;&nbsp;&nbsp;  {{ stats.package_count|intcomma }} Total Packages &nbsp;&nbsp;&nbsp; {{ stats.release_count|intcomma }} Releases &nbsp;&nbsp;&nbsp; {{ stats.upstream_count|intcomma }} Upstream Packages<span class="search"><input id="search" type="text" name="search" onKeyUp="if (event.keyCode == 13) { searchWatershed(); }"/><a onClick="searchWatershed();">Search</a></span></div>{% endblock %}
+      {% block bar %}<div id="bar"><div class="stat">{{ stats.distro_count|intcomma }} Distributions</div><div class="stat">{{ stats.package_count|intcomma }} Total Packages</div><div class="stat">{{ stats.release_count|intcomma }} Releases</div><div class="stat">{{ stats.upstream_count|intcomma }} Upstream Packages</div><div class="search right"><input id="search" type="text" name="search" onKeyUp="if (event.keyCode == 13) { searchWatershed(); }"/><a onClick="searchWatershed();">Search</a></div></div>{% endblock %}
       {% block logo %}<div id="logo">
         <a href="/"><img src="http://static.oswatershed.org/logo.png" /></a>
       </div>

@@ -26,7 +26,8 @@ class PackageHistory:
 		cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
 		result = cur.fetchone()
 		if result == None:
-			raise Exception("unknown package")
+			con.close()
+			raise UnknownPackageError(name)
 		else:
 			sid = result[0]
 		
@@ -122,6 +123,7 @@ class DistroHistory:
 		cur.execute("SELECT id, color FROM distros WHERE name = %s",(name,))
 		row = cur.fetchone()
 		if row==None:
+			con.close()
 			raise UnknownDistroError(name)
 		
 		self.id, self.color = row
