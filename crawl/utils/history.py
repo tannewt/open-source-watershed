@@ -330,7 +330,7 @@ class DistroHistory:
 		return age
 
 def get_upstream(history=True):
-	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+	con = db.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 	cur = con.cursor()
 	result = []
 	q = cur.execute("SELECT DISTINCT name FROM packages, ureleases WHERE releases.package_id = packages.id")
@@ -347,7 +347,7 @@ def get_upstream(history=True):
 	return result
 
 def get_all(history=True):
-	con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+	con = db.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
 	cur = con.cursor()
 	result = []
 	q = cur.execute("SELECT name FROM packages")
@@ -362,6 +362,11 @@ def get_all(history=True):
 		i += 1
 	con.close()
 	return result
+
+def get_all_distros(packages, branch):
+	distros = core.get_all_distros()
+	return map(lambda name: DistroHistory(name, packages, branch), distros)
+
 
 if __name__=="__main__":
 	if len(sys.argv)<2:

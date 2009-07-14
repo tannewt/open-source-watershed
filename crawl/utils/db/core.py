@@ -49,3 +49,12 @@ def get_downstream_releases(distro_id, packages, branch, revisions):
 		releases.append(tuple(row))
 	close_cursor(cur)
 	return releases
+
+def get_all_distros():
+  cur = get_cursor()
+  cur.execute("SELECT name FROM distros ORDER BY name")
+  distros = []
+  for row in cur:
+    distros.append(row[0])
+  close_cursor(cur)
+  return distros

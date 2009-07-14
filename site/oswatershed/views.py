@@ -32,7 +32,7 @@ def distro(request, distro):
 	return HttpResponse("Hello, this is the distro page for %s."%(distro,))
 
 STAT_DISTROS = [("arch","current"),("arch","future"),
-								("debian","current"),("debian","future"),
+								("debian","current"),("debian","future"),("debian","experimental"),
 								("fedora","current"),("fedora","future"),
 								("gentoo","current"),("gentoo","future"),
 								("opensuse","current"),("opensuse","future"),("opensuse","experimental"),
@@ -43,7 +43,7 @@ STAT_DISTROS = [("arch","current"),("arch","future"),
 def pkg(request, pkg):
 	ps = PackageStats(pkg)
 	s = DataStats()
-	h = ps.hist.timeline[-5:]
+	h = ps.hist.timeline[-10:]
 	history = []
 	for d in h:
 		history.insert(0, (d, h[d]))

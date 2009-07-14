@@ -5,17 +5,14 @@
 {% block title %}Now{% endblock %}
 
 {% block content%}
-<table style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; border: none; width: 100%; border-spacing: 0px; table-layout: fixed;">
+<table style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; border: none; width: 100%; border-spacing: 0px;">
   <tr class="headings" style="font-size: small; background-image: url('http://static.oswatershed.org/blue_grad_27.png'); color: white; font-family: sans-serif; ">
     <th style="font-weight: normal; ">Distro</th>
     <th style="font-weight: normal; ">Branch</th>
     <th style="font-weight: normal; ">Current</th>
     <th style="font-weight: normal; ">Lag</th>
-    <th style="font-weight: normal; ">MinLag</th>
-    <th style="font-weight: normal; ">MeanLag</th>
-    <th style="font-weight: normal; ">MaxLag</th>
-    <th style="font-weight: normal; ">TotalReleases</th>
-    <th style="font-weight: normal; ">MeanRevisions</th>
+    <th style="font-weight: normal; ">Total Releases</th>
+    <th style="font-weight: normal; ">Average Revisions</th>
   </tr>
   {% for stat in pkg_stats %}
   <tr>
@@ -23,9 +20,6 @@
     <td>{{ stat.branch }}</td>
     <td>{{ stat.current }}</td>
     <td>{{ stat.lag|prettydelta:True }}</td>
-    <td>{{ stat.min_lag|prettydelta }}</td>
-    <td>{{ stat.mean_lag|prettydelta }}</td>
-    <td>{{ stat.max_lag|prettydelta }}</td>
     <td>{{ stat.rel_count }}</td>
     <td>{{ stat.mean_rev_count|floatformat:2 }}</td>
   </tr>

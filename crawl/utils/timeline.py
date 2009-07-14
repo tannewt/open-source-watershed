@@ -224,7 +224,10 @@ class StepTimeline(Timeline):
 					result.append((d,self._values[d]))
 				return StepTimeline(result,default=self.default)
 		else:
-			i = bisect.bisect_left(self._dates,date)
+			if type(date)==datetime:
+				i = bisect.bisect_left(self._dates,date)
+			else:
+				i = date
 			#print date, i, self._dates[i-1],self._values[self._dates[i-1]]
 			if i == 0 and (len(self._dates)==0 or self._dates[i]>date):
 				return self.default

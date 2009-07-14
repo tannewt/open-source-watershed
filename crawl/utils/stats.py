@@ -99,7 +99,7 @@ class PackageStats:
 			results["mean_lag"] = reduce(lambda x,y: x+y,diffs,zero)/len(diffs)
 			results["min_lag"] = min(diffs)
 			results["max_lag"] = max(diffs)
-			results["lag"] = dh.timeline[-1]
+			results["lag"] = dh.get_lag_timeline()[-1]
 			results["mean_rev_count"] = float(len(downstream_rev))/len(downstream)
 		return results
 		
