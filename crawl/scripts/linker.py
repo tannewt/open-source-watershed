@@ -12,7 +12,7 @@ if len(sys.argv)<2:
 	print sys.argv[0],"<cmd>"
 
 cmd = sys.argv[1]
-con = db.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 cur = con.cursor()
 
 BY_HAND_LINK_ID = 5
@@ -22,7 +22,7 @@ if cmd == "list":
 	for p1, p2 in cur:
 		print p1,"<--",p2
 elif cmd == "link":
-	cur.execute("INSERT INTO links (package_tgt, package_src) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM packages WHERE name=%s))",(sys.argv[2],sys.argv[3]))
+	cur.execute("INSERT INTO links (package_tgt, package_src, distro_src) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM packages WHERE name=%s),(SELECT id FROM distros WHERE name=%s))",(sys.argv[2],sys.argv[3],sys.argv[4]))
 elif cmd == "unlink":
 	pass
 else:
