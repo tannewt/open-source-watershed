@@ -189,22 +189,23 @@ def crawl_repo(repo):
 		last = datetime.datetime.fromtimestamp(last)
 		# check to make sure the cache is reasonably new
 		if datetime.datetime.now()-last<datetime.timedelta(hours=1):
-			# only load the cache if we have not crawled it already
-			if repo.last_crawl==None or repo.last_crawl<last:
-				#load the cache and return the desired subset
-				f = open(STORAGE+CACHE_FN)
-				cache = pickle.load(f)
-				f.close()
-				if cache.has_key(repo.architecture) and cache[repo.architecture].has_key(repo.component):
-					return (datetime.datetime.now(),cache[repo.architecture][repo.component])
-			return (datetime.datetime.now(),[])
+			#load the cache and return the desired subset
+			f = open(STORAGE+CACHE_FN)
+			cache = pickle.load(f)
+			if cache.has_key("last_crawl"):
+				last_crawl = cache["last_crawl"]
+			else:
+				last_crawl = None
+			f.close()
+			if cache.has_key(repo.architecture) and cache[repo.architecture].has_key(repo.component):
+				return (last_crawl,cache[repo.architecture][repo.component])
 	
 	# only do this if the cache is old
 	
 	if not update_portage():
-		return (datetime.datetime.now(),[])
+		return (repo.last_crawl,[])
 	
-	pkgs = {"unknown":{"unknown":[]}}
+	pkgs = {"unknown":{"unknown":[]},"last_crawl":repo.last_crawl}
 	dirs = os.listdir(STORAGE)
 	f = open(STORAGE+"profiles/categories")
 	dirs = map(lambda s: s.strip(),f.readlines())
@@ -218,6 +219,9 @@ def crawl_repo(repo):
 				fn = STORAGE+d+"/"+p+"/"+v
 				last2 = os.stat(fn).st_mtime
 				last2 = datetime.datetime.fromtimestamp(last2)
+				
+				if pkgs["last_crawl"]==None or last2 > pkgs["last_crawl"]:
+					pkgs["last_crawl"] = last2
 				
 				# check last crawl
 				if repo.last_crawl==None or last2 > repo.last_crawl:
@@ -273,7 +277,7 @@ def crawl_repo(repo):
 	pickle.dump(pkgs,f)
 	f.close()
 	if pkgs.has_key(repo.architecture) and pkgs[repo.architecture].has_key(repo.component):
-		return (datetime.datetime.now(),pkgs[repo.architecture][repo.component])
+		return (pkgs["last_crawl"],pkgs[repo.architecture][repo.component])
 	else:
 		print "not found in cache"
-		return (datetime.datetime.now(),[])
+		return (pkgs["last_crawl"],[])
