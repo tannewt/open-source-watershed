@@ -24,6 +24,7 @@ class VersionNode:
 			elif len(self.tokens)>0:
 				date,children = self.children[self.tokens[0]].next([])
 				return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
+			return (self.date, [])
 		elif len(tokens)==0:
 				return (self.date,map(lambda x: self.children[x], self.tokens))
 		else:
