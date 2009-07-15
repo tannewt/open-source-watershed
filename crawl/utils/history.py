@@ -10,6 +10,7 @@ from utils.version import VersionTree
 from utils.timeline import *
 from utils.db import core
 from utils.errors import *
+from utils.version import *
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
@@ -399,6 +400,9 @@ if __name__=="__main__":
 	p = PackageHistory(p)
 	print p
 	
+	vt = VersionTree(p.timeline)
+	print vt
+
 	if d != None:
 		d = DistroHistory(d,[p],b)
 		print d.get_lag_timeline()
