@@ -121,9 +121,6 @@ class VersionTree:
 	
 	def compute_lag(self, date, version):
 		d,newer = self.root.next(self._tokenize(version))
-		print "newer"
-		for node in newer:
-			print node
 		if d==None:
 			oldest_new = datetime.datetime(9999,12,31)
 		else:
