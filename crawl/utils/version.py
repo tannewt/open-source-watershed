@@ -18,14 +18,14 @@ class VersionNode:
 	
 	def next(self, tokens):
 		"""Given a series of tokens return its release date and all subtrees with later versions."""
-		if len(tokens)==0 or tokens[0] not in self.tokens:
-			if len(tokens)>0 and len(self.tokens)>0 and type(tokens[0]) == type(self.tokens[-1]) and tokens[0] > self.tokens[-1]: 
+		if len(tokens)>0 and tokens[0] not in self.tokens:
+			if len(self.tokens)>0 and type(tokens[0]) == type(self.tokens[-1]) and tokens[0] > self.tokens[-1]: 
 				return (self.date,[])
-			elif len(tokens)>0 and len(self.tokens)>0:
+			elif len(self.tokens)>0:
 				date,children = self.children[self.tokens[0]].next([])
 				return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
-			else:
-				return (self.date,[])
+		elif len(tokens)==0:
+				return (self.date,map(lambda x: self.children[x], self.tokens))
 		else:
 			date,children = self.children[tokens[0]].next(tokens[1:])
 			if date==None:
@@ -120,6 +120,9 @@ class VersionTree:
 	
 	def compute_lag(self, date, version):
 		d,newer = self.root.next(self._tokenize(version))
+		print "newer"
+		for node in newer:
+			print node
 		if d==None:
 			oldest_new = datetime.datetime(9999,12,31)
 		else:
@@ -136,6 +139,14 @@ class VersionTree:
 	def compute_obsoletions(self, date, version):
 		d,newer = self.root.next(self._tokenize(version))
 		return sum(map(lambda r: r.count_after(d),newer))
+	
+	def _strip_zeros(self, tokens):
+		indexes = range(0, len(tokens))
+		indexes.reverse()
+		for i in indexes:
+			if tokens[i]==0 and (len(tokens)-1==i or type(tokens[i+1])!=int):
+				del tokens[i]
+		return tokens
 	
 	def _tokenize(self, v):
 		tokens = []
@@ -170,7 +181,7 @@ class VersionTree:
 		else:
 			tokens.append(token)
 		
-		return tokens
+		return self._strip_zeros(tokens)
 	
 	def __str__(self):
 		return str(self.root)
