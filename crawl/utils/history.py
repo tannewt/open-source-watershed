@@ -205,6 +205,7 @@ class DistroHistory:
 	def add_pkg(self, package):
 		upstream = package.timeline
 		downstream = self.get_downstream(package)
+		downstream = self._get_greatest_timeline(upstream, downstream)
 	
 		self._packages[package.name] = (package, downstream)
 		self._pkg_order.append(package.name)
@@ -232,7 +233,16 @@ class DistroHistory:
 		if VERBOSE:
 			print
 		return downstream
-	
+
+	def _get_greatest_timeline(self, upstream, downstream):
+		versions = VersionTree(upstream)
+		greatest = Timeline(default="0")
+		for date in downstream:
+			version = downstream[date]
+			greatest[date] = versions.max(greatest[-1],version)
+		
+		return greatest
+
 	def _compute_package_age(self, upstream, downstream):
 		ms = timedelta(microseconds=1)
 		versions = VersionTree()
@@ -375,7 +385,7 @@ if __name__=="__main__":
 	if len(sys.argv)<2:
 		print sys.argv[0],"<package>","[distro]","[branch]"
 		sys.exit(1)
-	#VERBOSE = True
+	VERBOSE = True
 	p = sys.argv[1]
 	d = None
 	b = "current"
