@@ -199,6 +199,7 @@ def crawl_repo(repo):
 			f.close()
 			if cache.has_key(repo.architecture) and cache[repo.architecture].has_key(repo.component):
 				return (last_crawl,cache[repo.architecture][repo.component])
+			return (last_crawl, [])
 	
 	# only do this if the cache is old
 	
