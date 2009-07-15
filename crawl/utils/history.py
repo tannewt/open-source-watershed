@@ -385,7 +385,7 @@ if __name__=="__main__":
 	if len(sys.argv)<2:
 		print sys.argv[0],"<package>","[distro]","[branch]"
 		sys.exit(1)
-	VERBOSE = True
+	#VERBOSE = True
 	p = sys.argv[1]
 	d = None
 	b = "current"
