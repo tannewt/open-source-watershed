@@ -57,7 +57,7 @@ class VersionNode:
 			return 1
 		
 		if t1[0]==t2[0]:
-			return self.max(t1[1:],t2[1:])
+			return self.children[t1[0]].max(t1[1:],t2[1:])
 		else:
 			if t1[0] in self.tokens and t2[0] in self.tokens:
 				if self.tokens.index(t1[0]) < self.tokens.index(t2[0]):
