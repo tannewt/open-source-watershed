@@ -195,8 +195,8 @@ def crawl_repo(repo):
 				f = open(STORAGE+CACHE_FN)
 				cache = pickle.load(f)
 				f.close()
-				if cache.has_key(repo.architecture) and cache[repo.architecture].has_key(repo.codename):
-					return (datetime.datetime.now(),cache[repo.architecture][repo.codename])
+				if cache.has_key(repo.architecture) and cache[repo.architecture].has_key(repo.component):
+					return (datetime.datetime.now(),cache[repo.architecture][repo.component])
 			return (datetime.datetime.now(),[])
 	
 	# only do this if the cache is old
@@ -249,10 +249,10 @@ def crawl_repo(repo):
 							print "WARNING: " + fn + " parsed keywords wrong"
 						if not kw.startswith("-") and "*" not in kw:
 							if "~" in kw:
-								branch = "~"
+								branch = "unstable"
 								arch = kw.strip("~")
 							else:
-								branch = ""
+								branch = "stable"
 								arch = kw
 							
 							if not pkgs.has_key(arch):
@@ -265,15 +265,15 @@ def crawl_repo(repo):
 							rel.package = p
 							rel.version = version
 							rel.revision = revision
-							rel.released = last
+							rel.released = last2
 							pkgs[arch][branch].append(rel)
 	
 	# cache it
 	f = open(STORAGE+CACHE_FN,"wb")
 	pickle.dump(pkgs,f)
 	f.close()
-	if pkgs.has_key(repo.architecture) and pkgs[repo.architecture].has_key(repo.codename):
-		return (datetime.datetime.now(),pkgs[repo.architecture][repo.codename])
+	if pkgs.has_key(repo.architecture) and pkgs[repo.architecture].has_key(repo.component):
+		return (datetime.datetime.now(),pkgs[repo.architecture][repo.component])
 	else:
 		print "not found in cache"
 		return (datetime.datetime.now(),[])
