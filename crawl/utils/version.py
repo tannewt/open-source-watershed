@@ -50,7 +50,7 @@ class VersionNode:
 			c += 1
 		return c
 	
-	def _missing_max(t1, t2):
+	def _missing_max(self, t1, t2):
 		if len(t1)==0:
 			return 2
 		if len(t2)==0:
