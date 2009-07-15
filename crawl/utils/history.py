@@ -10,7 +10,7 @@ from utils.version import VersionTree
 from utils.timeline import *
 from utils.db import core
 from utils.errors import *
-from utils.version import *
+from utils.version import VersionTree
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
