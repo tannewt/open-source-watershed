@@ -50,6 +50,18 @@ class VersionNode:
 			c += 1
 		return c
 	
+	def _missing_max(t1, t2):
+		if len(t1)==0:
+			return 2
+		if len(t2)==0:
+			return 1
+		
+		if t1[0]==t2[0]:
+			self._missing_max(t1[1:], t2[1:])
+		elif t1[0]>t2[0]:
+			return 1
+		return 2
+	
 	def max(self, t1, t2):
 		if len(t1)==0:
 			return 2
@@ -57,7 +69,10 @@ class VersionNode:
 			return 1
 		
 		if t1[0]==t2[0]:
-			return self.children[t1[0]].max(t1[1:],t2[1:])
+			if t1[0] in self.children:
+				return self.children[t1[0]].max(t1[1:],t2[1:])
+			else:
+				return self._missing_max(t1[1:], t2[1:])
 		else:
 			if t1[0] in self.tokens and t2[0] in self.tokens:
 				if self.tokens.index(t1[0]) < self.tokens.index(t2[0]):
