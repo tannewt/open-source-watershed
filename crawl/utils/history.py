@@ -31,6 +31,7 @@ class PackageHistory:
 		else:
 			sid = result[0]
 		
+		# find the root of the uptree
 		while True:
 			cur.execute("SELECT package_tgt FROM links WHERE package_src = %s",(sid,))
 			row = cur.fetchone()
@@ -50,9 +51,9 @@ class PackageHistory:
 		while len(explore)>0:
 			tmp = []
 			for sid in explore:
-				cur.execute("SELECT package_src, packages.id FROM packages, links WHERE package_tgt = %s AND package_tgt=packages.id",(sid,))
+				cur.execute("SELECT package_src FROM links WHERE package_tgt = %s",(sid,))
 				for row in cur:
-					aliases.append(row[1])
+					aliases.append(row[0])
 					tmp.append(row[0])
 			explore = tmp
 		
