@@ -79,8 +79,11 @@ class VersionNode:
 		return "\n".join(result)
 
 class VersionTree:
-	def __init__(self):
+	def __init__(self, timeline=None):
 		self.root = VersionNode()
+		if timeline!=None:
+			for date in timeline:
+				self.add_release(date, timeline[date])
 	
 	def add_release(self, date, version):
 		self.root.add(date, self._tokenize(version))
