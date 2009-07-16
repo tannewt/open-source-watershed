@@ -146,7 +146,9 @@ class DistroHistory:
 	def snapshot(self, date):
 		result = []
 		for p in self._pkg_order:
-			result.append((self._packages[p][1].last(date),self._packages[p][2][date]))
+			#timeline = self._compute_package_age(self._packages[p][0].timeline, self._packages[p][1])
+			timeline = self._compute_package_obsoletion(self._packages[p][0].timeline, self._packages[p][1])
+			result.append((self._packages[p][1].last(date),timeline[date]))
 		return result
 	
 	def get_lag_timeline(self):
@@ -406,4 +408,4 @@ if __name__=="__main__":
 	if d != None:
 		d = DistroHistory(d,[p],b)
 		print d.get_lag_timeline()
-		print d.get_obsoletion_timeline()
+		print d.get_obsoletion_count_timeline()

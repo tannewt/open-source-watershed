@@ -26,6 +26,11 @@ if "--notes" in sys.argv:
 	NOTES = True
 	sys.argv.remove("--notes")
 
+ALL = False
+if "--all" in sys.argv:
+	ALL = True
+	sys.argv.remove("--all")
+
 COUNT = False
 if "--count" in sys.argv:
 	COUNT = True
@@ -93,5 +98,10 @@ if COUNT:
 	render.get_obsoletion_count_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)
 elif BINARY:
 	render.get_obsoletion_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)
+elif ALL:
+	fn_start, fn_end = FILENAME.rsplit(".", 1)
+	render.get_obsoletion_count_graph(downstream, upstream, fn=fn_start+"_count."+fn_end, width=WIDTH, height=HEIGHT, title=title)
+	render.get_obsoletion_graph(downstream, upstream, fn=fn_start+"_obs."+fn_end, width=WIDTH, height=HEIGHT, title=title)
+	render.get_lag_graph(downstream, upstream, fn=fn_start+"_lag."+fn_end, width=WIDTH, height=HEIGHT, title=title)
 else:
 	render.get_lag_graph(downstream, upstream, fn=FILENAME, width=WIDTH, height=HEIGHT, title=title)

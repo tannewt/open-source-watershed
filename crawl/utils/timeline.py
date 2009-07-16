@@ -358,8 +358,10 @@ class ConnectedTimeline(StepTimeline):
 			if step==None:
 				start = None
 				stop = None
+				result = []
 				if date.start!=None and type(date.start)==datetime:
 					start = bisect.bisect_left(self._dates,date.start)
+					result.append((date.start, self[date.start]))
 				else:
 					start = date.start
 				if date.stop!=None and type(date.start)==datetime:
@@ -367,7 +369,6 @@ class ConnectedTimeline(StepTimeline):
 				else:
 					stop = date.stop
 				
-				result = []
 				for d in self._dates[start:stop]:
 					result.append((d,self._values[d]))
 				return ConnectedTimeline(result,default=self.default)

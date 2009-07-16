@@ -7,6 +7,7 @@ except:
 	print "argh headless!"
 	from headless import *
 import datetime
+import math
 
 from timeline import ConnectedTimeline
 
@@ -19,6 +20,7 @@ class Axis (Group):
 		self._orientation=orientation
 		self.p = polyline_new_line(self,0,0,0,0)
 		self.label_text = label
+		self.units = ""
 		self.label = Text(text=label)
 		self.add_child(self.label,-1)
 		if orientation==Axis.VERTICAL:
@@ -29,6 +31,18 @@ class Axis (Group):
 		self._length = 100
 		self._type = None
 		self._grid = []
+	
+	def _set_units(self, unit):
+		self.units = unit
+		self.remove_child(self.find_child(self.label))
+		if self.units!="":
+			self.label = Text(text=self.label_text+" ("+self.units+")")
+		else:
+			self.label = Text(text=self.label_text)
+		self.add_child(self.label,-1)
+		if self._orientation==Axis.VERTICAL:
+			self.label.rotate(-90, 0, 0)
+		self.label.props.anchor = gtk.ANCHOR_SOUTH
 	
 	def set_range(self, start, end):
 		if type(start)!=type(end):
@@ -158,8 +172,9 @@ class Axis (Group):
 					week += one_week
 			one_month = datetime.timedelta(weeks=4)
 			# draw lines per day
-			month = datetime.timedelta(weeks=(self._start.days/(7*4))+1)
-			i = 0
+			i = int(math.ceil(self._start.days/(7*4)))
+			month = datetime.timedelta(weeks=i*4)
+			self._set_units("months")
 			while month<self._end:
 				#print "draw month",month
 				line = polyline_new_line(self,0,0,0,0)
@@ -442,7 +457,7 @@ class Select(Group):
 	
 	def button_press(self, item, target, event):
 		if target==None:
-			date_selected = self.axis.from_coord(event.x-50)
+			date_selected = self.axis.from_coord(event.x-70)
 			if date_selected > self.axis._end:
 				self.emit('select', self.axis._end)
 				self._loc = self.axis.coord(self.axis._end)
@@ -451,7 +466,7 @@ class Select(Group):
 				self._loc = self.axis.coord(self.axis._start)
 			else:
 				self.emit('select', date_selected)
-				self._loc = event.x-50
+				self._loc = event.x-70
 			self._redraw()
 	
 	def _redraw(self):

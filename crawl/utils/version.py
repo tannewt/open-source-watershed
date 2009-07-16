@@ -19,13 +19,21 @@ class VersionNode:
 	def next(self, tokens):
 		"""Given a series of tokens return its release date and all subtrees with later versions."""
 		if len(tokens)>0 and tokens[0] not in self.tokens:
-			if len(self.tokens)>0 and type(tokens[0]) == type(self.tokens[-1]):
+			if len(self.tokens)>0 and type(tokens[0]) == int:
 				i = 0
-				while i < len(self.tokens)-1 and tokens[0]>self.tokens[i]:
+				# find in the children where it would go
+				# so go through them skipping tokens of a different type
+				while i < len(self.tokens) and (type(tokens[0]) != type(self.tokens[i]) or tokens[0]>self.tokens[i]):
 					i += 1
-				date,children = self.children[self.tokens[i]].next([])
-				return (date, children + map(lambda x: self.children[x], self.tokens[i:]))
-			return (self.date, [])
+				
+				# if the current token is less than the last
+				if i < len(self.tokens):
+					date,children = self.children[self.tokens[i]].next([])
+					return (date, children + map(lambda x: self.children[x], self.tokens[i:]))
+				else:
+					return (self.right_leaf().date, [])
+			#if the tokens are not comparable or are none at this level
+			return (self.date, map(lambda x: self.children[x], self.tokens))
 		elif len(tokens)==0:
 				return (self.date,map(lambda x: self.children[x], self.tokens))
 		else:
@@ -33,6 +41,12 @@ class VersionNode:
 			if date==None:
 				date = self.date
 			return (date,children + map(lambda x: self.children[x], self.tokens[self.tokens.index(tokens[0])+1:]))
+	
+	def right_leaf(self):
+		if len(self.tokens)==0:
+			return self
+		else:
+			return self.children[self.tokens[-1]].right_leaf()
 	
 	def after(self, date):
 		c = map(lambda k: self.children[k].after(date),self.children)
@@ -122,13 +136,10 @@ class VersionTree:
 	
 	def compute_lag(self, date, version):
 		d,newer = self.root.next(self._tokenize(version))
-		if d==None:
-			oldest_new = min(map( lambda x: x.after(None), newer))
+		if len(newer)>0:
+			oldest_new = min(map(lambda r: r.after(d),newer))
 		else:
-			if len(newer)>0:
-				oldest_new = min(map(lambda r: r.after(d),newer))
-			else:
-				oldest_new = datetime.datetime(9999,12,31)
+			oldest_new = datetime.datetime(9999,12,31)
 		
 		if oldest_new != datetime.datetime(9999,12,31):
 			return date - oldest_new
