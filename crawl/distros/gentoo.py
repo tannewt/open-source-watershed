@@ -210,6 +210,7 @@ def crawl_repo(repo):
 	dirs = os.listdir(STORAGE)
 	f = open(STORAGE+"profiles/categories")
 	dirs = map(lambda s: s.strip(),f.readlines())
+	dirs = filter(lambda x: x!="virtual", dirs)
 	f.close()
 	for d in dirs:
 		packages = os.listdir(STORAGE+d+"/")
