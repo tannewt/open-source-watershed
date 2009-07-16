@@ -22,8 +22,11 @@ class VersionNode:
 			if len(self.tokens)>0 and type(tokens[0]) == type(self.tokens[-1]) and tokens[0] > self.tokens[-1]: 
 				return (self.date,[])
 			elif len(self.tokens)>0:
-				date,children = self.children[self.tokens[0]].next([])
-				return (date, children + map(lambda x: self.children[x], self.tokens[1:]))
+				i = 0
+				while tokens[0]>self.tokens[i]:
+					i += 1
+				date,children = self.children[self.tokens[i]].next([])
+				return (date, children + map(lambda x: self.children[x], self.tokens[i:]))
 			return (self.date, [])
 		elif len(tokens)==0:
 				return (self.date,map(lambda x: self.children[x], self.tokens))
@@ -89,7 +92,7 @@ class VersionNode:
 	def __str__(self, prefix="", indent=0):
 		result = ["	"*indent + str(self.date)]
 		for t in self.tokens:
-			v = prefix + str(t)
+			v = prefix + "-" + str(t)
 			result.append("	"*indent + v)
 			result.append(self.children[t].__str__(v, indent+1))
 		return "\n".join(result)
