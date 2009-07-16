@@ -17,6 +17,7 @@ import upstream.subversion
 import upstream.sf
 import upstream.php
 import upstream.explore
+import upstream.mysql
 
 from utils.cache import Cache
 from utils.db import downstream
@@ -34,7 +35,8 @@ DISTROS = {"slackware": distros.slackware,
 UPSTREAM = {"subversion": upstream.subversion,
 						"sf"				: upstream.sf,
 						"php"				: upstream.php,
-						"explore"		: upstream.explore}
+						"explore"		: upstream.explore,
+						"mysql"			: upstream.mysql}
 
 import utils.helper
 
