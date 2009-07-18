@@ -223,7 +223,7 @@ class Axis (Group):
 					self._grid.append(text)
 					i += 0.1
 			elif spread <= 15:
-				i = float(int(self._start))
+				i = math.ceil(self._start)
 				while i<self._end:
 					#print "draw month",month
 					line = polyline_new_line(self,0,0,0,0)
@@ -246,7 +246,7 @@ class Axis (Group):
 					self._grid.append(text)
 					i += 1
 			else:
-				i = float(int(self._start))
+				i = math.ceil(self._start)
 				while i<self._end:
 					#print "draw month",month
 					line = polyline_new_line(self,0,0,0,0)
@@ -271,7 +271,7 @@ class Axis (Group):
 		elif type(self._start)==int:
 			spread = self._end - self._start
 			if spread < 20:
-				i = int(self._start)
+				i = int(math.ceil(self._start))
 				while i<self._end:
 					line = polyline_new_line(self,0,0,0,0)
 					c = self.coord(i)
@@ -293,7 +293,7 @@ class Axis (Group):
 					self._grid.append(text)
 					i += 1
 			else:
-				i = int(self._start)
+				i = int(math.ceil(self._start))
 				while i<self._end:
 					line = polyline_new_line(self,0,0,0,0)
 					c = self.coord(i)
@@ -567,13 +567,16 @@ class LineChart(Canvas):
 	
 	def _adjust_points(self, line, data):
 		if type(data) == ConnectedTimeline:
-			dates = [self._x_axis._start] + data[self._x_axis._start:self._x_axis._end].keys()
+			dates = data[self._x_axis._start:self._x_axis._end].keys()
 		else:
-			dates = [self._x_axis._start]
+			dates = []
 			ms = datetime.timedelta(microseconds=1)
+			first = True
 			for k in data[self._x_axis._start:self._x_axis._end].keys():
-				dates.append(k-ms)
+				if not first:
+					dates.append(k-ms)
 				dates.append(k)
+				first = False
 		line.props.points = Points(map(lambda d: (self._x_axis.coord(d),self._y_axis.coord(data[d])),dates))
 	
 	def _adjust_notes(self, notes,w=None,h=None):

@@ -72,23 +72,27 @@ def get_lag_graph(downstream, upstream, fn="output.png", width=500, height=300, 
 
 	graph = chart.LineChart(select=False,title=title, label_x='Date', label_y='Average Lag')
 	graph.show()
-
+	
+	now = datetime.now()
+	if timespan==None:
+		crawl_start = start_date
+	else:
+		crawl_start = now - timespan
+	
+	max_y = timedelta()
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
 		
 		dash = _get_dash(branch)
 		
 		timeline = distro.get_lag_timeline()
+		m = max(timeline[crawl_start:now].values())
+		if max_y < m:
+			max_y = m
 		graph.add(key,timeline,[],distro.color,dash)
-
-
-	now = datetime.now()
-	if timespan==None:
-		crawl_start = start_date
-	else:
-		crawl_start = now - timespan
-
+	
 	graph.set_x_bounds(crawl_start,now)
+	graph.set_y_bounds(timedelta(),max_y)
 
 	class Bounds:
 		pass
@@ -161,27 +165,27 @@ def get_obsoletion_count_graph(downstream, upstream, fn="output.png", width=500,
 
 	graph = chart.LineChart(select=False,title=title, label_x='Date', label_y='Average Number of New Releases')
 	graph.show()
-
+	
+	now = datetime.now()
+	if timespan==None:
+		crawl_start = start_date
+	else:
+		crawl_start = now - timespan
+	
+	max_y = 0.0
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
 		
 		dash = _get_dash(branch)
 		
 		timeline = distro.get_obsoletion_count_timeline()
+		m = max(timeline[crawl_start:now].values())
+		if max_y < m:
+			max_y = m
 		graph.add(key,timeline,[],distro.color,dash)
-
-
-	now = datetime.now()
-	if timespan==None:
-		crawl_start = start_date
-	else:
-		crawl_start = now - timespan
-
+	
 	graph.set_x_bounds(crawl_start,now)
-	#if not COUNT:
-	#	graph.set_y_bounds(timedelta(),timedelta(weeks=36))
-	#elif BINARY:
-	#	graph.set_y_bounds(0.0,1.0)
+	graph.set_y_bounds(0.0,max_y)
 
 	class Bounds:
 		pass

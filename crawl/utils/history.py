@@ -97,6 +97,16 @@ class PackageHistory:
 		
 		con.close()
 	
+	def get_greatest_timeline(self):
+		versions = VersionTree(self.timeline)
+		greatest = Timeline(default="0")
+		for date in self.timeline:
+			versions.add_release(date, self.timeline[date])
+			print versions
+			greatest[date] = versions.max(greatest[-1], self.timeline[date])
+		
+		return greatest
+	
 	def __str__(self):
 		if self.ish:
 			pre = "approx history of "
