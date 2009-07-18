@@ -7,12 +7,12 @@ def package(request):
 	ph = PackageHistory(p)
 	distros = get_all_distros([ph], "current")
 	cb = request.GET["cb"]
-	response = cb+'({"package":"%s","latest":"%s","distros":['%(ph.name, ph.timeline[-1])
+	response = cb+'({"package":"%s","latest":"%s","distros":['%(ph.name, ph.get_greatest_timeline()[-1])
 	distro_entries = []
 	for distro in distros:
 		timeline = distro.get_obsoletion_timeline()
 		v = distro.get_pkg(ph.name)[-1]
-		if v==0:
+		if v=='0':
 			v = "--"
 		if len(timeline)>0 and timeline[-1]==0.0:
 			utd = "true"
