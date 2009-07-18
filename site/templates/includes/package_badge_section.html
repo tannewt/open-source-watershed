@@ -1,0 +1,10 @@
+{% extends "includes/section.html" %}
+
+{% block title %}Badge{% endblock %}
+
+{% block content%}
+		You can now add OpenSourceWatershed badges to your own website.  Below is the badge for {{ name }}:
+		{% include "includes/package_badge.html" %}<br>
+		To add it to your own webpage simply copy and paste the code below.
+		<pre><code>{% include "includes/package_badge_escaped.html" %}</code></pre>
+{% endblock %}
