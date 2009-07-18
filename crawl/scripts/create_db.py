@@ -201,13 +201,15 @@ FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 # package sets
 cur.execute("""CREATE TABLE groups (
 id SERIAL NOT NULL PRIMARY KEY,
-user_id INT NOT NULL REFERENCES users(id),
-name VARCHAR(255)
+user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+name VARCHAR(255),
+UNIQUE (user_id, name)
 )""")
 
 cur.execute("""CREATE TABLE group_packages (
-group_id INT REFERENCES groups(id),
-package_id INT REFERENCES packages(id)
+group_id INT REFERENCES groups(id) ON DELETE CASCADE,
+package_id INT REFERENCES packages(id) ON DELETE CASCADE,
+PRIMARY KEY (group_id, package_id)
 )""")
 
 # cache may not be needed for rev3

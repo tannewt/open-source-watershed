@@ -2,6 +2,12 @@
 from . import db, get_cursor, close_cursor, commit
 from . import core
 
+def list_distros():
+	cur = get_cursor()
+	cur.execute("SELECT name FROM distros")
+	result = map(lambda x: x[0], cur.fetchall())
+	return result
+
 def distro(name, color=None, description=None, website=None):
 	cur = get_cursor()
 	cur.execute("SELECT id FROM distros WHERE name = %s", (name,))

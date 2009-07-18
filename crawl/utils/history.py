@@ -117,15 +117,6 @@ class PackageHistory:
 
 class DistroHistory:
 	def __init__(self, name, packages=[], branch=None, codename=None, arch=None, now=None):
-		self._timeline = ConnectedTimeline(default=timedelta())
-		self._obs_timeline = StepTimeline(default=0.0)
-		self._bin_obs_timeline = StepTimeline(default=0.0)
-		self.timeline = self._timeline
-		self.obs_timeline = self._obs_timeline
-		self.bin_obs_timeline = self._bin_obs_timeline
-		self.notes = Timeline(default="")
-		self.count = StepTimeline()
-		self.fcount = StepTimeline()
 		self.name = name
 		self.branch = branch
 		self.codename = codename
@@ -139,6 +130,12 @@ class DistroHistory:
 			raise UnknownDistroError(name)
 		
 		self.id, self.color = row
+		
+		if branch!=None and codename==None:
+			cur.execute("SELECT repos.codename FROM repos, branches WHERE repos.distro_id = %s AND branches.repo_id = repos.id AND branches.branch=%s ORDER BY branches.start DESC LIMIT 1",(self.id, branch))
+			row = cur.fetchone()
+			if row!=None:
+				self.codename = row[0]
 		con.close()
 		
 		self.arch = arch

@@ -231,7 +231,7 @@ class StepTimeline(Timeline):
 			else:
 				i = date
 			#print date, i, self._dates[i-1],self._values[self._dates[i-1]]
-			if i == 0 and (len(self._dates)==0 or self._dates[i]>date):
+			if len(self._dates)==0 or (i == 0 and (len(self._dates)==0 or self._dates[i]>date)):
 				return self.default
 			if i<len(self._dates) and self._dates[i]==date:
 				return self._values[date]

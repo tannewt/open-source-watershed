@@ -11,8 +11,53 @@ from utils import history
 from utils import version
 from utils.cache import Cache
 from utils.errors import *
+from utils.db import groups
+from utils.db import downstream
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
+
+class DistroRanks:
+	def __init__(self):
+		cache = Cache()
+		status = cache.key_status("/distro_ranks")
+		if status == None:
+			self.update(cache)
+		else:
+			if status == Cache.STALE:
+				t = threading.Thread(target=self.update)
+				t.start()
+			self.distros, = cache.get("/distro_ranks")
+	
+	def update(self, cache=None):
+		if cache == None:
+			cache = Cache()
+		
+		pkgs = groups.get_group("twenty")
+		upstream = map(history.PackageHistory, pkgs)
+		distros = downstream.list_distros()
+		distros = map(lambda x: history.DistroHistory(x,upstream,"current"), distros)
+		results = []
+		for distro in distros:
+			current_obs = distro.get_obsoletion_timeline()[-1]
+			current_obs_count = distro.get_obsoletion_count_timeline()[-1]
+			current_lag = distro.get_lag_timeline()[-1]
+			results.append({"name":distro.name,
+											"codename":distro.codename,
+											"obs":current_obs,
+											"count":current_obs_count,
+											"lag":current_lag})
+		
+		self.distros = results
+		self.distros.sort(key=lambda x: x["obs"])
+		
+		cache.put("/distro_ranks", (self.distros, ))
+	
+	def __str__(self):
+		i = 1
+		result = []
+		for distro in self.distros:
+			result.append(str(i)+" "+str(distro))
+		return "\n".join(result)
 
 class DataStats:
 	def __init__(self):
@@ -109,3 +154,6 @@ if __name__=="__main__":
 	
 	ps = PackageStats("gcc")
 	print ps.for_distro("opensuse","current")
+	
+	dr = DistroRanks()
+	print dr
