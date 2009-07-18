@@ -80,9 +80,15 @@ class VersionNode:
 	
 	def max(self, t1, t2):
 		if len(t1)==0:
-			return 2
-		if len(t2)==0:
+			d,newer = self.next(t2)
+			if self.date==None or (d!=None and d>self.date):
+				return 2
 			return 1
+		if len(t2)==0:
+			d,newer = self.next(t1)
+			if self.date==None or (d!=None and d>self.date):
+				return 1
+			return 2
 		
 		if t1[0]==t2[0]:
 			if t1[0] in self.children:
