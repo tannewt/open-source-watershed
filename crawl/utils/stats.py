@@ -50,7 +50,7 @@ class DistroRanks:
 		self.distros = results
 		self.distros.sort(key=lambda x: x["obs"])
 		
-		cache.put("/distro_ranks", (self.distros, ))
+		cache.put("/distro_ranks", (self.distros,), [(None, None)])
 	
 	def __str__(self):
 		i = 1

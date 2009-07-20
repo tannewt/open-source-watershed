@@ -1,0 +1,10 @@
+{% extends "includes/section.html" %}
+
+{% block id %}welcome{% endblock %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}<span style="font-size: larger; font-weight: bold;">OpenSourceWatershed</span> is a project aimed at understanding the relationship between distributions (downstream) and the individual software components (upstream).  It is the basis for a larger study of distributions and their evolution.  It is <strong>distrology</strong>.  In the future, more distro oriented statistics will be available.  More details are below.  For now search in the top right for your favorite package to see how up to date the different distributions.  Or look at the right to see what new releases happened in the last 24 hours.
+<br><br>
+The aggregate analysis is done over twenty packages including firefox, gcc and openssh.  The full package list is in the <a href="http://tannewt.org/slides/shawcroft-oscon_presentation.pdf">OSCON slides</a>.  In the future, users will be able to set custom groups.  The three forms of analysis are percent obsolete, the average number of newer releases per package and the time since the oldest new release.  In other words the lag is the amount of time a distro had to move to a newer package.
+{% endblock %}

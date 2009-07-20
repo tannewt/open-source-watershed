@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
 from utils.history import PackageHistory
-from utils.stats import DataStats, PackageStats
+from utils.stats import DataStats, PackageStats, DistroRanks
 from utils.crawlhistory import CrawlHistory
 from utils.search import Search
 from utils.errors import *
@@ -22,9 +22,15 @@ def index(request):
 			continue
 		rest.append((distro,ch.today,ch.releases[:5]))
 	
+	ranks = DistroRanks()
+	
+	sidebar = [("Released Today:","",""),("Upstream",upstream.today,upstream.releases[:5])]+rest
+	
 	return render_to_response('index.html',
 		{"stats": s,
-		"crawl_stats":[("Upstream",upstream.today,upstream.releases[:5])]+rest
+		"crawl_stats":sidebar,
+		"distros":ranks.distros,
+		"True" : True
 		}
 	)
 
