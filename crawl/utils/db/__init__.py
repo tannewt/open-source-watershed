@@ -14,6 +14,7 @@ def get_cursor():
 	if con==None:
 		con = db.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
 	refcount += 1
+	con.commit()
 	return con.cursor()
 
 def close_cursor(cur):
