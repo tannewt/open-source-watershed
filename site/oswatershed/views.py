@@ -22,14 +22,16 @@ def index(request):
 			continue
 		rest.append((distro,ch.today,ch.releases[:5]))
 	
-	ranks = DistroRanks()
+	current = DistroRanks()
+	future = DistroRanks("future")
 	
 	sidebar = [("Released Today:","",""),("Upstream",upstream.today,upstream.releases[:5])]+rest
 	
 	return render_to_response('index.html',
 		{"stats": s,
 		"crawl_stats":sidebar,
-		"distros":ranks.distros,
+		"current_distros":current.distros,
+		"future_distros":future.distros,
 		"True" : True
 		}
 	)

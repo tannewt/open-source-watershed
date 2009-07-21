@@ -1,0 +1,28 @@
+{% extends "includes/section.html" %}
+
+{% load osfilters %}
+
+{% block title %}Current Distros{% endblock %}
+
+{% block content%}
+<table style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; border: none; width: 100%; border-spacing: 0px;">
+  <tr class="headings" style="font-size: small; background-image: url('http://static.oswatershed.org/blue_grad_27.png'); color: white; font-family: sans-serif; ">
+    <th style="font-weight: normal; ">Rank</th>
+		<th style="font-weight: normal; ">Distro</th>
+    <th style="font-weight: normal; ">Codename</th>
+    <th style="font-weight: normal; ">% Obsolete</th>
+    <th style="font-weight: normal; ">Avg # New Rels</th>
+    <th style="font-weight: normal; ">Avg Lag</th>
+  </tr>
+  {% for distro in current_distros %}
+  <tr>
+    <th>{{ forloop.counter }}</th>
+    <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong>{{ distro.name }}</strong></td>
+		<td>{{ distro.codename }}</td>
+		<td>{{ distro.obs|percent }}</td>
+		<td>{{ distro.count|floatformat:2 }}</td>
+    <td>{{ distro.lag|prettydelta:True }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
