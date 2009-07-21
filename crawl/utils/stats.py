@@ -17,16 +17,17 @@ from utils.db import downstream
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
 class DistroRanks:
-	def __init__(self):
+	def __init__(self,branch="current"):
+		self.branch = branch
 		cache = Cache()
-		status = cache.key_status("/distro_ranks")
+		status = cache.key_status("/distro_ranks/"+self.branch)
 		if status == None:
 			self.update(cache)
 		else:
 			if status == Cache.STALE:
 				t = threading.Thread(target=self.update)
 				t.start()
-			self.distros, = cache.get("/distro_ranks")
+			self.distros, = cache.get("/distro_ranks/"+self.branch)
 	
 	def update(self, cache=None):
 		if cache == None:
@@ -35,7 +36,7 @@ class DistroRanks:
 		pkgs = groups.get_group("twenty")
 		upstream = map(history.PackageHistory, pkgs)
 		distros = downstream.list_distros()
-		distros = map(lambda x: history.DistroHistory(x,upstream,"current"), distros)
+		distros = map(lambda x: history.DistroHistory(x,upstream,self.branch), distros)
 		results = []
 		for distro in distros:
 			current_obs = distro.get_obsoletion_timeline()[-1]
@@ -50,7 +51,7 @@ class DistroRanks:
 		self.distros = results
 		self.distros.sort(key=lambda x: x["obs"])
 		
-		cache.put("/distro_ranks", (self.distros,), [(None, None)])
+		cache.put("/distro_ranks/"+self.branch, (self.distros,), [(None, None)])
 	
 	def __str__(self):
 		i = 1
@@ -156,4 +157,7 @@ if __name__=="__main__":
 	print ps.for_distro("opensuse","current")
 	
 	dr = DistroRanks()
+	print dr
+	
+	dr = DistroRanks("future")
 	print dr
