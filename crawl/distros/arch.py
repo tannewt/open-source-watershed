@@ -18,7 +18,7 @@ distro_id = downstream.distro("arch", "", "A rolling release binary distribution
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos(test):
 	repos = []
-	for comp in ["core","extra"]:
+	for comp in ["core","extra","community"]:
 		for a in ARCHES:
 			repo = Repo()
 			repo.distro_id = distro_id
@@ -39,17 +39,6 @@ def get_repos(test):
 			repos.append(repo)
 			downstream.repo(repo, test)
 			downstream.add_branch(repo, "future", test)
-	
-	for comp in ["community"]:
-		for a in ARCHES:
-			repo = Repo()
-			repo.distro_id = distro_id
-			repo.component = comp
-			repo.architecture = a
-			repo.codename = ""
-			repos.append(repo)
-			downstream.repo(repo, test)
-			downstream.add_branch(repo, "experimental", test)
 	
 	return repos
 
