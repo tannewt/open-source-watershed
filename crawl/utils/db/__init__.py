@@ -1,31 +1,19 @@
 # -*- coding: utf-8 -*-
 import psycopg2 as db
+from psycopg2 import pool
+from contextlib import contextmanager
 
 #open the file
 from .. import helper
 HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
-con = None
-refcount = 0
+pool = pool.ThreadedConnectionPool(2,10,host=HOST, user=USER, password=PASSWORD, database=DATABASE)
 
-# Not threadsafe!
-def get_cursor():
-	global con
-	global refcount
-	if con==None:
-		con = db.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
-	refcount += 1
-	con.commit()
-	return con.cursor()
-
-def close_cursor(cur):
-	global con
-	global refcount
-	cur.close()
-	con.commit()
-	refcount -= 1
-	if refcount==0:
-		con.close()
-		con = None
-
-def commit():
-	con.commit()
+@contextmanager
+def cursor():
+	global pool
+	con = pool.getconn()
+	try:
+		yield con.cursor()
+	finally:
+		con.commit()
+		pool.putconn(con)
