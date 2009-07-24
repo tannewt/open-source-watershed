@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import cursor
 from . import core
+import psycopg2
 
 def source(name, description, user_id=1):
 	with cursor() as cur:
@@ -42,7 +43,7 @@ def add_releases(source_id, rels, test, cache=None):
 					if cache != None:
 						cache.evict([(rel.package, None)])
 					total_new += 1
-				except db.IntegrityError:
+				except psycopg2.IntegrityError:
 					pass
 				commit()
 	return (total_new, max_date)

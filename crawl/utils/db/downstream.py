@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import cursor
 from . import core
+import psycopg2
 
 def list_distros():
 	with cursor() as cur:
@@ -70,7 +71,7 @@ def add_releases(repo, rels, test=False, cache=None):
 					if cache!=None:
 						cache.evict([(rel.package, repo.distro_id)])
 					total_new += 1
-				except db.IntegrityError:
+				except psycopg2.IntegrityError:
 					pass
 	return total_new
 
