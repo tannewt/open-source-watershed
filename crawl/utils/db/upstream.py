@@ -29,23 +29,23 @@ def add_releases(source_id, rels, test, cache=None):
 			rel.package = core.package(rel.package)
 	
 	total_new = 0
-		if test:
-			for rel in rels:
-				with cursor() as cur:
-					cur.execute("SELECT id FROM ureleases WHERE package_id = %s AND version = %s AND revision = %s AND usource_id = %s",(rel.package, rel.version, rel.revision, source_id))
-					if cur.fetchone()==None:
-						print "new", rel
-						total_new += 1
-		else:
-			for rel in rels:
-				with cursor() as cur:
-					try:
-						cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
-						if cache != None:
-							cache.evict([(rel.package, None)])
-						total_new += 1
-					except psycopg2.IntegrityError:
-						pass
+	if test:
+		for rel in rels:
+			with cursor() as cur:
+				cur.execute("SELECT id FROM ureleases WHERE package_id = %s AND version = %s AND revision = %s AND usource_id = %s",(rel.package, rel.version, rel.revision, source_id))
+				if cur.fetchone()==None:
+					print "new", rel
+					total_new += 1
+	else:
+		for rel in rels:
+			with cursor() as cur:
+				try:
+					cur.execute("INSERT INTO ureleases (package_id, version, released, usource_id) VALUES (%s, %s, %s, %s)",(rel.package, rel.version, rel.released, source_id))
+					if cache != None:
+						cache.evict([(rel.package, None)])
+					total_new += 1
+				except psycopg2.IntegrityError:
+					pass
 	return (total_new, max_date)
 	
 def last_crawl(source_id):
