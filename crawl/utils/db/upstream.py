@@ -45,7 +45,6 @@ def add_releases(source_id, rels, test, cache=None):
 					total_new += 1
 				except psycopg2.IntegrityError:
 					pass
-				commit()
 	return (total_new, max_date)
 	
 def last_crawl(source_id):
