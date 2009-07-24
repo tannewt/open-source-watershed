@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # Django settings for api project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+  ('Scott Shawcroft', 'scott.shawcroft@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -73,8 +73,8 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
+    #'django.contrib.auth',
+    #'django.contrib.contenttypes',
+    #'django.contrib.sessions',
+    #'django.contrib.sites',
 )
