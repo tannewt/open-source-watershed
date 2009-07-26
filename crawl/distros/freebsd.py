@@ -33,7 +33,7 @@ def get_repos(test):
 				print repo
 				repos.append(repo)
 				downstream.repo(repo, test)
-				if branch=="current":
+				if branch=="current" and (next_version == None or repo.codename > next_version):
 					next_version = repo.codename
 	
 	for repo in repos:
