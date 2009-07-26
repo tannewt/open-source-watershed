@@ -15,7 +15,7 @@ def index(request):
 	s = DataStats()
 	upstream = CrawlHistory()
 	rest = []
-	for distro in ["arch","debian", "fedora", "funtoo", "gentoo", "opensuse", "sabayon", "slackware", "ubuntu"]:
+	for distro in ["arch","debian", "fedora", "freebsd", "funtoo", "gentoo", "opensuse", "sabayon", "slackware", "ubuntu"]:
 		try:
 			ch = CrawlHistory(None,distro)
 		except UnknownDistroError:
@@ -42,8 +42,9 @@ def distro(request, distro):
 STAT_DISTROS = [("arch","current"),("arch","future"),
 								("debian","current"),("debian","future"),("debian","experimental"),
 								("fedora","current"),("fedora","future"),
+								("freebsd","current"),("freebsd","future"),
 								("gentoo","current"),("gentoo","future"),
-								("opensuse","current"),("opensuse","future"),("opensuse","experimental"),
+								("opensuse","current"),("opensuse","future"),
 								("sabayon","current"),("sabayon","future"),
 								("slackware","current"),("slackware","future"),
 								("ubuntu","current"),("ubuntu","future")
