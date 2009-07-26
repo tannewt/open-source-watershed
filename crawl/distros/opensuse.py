@@ -53,7 +53,7 @@ def get_repos(test):
 			repo.architecture = arch
 			downstream.repo(repo, test)
 			repos.append(repo)
-			downstream.add_branch(repo, "experimental", test)
+			downstream.add_branch(repo, "future", test)
 	return repos
 		
 	
