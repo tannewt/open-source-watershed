@@ -8,6 +8,7 @@ import distros.opensuse
 import distros.arch
 import distros.sabayon
 import distros.funtoo
+import distros.freebsd
 
 import gc
 import traceback
@@ -30,7 +31,8 @@ DISTROS = {"slackware": distros.slackware,
 					 "opensuse"	: distros.opensuse,
 					 "arch"			: distros.arch,
 					 "sabayon"	: distros.sabayon,
-					 "funtoo"		: distros.funtoo}
+					 "funtoo"		: distros.funtoo,
+					 "freebsd"	: distros.freebsd}
 
 UPSTREAM = {"subversion": upstream.subversion,
 						"sf"				: upstream.sf,

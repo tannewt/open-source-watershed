@@ -19,7 +19,31 @@ class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
         res.status = None
       return res
 
-def open_url(url, filename, last_crawl=None):
+def ftp_open_url(url, filename, last_crawl=None):
+	tokens = url.split("/")
+	host = tokens[2]
+	fn = tokens[-1]
+	d = "/".join(tokens[3:-1])
+	for i in range(3):
+		try:
+			ftp = ftplib.FTP(host,"anonymous",timeout=90)
+		except EOFError:
+			time.sleep(10)
+	ftp.cwd(d)
+	date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
+	date = datetime.datetime.strptime(date,"%Y%m%d%H%M%S")
+	ftp.close()
+	if last_crawl==None or last_crawl<date:
+		request = urllib2.Request(url)
+		opener = urllib2.build_opener()
+		datastream = opener.open(request)
+		out = open(filename, "w")
+		out.write(datastream.read())
+		out.close()
+		return date
+	return None
+
+def http_open_url(url, filename, last_crawl=None):
   request = urllib2.Request(url)
   request.add_header('Accept','text/html,application/xhtml+xml,application/xml,q=0.9,*/*;q=0.8')
   request.add_header('Accept-Language','en-us,en;q=0.5')
@@ -46,6 +70,12 @@ def open_url(url, filename, last_crawl=None):
     except:
       date = datastream.headers.dict['date']
     return datetime.datetime.strptime(date,"%a, %d %b %Y %H:%M:%S %Z")
+
+def open_url(url, filename, last_crawl=None):
+	if url.startswith("http://"):
+		return http_open_url(url, filename, last_crawl)
+	elif url.startswith("ftp://"):
+		return ftp_open_url(url, filename, last_crawl)
 
 def http_open_dir(url):
   filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))

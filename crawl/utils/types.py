@@ -20,6 +20,9 @@ class Release:
 	
 	def __str__(self):
 		return " ".join(map(str, (self.package, self.version, self.released)))
+	
+	def __repr__(self):
+		return self.__str__()
 
 class UpstreamRelease(Release):
 	def __init__(self):
