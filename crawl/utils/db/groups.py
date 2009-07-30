@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import with_statement
+
 from . import cursor
 #cur.execute("""CREATE TABLE groups (
 #id SERIAL NOT NULL PRIMARY KEY,

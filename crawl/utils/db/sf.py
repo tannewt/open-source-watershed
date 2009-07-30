@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import with_statement
+
 from . import cursor
 from . import core
 import psycopg2
