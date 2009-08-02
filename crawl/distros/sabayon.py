@@ -9,9 +9,9 @@ from .utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("sabayon", "", "A binary distribution derived from Gentoo.", "http://www.sabayonlinux.org")
 
-MIRROR = "mirror.cs.vt.edu"
+MIRROR = "mirror.internode.on.net"
 HTTP_START_DIR = "pub/SabayonLinux"
-FTP_START_DIR = None
+FTP_START_DIR = "pub/sabayonlinux"
 
 VERSIONS = ["3.5", "4", "5"]
 CURRENT = "4"
@@ -42,7 +42,7 @@ def get_repos(test):
 # return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
 	fn = "".join(("files/sabayon/packages-",repo.codename,"-",repo.architecture,"-",str(time.time()),".db"))
-	url = "".join(("http://",MIRROR,"/",HTTP_START_DIR,"/entropy/standard/sabayonlinux.org/database/", repo.architecture, "/", repo.codename, "/packages.db.bz2"))
+	url = "".join(("ftp://",MIRROR,"/",FTP_START_DIR,"/entropy/standard/sabayonlinux.org/database/", repo.architecture, "/", repo.codename, "/packages.db.bz2"))
 	
 	#print "open url"
 	t = helper.open_url(url,fn+".bz2", repo.last_crawl)

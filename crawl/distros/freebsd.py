@@ -57,6 +57,8 @@ def crawl_repo(repo):
 			for line in f:
 				pkg_ver = line.split("|",1)
 				pkg, ver = pkg_ver[0].rsplit("-",1)
+				if "," in ver:
+					ver = ver.rsplit(",",1)[0]
 				if "_" in ver:
 					ver, rev = ver.rsplit("_",1)
 				else:
