@@ -130,6 +130,8 @@ def distro(request, distro):
 	data = []
 	for branch in ["future", "current", "past"]:
 		h = DistroHistory(distro, packages, branch, now=now)
+		if h.codename == None:
+			h.codename = ""
 		data.append((branch.capitalize(), h.codename.capitalize(), h.snapshot_all_metrics()))
 	s = DataStats()
 	return render_to_response('distro.html',
