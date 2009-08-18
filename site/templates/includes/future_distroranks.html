@@ -17,7 +17,7 @@
   {% for distro in future_distros %}
   <tr>
     <th>{{ forloop.counter }}</th>
-    <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong>{{ distro.name }}</strong></td>
+    <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong><a href="/distro/{{ distro.name }}#Future">{{ distro.name }}</a></strong></td>
 		<td>{{ distro.codename }}</td>
 		<td>{{ distro.obs|percent }}</td>
 		<td>{{ distro.count|floatformat:2 }}</td>
