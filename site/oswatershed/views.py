@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 import os
+import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from utils.history import PackageHistory
+from utils.history import PackageHistory, DistroHistory
 from utils.stats import DataStats, PackageStats, DistroRanks
 from utils.crawlhistory import CrawlHistory
 from utils.search import Search
 from utils.errors import *
+from utils.db import groups
 
 def index(request):
 	s = DataStats()
@@ -119,5 +121,22 @@ def pkg_set(request, group):
 			"set_name": "test set",
 			"distros": [],
 			"pkg_set": [p]
+		}
+	)
+
+def distro(request, distro):
+	packages = map(PackageHistory, groups.get_group("twenty"))
+	now = datetime.datetime.now()
+	data = []
+	for branch in ["future", "current", "past"]:
+		h = DistroHistory(distro, packages, branch, now=now)
+		data.append((branch.capitalize(), h.codename.capitalize(), h.snapshot_all_metrics()))
+	s = DataStats()
+	return render_to_response('distro.html',
+		{"stats": s,
+			"name": distro,
+			"data": data,
+			"True": True,
+			"zero": 0
 		}
 	)

@@ -11,6 +11,12 @@ def list_distros():
 		result = map(lambda x: x[0], cur.fetchall())
 	return result
 
+def list_all_distro_packages(distro):
+	with cursor() as cur:
+		cur.execute("SELECT DISTINCT packages.name FROM packages, distros, repos, dreleases WHERE packages.id = dreleases.package_id AND distros.id=repos.distro_id AND repos.id = dreleases.repo_id AND distros.name=%s",(distro,))
+		result = map(lambda x: x[0], cur.fetchall())
+	return result
+
 def distro(name, color=None, description=None, website=None):
 	with cursor() as cur:
 		cur.execute("SELECT id FROM distros WHERE name = %s", (name,))

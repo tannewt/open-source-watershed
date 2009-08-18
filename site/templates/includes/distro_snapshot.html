@@ -1,0 +1,37 @@
+{% extends "includes/section.html" %}
+
+{% load osfilters %}
+
+{% block title %}{{ branch }} {% if codename %}({{ codename }}){% endif %}{% endblock %}
+
+{% block content%}
+<a name="{{ branch }}"></a>
+<table style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; border: none; width: 100%; border-spacing: 0px;">
+  <tr class="headings" style="font-size: small; background-image: url('http://static.oswatershed.org/blue_grad_27.png'); color: white; font-family: sans-serif; ">
+    <th style="font-weight: normal; ">Package</th>
+    <th style="font-weight: normal; ">Version</th>
+    <th style="font-weight: normal; ">Revision</th>
+    <th style="font-weight: normal; ">Upstream Version</th>
+    <th style="font-weight: normal; ">Number Newer</th>
+    <th style="font-weight: normal; ">Lag</th>
+  </tr>
+  {% for pkg in snapshot %}
+  <tr>
+    <th>{{ pkg.package }}</th>
+		{% if pkg.current %}
+			{% ifequal pkg.num_newer zero %}
+				<td><strong>{{ pkg.current }}</strong></td>
+			{% else %}
+				<td>{{ pkg.current }}</td>
+			{% endifequal %}
+    {% else %}
+      <td></td>
+    {% endif %}
+    <td></td>
+    <td>{{ pkg.newest }}</td>
+    <td>{{ pkg.num_newer }}</td>
+    <td>{{ pkg.lag|prettydelta:True }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

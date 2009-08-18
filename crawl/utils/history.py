@@ -11,6 +11,7 @@ from utils.timeline import *
 from utils.db import core
 from utils.errors import *
 from utils.version import VersionTree
+from utils.db import downstream
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
@@ -112,7 +113,18 @@ class PackageHistory:
 		else:
 			pre = "history of "
 		return "\n".join((pre+self.name,str(self.timeline),"release count",str(self.count)))
-		
+
+class DistroPackageData:
+	def __init__(self):
+		self.package = None
+		self.newest = None
+		self.current = None
+		self.num_newer = None
+		self.lag = None
+		self.ish = None
+	
+	def __str__(self):
+		return " ".join(map(str, (self.package, self.ish, self.newest, self.current, self.num_newer, self.lag)))
 
 class DistroHistory:
 	def __init__(self, name, packages=[], branch=None, codename=None, arch=None, now=None):
@@ -146,6 +158,11 @@ class DistroHistory:
 		self._hidden = []
 		self._pkg_order = []
 		
+		if packages == None:
+			packages = downstream.list_all_distro_packages(name)
+			print len(packages),"packages"
+			packages = map(PackageHistory, packages)
+		
 		for p in packages:
 			self.add_pkg(p)
 	
@@ -155,6 +172,24 @@ class DistroHistory:
 			#timeline = self._compute_package_age(self._packages[p][0].timeline, self._packages[p][1])
 			timeline = self._compute_package_obsoletion(self._packages[p][0].timeline, self._packages[p][1])
 			result.append((self._packages[p][1].last(date),timeline[date]))
+		return result
+	
+	def snapshot_all_metrics(self, date=None):
+		result = []
+		if date==None:
+			date = self._now
+		for p in self._pkg_order:
+			lag = self._compute_package_age(self._packages[p][0].timeline, self._packages[p][1])
+			obs = self._compute_package_obsoletion(self._packages[p][0].timeline, self._packages[p][1])
+			# return package name, current version, newer versions, lag
+			data = DistroPackageData()
+			data.package = p
+			data.ish = self._packages[p][0].ish
+			data.newest = self._packages[p][0].timeline.last(date)
+			data.current = self._packages[p][1].last(date)
+			data.num_newer = obs[date]
+			data.lag = lag[date]
+			result.append(data)
 		return result
 	
 	def get_lag_timeline(self):

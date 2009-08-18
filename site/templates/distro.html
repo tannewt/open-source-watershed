@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Open Source Watershed - {{ name }}{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block contentblock %}
+{% for branch, codename, snapshot in data %}
+	{% include "includes/distro_snapshot.html" %}
+{% endfor %}
+{% endblock %}
