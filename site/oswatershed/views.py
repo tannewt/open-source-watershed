@@ -127,13 +127,20 @@ def pkg_set(request, group):
 def distro(request, distro):
 	packages = map(PackageHistory, groups.get_group("twenty"))
 	now = datetime.datetime.now()
+	s = DataStats()
 	data = []
 	for branch in ["future", "current", "past"]:
-		h = DistroHistory(distro, packages, branch, now=now)
+		try:
+			h = DistroHistory(distro, packages, branch, now=now)
+		except UnknownPackageError:
+			return render_to_response('unknown_distro.html',
+				{"stats": s,
+				"name" : distro
+				}
+			)
 		if h.codename == None:
 			h.codename = ""
 		data.append((branch.capitalize(), h.codename.capitalize(), h.snapshot_all_metrics()))
-	s = DataStats()
 	return render_to_response('distro.html',
 		{"stats": s,
 			"name": distro,
