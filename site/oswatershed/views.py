@@ -132,7 +132,7 @@ def distro(request, distro):
 	for branch in ["future", "current", "past"]:
 		try:
 			h = DistroHistory(distro, packages, branch, now=now)
-		except UnknownPackageError:
+		except UnknownDistroError:
 			return render_to_response('unknown_distro.html',
 				{"stats": s,
 				"name" : distro
