@@ -185,7 +185,8 @@ class DistroHistory:
 			data = DistroPackageData()
 			data.package = p
 			data.ish = self._packages[p][0].ish
-			data.newest = self._packages[p][0].timeline.last(date)
+			upstream = self._packages[p][0].timeline
+			data.newest = self._get_greatest_timeline(upstream, upstream).last(date)
 			data.current = self._packages[p][1].last(date)
 			data.num_newer = obs[date]
 			data.lag = lag[date]
