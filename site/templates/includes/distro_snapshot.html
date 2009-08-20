@@ -17,7 +17,7 @@
   </tr>
   {% for pkg in snapshot %}
   <tr>
-    <th>{{ pkg.package }}</th>
+    <th><a href="/pkg/{{ pkg.package }}">{{ pkg.package }}</a></th>
 		{% if pkg.current %}
 			{% ifequal pkg.num_newer zero %}
 				<td><strong>{{ pkg.current }}</strong></td>
