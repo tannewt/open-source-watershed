@@ -117,7 +117,7 @@ def crawl_changelog(category,package,last_crawl=None):
 	try:
 		last = os.stat(fn).st_mtime
 	except:
-		print "ERROR: missing %s"%fn
+		print "WARNING: missing %s"%fn
 		return []
 	last = datetime.datetime.fromtimestamp(last)
 	rels = []
@@ -126,7 +126,7 @@ def crawl_changelog(category,package,last_crawl=None):
 		try:
 			f = open(fn)
 		except:
-			print "ERROR: opening %s"%fn
+			print "WARNING: opening %s"%fn
 			return []
 		
 		for line in f:
@@ -156,7 +156,7 @@ def crawl_changelog(category,package,last_crawl=None):
 						rel.released = released
 						rels.append(rel)
 				except:
-					print "ERROR: parsing '%s' in %s"%(line,fn)
+					print "WARNING: parsing '%s' in %s"%(line,fn)
 		f.close()
 	return rels
 
@@ -231,7 +231,7 @@ def crawl_repo(repo):
 						f = open(fn)
 						pkg = parse(f)
 					except:
-						print "ERROR: parsing %s"%fn
+						print "WARNING: parsing %s"%fn
 						continue
 					f.close()
 					

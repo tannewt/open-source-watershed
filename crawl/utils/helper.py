@@ -30,9 +30,15 @@ def ftp_open_url(url, filename, last_crawl=None):
 		except EOFError:
 			time.sleep(10)
 	ftp.cwd(d)
-	date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
+	try:
+		date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
+	except ftplib.error_perm:
+		print "WARNING ftp MDTM fail: ", url
+		return None
+	finally:
+		ftp.close()
+	
 	date = datetime.datetime.strptime(date,"%Y%m%d%H%M%S")
-	ftp.close()
 	if last_crawl==None or last_crawl<date:
 		request = urllib2.Request(url)
 		opener = urllib2.build_opener()

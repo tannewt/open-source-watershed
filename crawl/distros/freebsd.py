@@ -30,7 +30,6 @@ def get_repos(test):
 				repo.architecture = arch
 				repo.codename = int(version)
 				repo.branch = branch
-				print repo
 				repos.append(repo)
 				downstream.repo(repo, test)
 				if branch=="current" and (next_version == None or repo.codename > next_version):
