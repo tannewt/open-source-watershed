@@ -4,9 +4,11 @@ sys.path.append(".")
 
 from utils import helper
 from utils import parsers
+import httplib
 import time
 import re
 import datetime
+import urllib2
 from utils.db import sf as sf_module
 from utils.db import upstream
 from utils.cache import Cache
@@ -21,10 +23,21 @@ def get_files(project_id,last_crawl=None):
 		limit = 100
 	
 	fn = "files/sourceforge/%d-%s.rss"%(time.time(),project_id)
-	helper.open_url("http://sourceforge.net/export/rss2_projfiles.php?group_id=%s&rss_limit=%s"%(project_id,limit),fn)
+	try:
+		ret = helper.open_url("http://sourceforge.net/api/file/index/project-id/%s/rss"%(project_id,),fn)
+	except httplib.BadStatusLine:
+		print "ERROR bad status"
+		return []
+	except urllib2.URLError:
+		print "ERROR UrlError"
+		return []
 	
-	pattern_file = re.compile("(\S*) \([0-9]* bytes, [0-9]* downloads to date\)")
-	pattern_date = re.compile("<pubDate>(.*)</pubDate>")
+	if ret==None:
+		print " ERROR"
+		return []
+	
+	pattern_file = re.compile("<link>http://sourceforge.net/projects/.*/(\S*)/download</link>")
+	pattern_date = re.compile("<pubDate>(.*) [\+-][0-9]{4}</pubDate>")
 	
 	files = []
 	fs = []
@@ -34,7 +47,7 @@ def get_files(project_id,last_crawl=None):
 			fs=tmp_fs
 		ds = pattern_date.findall(line)
 		if len(ds)>0:
-			d = datetime.datetime.strptime(ds[0],"%a, %d %b %Y %H:%M:%S %Z")
+			d = datetime.datetime.strptime(ds[0],"%a, %d %b %Y %H:%M:%S")
 			for f in fs:
 				files.append((f,d))
 				fs = []
