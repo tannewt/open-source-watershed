@@ -24,13 +24,16 @@ def ftp_open_url(url, filename, last_crawl=None):
 	host = tokens[2]
 	fn = tokens[-1]
 	d = "/".join(tokens[3:-1])
+	ftp = None
 	for i in range(3):
 		try:
 			ftp = ftplib.FTP(host,"anonymous",timeout=90)
 		except EOFError:
 			time.sleep(10)
-	ftp.cwd(d)
+	if ftp==None:
+		return None
 	try:
+		ftp.cwd(d)
 		date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
 	except ftplib.error_perm:
 		print "WARNING ftp MDTM fail: ", url
@@ -42,7 +45,11 @@ def ftp_open_url(url, filename, last_crawl=None):
 	if last_crawl==None or last_crawl<date:
 		request = urllib2.Request(url)
 		opener = urllib2.build_opener()
-		datastream = opener.open(request)
+		try:
+			datastream = opener.open(request)
+		except urllib2.URLError:
+			print "urllib2.URLError",url
+			return None
 		out = open(filename, "w")
 		out.write(datastream.read())
 		out.close()
