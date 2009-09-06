@@ -24,6 +24,7 @@ class PackageHistory:
 		# find the package name aliases
 		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 		cur = con.cursor()
+		cur2 = con.cursor()
 		
 		cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
 		result = cur.fetchone()
@@ -65,12 +66,14 @@ class PackageHistory:
 		for alias in aliases:
 			cur.execute("SELECT DISTINCT distros.id FROM dreleases, repos, distros WHERE dreleases.repo_id = repos.id AND distros.id = repos.distro_id AND dreleases.package_id = %s",(alias,))
 			for row in cur:
-				if row[0] not in distro_aliases:
-					distro_aliases[row[0]] = [alias]
-				else:
-					distro_aliases[row[0]].append(alias)
+				cur2.execute("SELECT * FROM unlinks WHERE package_id = %s AND distro_id = %s",(alias,row[0]))
+				if cur2.rowcount == 0:
+					if row[0] not in distro_aliases:
+						distro_aliases[row[0]] = [alias]
+					else:
+						distro_aliases[row[0]].append(alias)
 		self.aliases = distro_aliases
-		if VERBOSE:
+		if True or VERBOSE:
 			print self.aliases
 		
 		self.ish = False

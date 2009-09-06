@@ -110,6 +110,18 @@ cur.execute("""CREATE TABLE link_reviews (
 link_id INT NOT NULL REFERENCES links(id)
 ) INHERITS (reviews)""")
 
+cur.execute("""CREATE TABLE unlinks (
+package_id INT NOT NULL REFERENCES packages(id),
+distro_id INT REFERENCES distros(id),
+PRIMARY KEY(package_id, distro_id)
+)""")
+
+cur.execute("""CREATE TABLE unlink_reviews (
+unlink_package_id INT NOT NULL,
+unlink_distro_id INT,
+FOREIGN KEY (unlink_package_id, unlink_distro_id) REFERENCES unlinks(package_id, distro_id)
+) INHERITS (reviews)""")
+
 cur.execute("""CREATE TABLE releases (
 id SERIAL NOT NULL,
 package_id INT NOT NULL REFERENCES packages(id),

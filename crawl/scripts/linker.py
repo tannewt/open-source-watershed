@@ -23,6 +23,8 @@ if cmd == "list":
 		print p1,"<--",p2
 elif cmd == "link":
 	cur.execute("INSERT INTO links (package_tgt, package_src, distro_src) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM packages WHERE name=%s),(SELECT id FROM distros WHERE name=%s))",(sys.argv[2],sys.argv[3],sys.argv[4]))
+elif cmd == "hard_unlink":
+	cur.execute("INSERT INTO unlinks (package_id, distro_id) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM distros WHERE name=%s))",(sys.argv[2],sys.argv[3]))
 elif cmd == "unlink":
 	pass
 else:
