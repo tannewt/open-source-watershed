@@ -12,7 +12,16 @@ class VersionNode:
 			self.date = date
 		else:
 			if tokens[0] not in self.tokens:
-				self.tokens.append(tokens[0])
+				# Insert numbers before higher numbers.  Ignore strings.
+				index = None
+				if type(tokens[0]) == int:
+					for i in range(len(self.tokens)):
+						if type(self.tokens[i]) == int and tokens[0] < self.tokens[i]:
+							index = i
+				if index == None:
+					self.tokens.append(tokens[0])
+				else:
+					self.tokens.insert(index, tokens[0])
 				self.children[tokens[0]] = VersionNode()
 			self.children[tokens[0]].add(date, tokens[1:])
 	
