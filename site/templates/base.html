@@ -19,8 +19,14 @@ function searchWatershed()
       {% block bar %}<div id="bar"><div class="stat">{{ stats.distro_count|intcomma }} Distributions</div><div class="stat">{{ stats.package_count|intcomma }} Total Packages</div><div class="stat">{{ stats.release_count|intcomma }} Releases</div><div class="stat">{{ stats.upstream_count|intcomma }} Upstream Packages</div><div class="search right"><input id="search" type="text" name="search" onKeyUp="if (event.keyCode == 13) { searchWatershed(); }"/><a onClick="searchWatershed();">Search</a></div></div>{% endblock %}
       {% block logo %}<div id="logo">
         <a href="/"><img src="http://static.oswatershed.org/logo.png" /></a>
+{% block user %}
+      <div id="user">
+         {% include "includes/user_snippet.html" %}
       </div>
       {% endblock %}
+      </div>
+      {% endblock %}
+      
       {% block sidebar %}
       <div class="right sidebar" style="margin: 0px 0px 0px 0px; padding: 0px 0px 0px 0px; padding-top: 17px;">
       {% block right %} {% endblock %}

@@ -11,10 +11,13 @@ from utils.stats import DataStats, PackageStats, DistroRanks
 from utils.crawlhistory import CrawlHistory
 from utils.search import Search
 from utils.errors import *
-from utils.db import groups
+from utils.db import groups,users
 
 def index(request):
-	s = DataStats()
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
+	print vals['user']
 	upstream = CrawlHistory()
 	rest = []
 	for distro in ["arch","debian", "fedora", "freebsd", "funtoo", "gentoo", "opensuse", "sabayon", "slackware", "ubuntu"]:
@@ -29,17 +32,30 @@ def index(request):
 	
 	sidebar = [("Released Today:","",""),("Upstream",upstream.today,upstream.releases[:5])]+rest
 	
-	return render_to_response('index.html',
-		{"stats": s,
-		"crawl_stats":sidebar,
-		"current_distros":current.distros,
-		"future_distros":future.distros,
-		"True" : True
-		}
-	)
+	vals["crawl_stats"] = sidebar
+	vals["current_distros"] = current.distros
+	vals["future_distros"] = future.distros
+	vals["True"] = True
+	return render_to_response('index.html', vals)
 
-def distro(request, distro):
-	return HttpResponse("Hello, this is the distro page for %s."%(distro,))
+def maybe_login(request):
+	user = None
+	if request.POST.has_key("username") and request.POST.has_key("password"):
+		user = users.get(request.POST["username"], request.POST["password"])
+	if (request.GET.has_key("logout") or request.POST.has_key("logout")) and request.session.has_key('user'):
+		del request.session['user']
+	if request.session.has_key('user'):
+		return request.session['user']
+	elif user != None:
+		request.session['user'] = user
+	return user
+
+def home(request):
+	vals = {}
+	vals['stats'] = DataStats()
+	if maybe_login(request):
+		pass
+	return render_to_response('home.html', vals)
 
 STAT_DISTROS = [("arch","current"),("arch","future"),
 								("debian","current"),("debian","future"),("debian","experimental"),
@@ -52,33 +68,30 @@ STAT_DISTROS = [("arch","current"),("arch","future"),
 								("ubuntu","current"),("ubuntu","future")
 ]
 def pkg(request, pkg):
-	s = DataStats()
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
+	vals["name"] = pkg
 	try:
 		ps = PackageStats(pkg)
 	except UnknownPackageError:
-		return render_to_response('unknown_pkg.html',
-		{"stats": s,
-		 "name" : pkg
-		}
-	)
+		return render_to_response('unknown_pkg.html', vals)
 	h = ps.hist.timeline[-10:]
 	history = []
 	for d in h:
 		history.insert(0, (d, h[d]))
-	return render_to_response('pkg.html',
-		{"stats": s,
-		"pkg_stats":filter(lambda x: x!=None, map(lambda x: ps.for_distro(*x),STAT_DISTROS)),
-		"name" : pkg,
-		"description" : ps.hist.description,
-		"history" : history,
-		"approx" : ps.hist.ish,
-		"True" : True
-		}
-	)
+	vals["pkg_stats"] = filter(lambda x: x!=None, map(lambda x: ps.for_distro(*x),STAT_DISTROS))
+	vals["description"] = ps.hist.description
+	vals["history"] = history
+	vals["approx"] = ps.hist.ish
+	vals["True"] = True
+	return render_to_response('pkg.html', vals)
 
 def search2(request, search):
 	search = Search(search)
-	s = DataStats()
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
 	
 	results = []
 	for name,history in search.results:
@@ -88,16 +101,15 @@ def search2(request, search):
 		if line[0]==line[1]:
 			line[1] = "-"
 		results.append(line)
-	return render_to_response('search2.html',
-		{"stats": s,
-		"search": search.search,
-		"results" : results
-		}
-	)
+	vals["results"] = results
+	vals["search"] = search.search
+	return render_to_response('search2.html', vals)
 
 def search(request, search):
 	search = Search(search, basic=True)
-	s = DataStats()
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
 	
 	results = []
 	for name,description in search.results:
@@ -105,29 +117,29 @@ def search(request, search):
 			name = name[:32]+"..."
 		line = [name, description]
 		results.append(line)
-	return render_to_response('search.html',
-		{"stats": s,
-		"search": search.search,
-		"results" : results
-		}
-	)
+	vals["results"] = results
+	vals["search"] = search.search
+	return render_to_response('search.html', vals)
 
 def pkg_set(request, group):
-	p = PackageHistory("inkscape")
-	s = DataStats()
-	return render_to_response('pkg_set.html',
-		{"stats": s,
-			"name": "package set",
-			"set_name": "test set",
-			"distros": [],
-			"pkg_set": [p]
-		}
-	)
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
+	vals["pkg_set"] = [PackageHistory("inkscape")]
+	vals["distros"] = []
+	vals["set_name"] = "test set"
+	vals["name"] = "package set"
+	return render_to_response('pkg_set.html', vals)
 
 def distro(request, distro):
 	packages = map(PackageHistory, groups.get_group("twenty"))
 	now = datetime.datetime.now()
-	s = DataStats()
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
+	vals["True"] = True
+	vals["zero"] = 0
+	vals["name"] = distro
 	data = []
 	for branch in ["future", "current", "past"]:
 		try:
@@ -141,11 +153,5 @@ def distro(request, distro):
 		if h.codename == None:
 			h.codename = ""
 		data.append((branch.capitalize(), h.codename.capitalize(), h.snapshot_all_metrics()))
-	return render_to_response('distro.html',
-		{"stats": s,
-			"name": distro,
-			"data": data,
-			"True": True,
-			"zero": 0
-		}
-	)
+	vals["data"] = data
+	return render_to_response('distro.html', vals)

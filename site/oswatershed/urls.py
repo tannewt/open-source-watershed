@@ -8,6 +8,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('',
 		# Example:
 		(r'^$', 'oswatershed.views.index'),
+		(r'^$', 'oswatershed.views.home'),
 		(r'^distro/(?P<distro>[^/]+)/?$', 'oswatershed.views.distro'),
 		(r'^pkg/(?P<pkg>[^/]+)/?$', 'oswatershed.views.pkg'),
 		(r'^search2/(?P<search>[^/]+)/?$', 'oswatershed.views.search2'),

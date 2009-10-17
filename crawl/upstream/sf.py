@@ -36,7 +36,7 @@ def get_files(project_id,last_crawl=None):
 		print " ERROR"
 		return []
 	
-	pattern_file = re.compile("<link>http://sourceforge.net/projects/.*/(\S*)/download</link>")
+	pattern_file = re.compile("<link>http://sourceforge.net/projects/.*%2F(\S*)/download</link>")
 	pattern_date = re.compile("<pubDate>(.*) [\+-][0-9]{4}</pubDate>")
 	
 	files = []
