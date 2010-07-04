@@ -9,6 +9,7 @@ from utils import helper
 from utils.version import VersionTree
 from utils.timeline import *
 from utils.db import core
+from utils.db import cursor
 from utils.errors import *
 from utils.version import VersionTree
 from utils.db import downstream
@@ -22,84 +23,80 @@ class PackageHistory:
 	def __init__(self, name, force_approx = False):
 		self.name = name
 		# find the package name aliases
-		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
-		cur = con.cursor()
-		cur2 = con.cursor()
-		
-		cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
-		result = cur.fetchone()
-		if result == None:
-			con.close()
-			raise UnknownPackageError(name)
-		else:
-			sid = result[0]
-		
-		# find the root of the uptree
-		while True:
-			cur.execute("SELECT package_tgt FROM links WHERE package_src = %s",(sid,))
-			row = cur.fetchone()
-			if row==None:
-				break
-			sid = row[0]
-		
-		cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE packages.id = %s",(sid,))
-		sname, self.description = cur.fetchone()
-		
-		if VERBOSE:
-			print "found real name",sname
-		self.name = sname
-		
-		explore = [sid]
-		aliases = [sid]
-		while len(explore)>0:
-			tmp = []
-			for sid in explore:
-				cur.execute("SELECT package_src FROM links WHERE package_tgt = %s",(sid,))
+		with cursor() as cur:
+			cur.execute("SELECT id FROM packages WHERE name = %s",(name,))
+			result = cur.fetchone()
+			if result == None:
+				con.close()
+				raise UnknownPackageError(name)
+			else:
+				sid = result[0]
+			
+			# find the root of the uptree
+			while True:
+				cur.execute("SELECT package_tgt FROM links WHERE package_src = %s",(sid,))
+				row = cur.fetchone()
+				if row==None:
+					break
+				sid = row[0]
+			
+			cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE packages.id = %s",(sid,))
+			sname, self.description = cur.fetchone()
+			
+			if VERBOSE:
+				print "found real name",sname
+			self.name = sname
+			
+			explore = [sid]
+			aliases = [sid]
+			while len(explore)>0:
+				tmp = []
+				for sid in explore:
+					cur.execute("SELECT package_src FROM links WHERE package_tgt = %s",(sid,))
+					for row in cur:
+						aliases.append(row[0])
+						tmp.append(row[0])
+				explore = tmp
+			
+			#print "aliases",aliases
+			
+			distro_aliases = {}
+			for alias in aliases:
+				cur.execute("SELECT DISTINCT distros.id FROM dreleases, repos, distros WHERE dreleases.repo_id = repos.id AND distros.id = repos.distro_id AND dreleases.package_id = %s",(alias,))
 				for row in cur:
-					aliases.append(row[0])
-					tmp.append(row[0])
-			explore = tmp
-		
-		#print "aliases",aliases
-		
-		distro_aliases = {}
-		for alias in aliases:
-			cur.execute("SELECT DISTINCT distros.id FROM dreleases, repos, distros WHERE dreleases.repo_id = repos.id AND distros.id = repos.distro_id AND dreleases.package_id = %s",(alias,))
-			for row in cur:
-				cur2.execute("SELECT * FROM unlinks WHERE package_id = %s AND distro_id = %s",(alias,row[0]))
-				if cur2.rowcount == 0:
-					if row[0] not in distro_aliases:
-						distro_aliases[row[0]] = [alias]
-					else:
-						distro_aliases[row[0]].append(alias)
-		self.aliases = distro_aliases
-		if True or VERBOSE:
-			print self.aliases
-		
-		self.ish = False
-		#print "query upstream"
-		if not force_approx:
-			q = "SELECT version, MIN(released) FROM ureleases WHERE ("+ " OR ".join(("package_id=%s",)*len(aliases)) + ") GROUP BY version ORDER BY MIN(released), version"
-			cur.execute(q,aliases)
-		if cur.rowcount == 0 or force_approx:
+					with cursor() as cur2:
+						cur2.execute("SELECT * FROM unlinks WHERE package_id = %s AND distro_id = %s",(alias,row[0]))
+						if cur2.rowcount == 0:
+							if row[0] not in distro_aliases:
+								distro_aliases[row[0]] = [alias]
+							else:
+								distro_aliases[row[0]].append(alias)
+			self.aliases = distro_aliases
 			if VERBOSE:
-				print "falling back to approximate upstream"
-			self.ish = True
-			q = "SELECT dreleases.version, MIN(dreleases.released) FROM dreleases, packages WHERE dreleases.package_id = packages.id AND packages.name=%s AND dreleases.version!='9999' GROUP BY dreleases.version ORDER BY MIN(dreleases.released), dreleases.version"
-			cur.execute(q,(self.name,))
-		
-		data = []
-		if VERBOSE:
-			print "upstream"
-		for version,date in cur:
+				print self.aliases
+			
+			self.ish = False
+			#print "query upstream"
+			if not force_approx:
+				q = "SELECT version, MIN(released) FROM ureleases WHERE ("+ " OR ".join(("package_id=%s",)*len(aliases)) + ") GROUP BY version ORDER BY MIN(released), version"
+				cur.execute(q,aliases)
+			if cur.rowcount == 0 or force_approx:
+				if VERBOSE:
+					print "falling back to approximate upstream"
+				self.ish = True
+				q = "SELECT dreleases.version, MIN(dreleases.released) FROM dreleases, packages WHERE dreleases.package_id = packages.id AND packages.name=%s AND dreleases.version!='9999' GROUP BY dreleases.version ORDER BY MIN(dreleases.released), dreleases.version"
+				cur.execute(q,(self.name,))
+			
+			data = []
 			if VERBOSE:
-				print version,date
-			data.append((date, version))
+				print "upstream"
+			for version,date in cur:
+				if VERBOSE:
+					print version,date
+				data.append((date, version))
 		
 		self.timeline = Timeline(data)
 		self.count = DayTimeline(data,default=[])
-		
-		con.close()
 	
 	def get_greatest_timeline(self):
 		versions = VersionTree(self.timeline)
@@ -135,22 +132,19 @@ class DistroHistory:
 		self.branch = branch
 		self.codename = codename
 		
-		con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
-		cur = con.cursor()
-		cur.execute("SELECT id, color FROM distros WHERE name = %s",(name,))
-		row = cur.fetchone()
-		if row==None:
-			con.close()
-			raise UnknownDistroError(name)
-		
-		self.id, self.color = row
-		
-		if branch!=None and codename==None:
-			cur.execute("SELECT repos.codename FROM repos, branches WHERE repos.distro_id = %s AND branches.repo_id = repos.id AND branches.branch=%s ORDER BY branches.start DESC LIMIT 1",(self.id, branch))
+		with cursor() as cur:
+			cur.execute("SELECT id, color FROM distros WHERE name = %s",(name,))
 			row = cur.fetchone()
-			if row!=None:
-				self.codename = row[0]
-		con.close()
+			if row==None:
+				raise UnknownDistroError(name)
+			
+			self.id, self.color = row
+			
+			if branch!=None and codename==None:
+				cur.execute("SELECT repos.codename FROM repos, branches WHERE repos.distro_id = %s AND branches.repo_id = repos.id AND branches.branch=%s ORDER BY branches.start DESC LIMIT 1",(self.id, branch))
+				row = cur.fetchone()
+				if row!=None:
+					self.codename = row[0]
 		
 		self.arch = arch
 		self._now = now
@@ -391,37 +385,33 @@ class DistroHistory:
 		return age
 
 def get_upstream(history=True):
-	con = db.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
-	cur = con.cursor()
-	result = []
-	q = cur.execute("SELECT DISTINCT name FROM packages, ureleases WHERE releases.package_id = packages.id")
-	total = q
-	i = 0
-	for pkg in cur:
-		#print pkg[0],i,"/",total
-		if history:
-			result.append(PackageHistory(pkg[0]))
-		else:
-			result.append(pkg[0])
-		i += 1
-	con.close()
+	with cursor() as cur:
+		result = []
+		q = cur.execute("SELECT DISTINCT name FROM packages, ureleases WHERE releases.package_id = packages.id")
+		total = q
+		i = 0
+		for pkg in cur:
+			#print pkg[0],i,"/",total
+			if history:
+				result.append(PackageHistory(pkg[0]))
+			else:
+				result.append(pkg[0])
+			i += 1
 	return result
 
 def get_all(history=True):
-	con = db.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
-	cur = con.cursor()
-	result = []
-	q = cur.execute("SELECT name FROM packages")
-	total = q
-	i = 0
-	for pkg in cur:
-		#print pkg[0],i,"/",total
-		if history:
-			result.append(PackageHistory(pkg[0]))
-		else:
-			result.append(pkg[0])
-		i += 1
-	con.close()
+	with cursor() as cur:
+		result = []
+		q = cur.execute("SELECT name FROM packages")
+		total = q
+		i = 0
+		for pkg in cur:
+			#print pkg[0],i,"/",total
+			if history:
+				result.append(PackageHistory(pkg[0]))
+			else:
+				result.append(pkg[0])
+			i += 1
 	return result
 
 def get_all_distros(packages, branch):
