@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import xml.etree.ElementTree as xml
+import xml.etree.cElementTree as xml
 import datetime
 import gzip
 import time
@@ -24,6 +24,7 @@ def get_repos(test):
 	repos = []
 	files = map(lambda s: s[1][:-1],helper.open_dir("http://"+MIRROR+"/"+HTTP_START_DIR+"/releases"))
 	releases = []
+	print releases
 	#get the releases
 	for f in files:
 		if f!="test":
@@ -94,6 +95,7 @@ def crawl_repo(repo):
 		if last_crawl == None or (repomd != None and last_crawl < repomd):
 			last_crawl = repomd
 		if repomd:
+			print filename
 			f = open(filename)
 			repomd_tree = xml.parse(f)
 			f.close()
@@ -112,12 +114,16 @@ def crawl_repo(repo):
 	
 	rels = []
 	for p,filename in primaries:
+		print filename
 		t = helper.open_url(p,filename,repo.last_crawl)
 		if t==None:
 			continue
 		gzp = gzip.open(filename)
+		print "opened"
 		primary_tree = xml.parse(gzp)
+		print "parsed"
 		gzp.close()
+		print "closed"
 		
 		i = primary_tree.getiterator(NAMESPACE + "package")
 
@@ -140,5 +146,5 @@ def crawl_repo(repo):
 	
 	if last_crawl==None:
 		last_crawl = repo.last_crawl
-	
+	print "return",last_crawl,len(rels)
 	return (last_crawl, rels)

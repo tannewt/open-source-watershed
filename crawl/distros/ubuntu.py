@@ -18,17 +18,23 @@ CN_HARDY="hardy"
 CN_INTREPID="intrepid"
 CN_JAUNTY="jaunty"
 CN_KARMIC="karmic"
+CN_LUCID="lucid"
+CN_MAVERICK="maverick"
+CN_NATTY="natty"
+CN_ONEIRIC="oneiric"
 
 CODENAMES = [
 	CN_DAPPER,
-	CN_FEISTY,
-	CN_GUTSY,
 	CN_HARDY,
 	CN_INTREPID,
 	CN_JAUNTY,
-	CN_KARMIC]
+	CN_KARMIC,
+	CN_LUCID,
+	CN_MAVERICK,
+	CN_NATTY,
+	CN_ONEIRIC]
 
-LTS = [CN_DAPPER, CN_HARDY]
+LTS = [CN_DAPPER, CN_HARDY, CN_LUCID]
 
 ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
 	CN_FEISTY : ["amd64", "i386", "powerpc", "sparc"],
@@ -36,7 +42,11 @@ ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
 	CN_HARDY : ["amd64", "i386"],
 	CN_INTREPID : ["amd64", "i386"],
 	CN_JAUNTY : ["amd64", "i386"],
-	CN_KARMIC : ["amd64", "i386"]}
+	CN_KARMIC : ["amd64", "i386"],
+	CN_LUCID : ["amd64", "i386"],
+	CN_MAVERICK : ["amd64", "i386"],
+	CN_NATTY : ["amd64", "i386"],
+	CN_ONEIRIC : ["amd64", "i386"]}
 
 MIRROR = "ubuntu.osuosl.org"
 

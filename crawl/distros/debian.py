@@ -16,21 +16,23 @@ CN_LENNY="lenny"
 CN_SARGE="sarge"
 CN_SID="sid"
 CN_SQUEEZE="squeeze"
+CN_WHEEZY="wheezy"
 CN_EXPERIMENTAL="experimental"
 
 CODENAMES = [
-	CN_ETCH,
 	CN_LENNY,
-	CN_SID,
 	CN_SQUEEZE,
+	CN_WHEEZY,
+	CN_SID,
 	CN_EXPERIMENTAL]
 
 BRANCHES = {
-	CN_ETCH : "lts",
-	CN_LENNY : "current",
+	CN_ETCH : "past",
+	CN_LENNY : "lts",
 	CN_SARGE : "past",
 	CN_SID : "experimental",
-	CN_SQUEEZE : "future",
+	CN_SQUEEZE : "current",
+	CN_WHEEZY : "future",
 	CN_EXPERIMENTAL : "experimental"}
 
 MIRROR = "debian.osuosl.org"
@@ -68,7 +70,7 @@ def get_repos(test):
 					components=line.split(' ')[1:]
 			
 			if not architectures:
-				architectures = "alpha amd64 arm hppa i386 ia64 mips mipsel powerpc s390 sparc".split(' ')
+				architectures = "alpha amd64 arm armel hppa i386 ia64 kfreebsd-i386 kfreebsd-amd64 mips mipsel powerpc s390 sparc".split(' ')
 			
 			#print components,architectures
 			if not architectures or not components:

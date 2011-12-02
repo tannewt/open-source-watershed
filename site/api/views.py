@@ -3,8 +3,13 @@ from django.http import HttpResponse
 from utils.history import *
 
 def package(request):
+	if "package" not in request.GET or "cb" not in request.GET:
+		return HttpResponse(status=400)
 	p = request.GET["package"]
-	ph = PackageHistory(p)
+	try:
+		ph = PackageHistory(p)
+	except UnknownPackageError:
+		return HttpResponse(status=400)
 	distros = get_all_distros([ph], "current")
 	cb = request.GET["cb"]
 	response = cb+'({"package":"%s","latest":"%s","distros":['%(ph.name, ph.get_greatest_timeline()[-1])

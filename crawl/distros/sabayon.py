@@ -13,7 +13,7 @@ MIRROR = "mirror.internode.on.net"
 HTTP_START_DIR = "pub/SabayonLinux"
 FTP_START_DIR = "pub/sabayonlinux"
 
-VERSIONS = ["3.5", "4", "5"]
+VERSIONS = ["4", "5"]
 CURRENT = "5"
 FUTURE = ""
 
