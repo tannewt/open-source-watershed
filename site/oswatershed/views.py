@@ -12,12 +12,9 @@ from utils.crawlhistory import CrawlHistory
 from utils.search import Search
 from utils.errors import *
 from utils.db import groups,users
+from utils.timeline import Timeline
 
-def index(request):
-	vals = {}
-	vals["stats"] = DataStats()
-	vals["user"] = maybe_login(request)
-	print vals['user']
+def sidebar():
 	upstream = CrawlHistory()
 	rest = []
 	for distro in ["arch","debian", "fedora", "freebsd", "funtoo", "gentoo", "opensuse", "sabayon", "slackware", "ubuntu"]:
@@ -27,12 +24,21 @@ def index(request):
 			continue
 		rest.append((distro,ch.today,ch.releases[:5]))
 	
+	sidebar = [("Released Today:","",""),("Upstream",upstream.today,upstream.releases[:5])]+rest
+	return sidebar
+
+def index(request):
+	vals = {}
+	vals["stats"] = DataStats()
+	vals["user"] = maybe_login(request)
+	print vals['user']
+	if not vals['user'] == None:
+		return home(request, vals['user'])
+	
 	current = DistroRanks()
 	future = DistroRanks("future")
 	
-	sidebar = [("Released Today:","",""),("Upstream",upstream.today,upstream.releases[:5])]+rest
-	
-	vals["crawl_stats"] = sidebar
+	vals["crawl_stats"] = sidebar()
 	vals["current_distros"] = current.distros
 	vals["future_distros"] = future.distros
 	vals["True"] = True
@@ -44,17 +50,48 @@ def maybe_login(request):
 		user = users.get(request.POST["username"], request.POST["password"])
 	if (request.GET.has_key("logout") or request.POST.has_key("logout")) and request.session.has_key('user'):
 		del request.session['user']
-	if request.session.has_key('user'):
+	if request.session.has_key('user') and request.session['user'].username != None:
 		return request.session['user']
 	elif user != None:
 		request.session['user'] = user
 	return user
 
-def home(request):
+def home(request, user):
 	vals = {}
+	vals['user'] = user
 	vals['stats'] = DataStats()
-	if maybe_login(request):
-		pass
+	vals["crawl_stats"] = sidebar()
+	
+	now = datetime.datetime.now()
+	week_ago = now - datetime.timedelta(days=7)
+	
+	timeline = Timeline()
+	group = groups.get_group(".tracked")
+	print group
+	histories = []
+	for pkg in group:
+		hist = PackageHistory(pkg)
+		histories.append(hist)
+		for date in hist.timeline[week_ago:]:
+			timeline[date] = (None, pkg, hist.timeline[date])
+	
+	distro = DistroHistory('gentoo', histories)
+	for p in group:
+		downstream = distro.get_pkg(p)[week_ago:]
+		for date in downstream:
+			timeline[date] = (distro.name, date.time(), pkg, downstream[date])
+	
+	feed = [["Today",[]], ["Yesterday",[]]]
+	for i in range(2,7):
+		day = now - datetime.timedelta(i)
+		feed.append([day.strftime("%A"), []])
+	
+	for date in timeline:
+		feed[(now.date() - date.date()).days][1].append(timeline[date])
+	print feed
+	map(lambda x: x[1].reverse(), feed)
+	
+	vals["release_feed"] = feed
 	return render_to_response('home.html', vals)
 
 STAT_DISTROS = [("arch","current"),("arch","future"),
@@ -155,3 +192,31 @@ def distro(request, distro):
 		data.append((branch.capitalize(), h.codename.capitalize(), h.snapshot_all_metrics()))
 	vals["data"] = data
 	return render_to_response('distro.html', vals)
+
+def track_package(request, pkg):
+	action = request.GET["action"]
+	cb = request.GET["cb"]
+	user = maybe_login(request)
+	status = "no_user"
+	if user != None:
+		if action == "track":
+			if not groups.has_group(".tracked", user.id):
+				groups.create_group(".tracked", user.id)
+			groups.add_to_group(pkg, ".tracked", user.id)
+			status = "tracked"
+		elif action == "untrack":
+			if groups.has_group(".tracked", user.id):
+				groups.remove_from_group(pkg, ".tracked", user.id)
+			status = "untracked"
+		elif action == "is_tracked":
+			if groups.in_group(pkg, ".tracked", user.id):
+				status = "tracked"
+			else:
+				status = "untracked"
+		else:
+			status = "unknown_command"
+	response = cb + '({"status":"%s"'%(status) + "})"
+	return HttpResponse(response)
+
+def api(request, version):
+	print request, version

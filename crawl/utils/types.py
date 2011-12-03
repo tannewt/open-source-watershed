@@ -40,3 +40,7 @@ class User:
 		self.level = None
 		self.reviews = None
 		self.points = None
+		self.id = None
+	
+	def __str__(self):
+		return str(self.username)

@@ -5,22 +5,22 @@ from . import cursor
 from . import core
 import psycopg2
 
-def add_sf_target(name, project_num, packages, bad_tokens, bad_versions, user_id=1):
+def add_sf_target(name, project_num, packages, bad_tokens, bad_versions, path, user_id=1):
 	with cursor() as cur:
-		cur.execute("INSERT INTO sf (name, project_num, packages, bad_tokens, bad_versions, user_id) VALUES (%s, %s, %s, %s, %s, %s)",(name, project_num, packages, bad_tokens, bad_versions, user_id))
+		cur.execute("INSERT INTO sf (name, project_num, packages, bad_tokens, bad_versions, paths, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s)",(name, project_num, packages, bad_tokens, bad_versions, path, user_id))
 		cur.execute("SELECT lastval();")
 		i = cur.fetchone()[0]
 	return i
 
 def get_sf_target(name):
 	with cursor() as cur:
-		cur.execute("SELECT id, name, project_num, packages, bad_tokens, bad_versions, last_crawl FROM sf WHERE name = %s", (name,))
+		cur.execute("SELECT id, name, project_num, packages, bad_tokens, bad_versions, paths, last_crawl FROM sf WHERE name = %s", (name,))
 		row = cur.fetchone()
 	return row
 
 def get_sf_targets():
 	with cursor() as cur:
-		cur.execute("SELECT id, name, project_num, packages, bad_tokens, bad_versions, last_crawl FROM sf")
+		cur.execute("SELECT id, name, project_num, packages, bad_tokens, bad_versions, paths, last_crawl FROM sf")
 		result = []
 		for row in cur:
 			result.append(row)

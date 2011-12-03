@@ -18,6 +18,7 @@ def get(username, passwd):
 		if cur.rowcount > 0:
 			user = types.User()
 			user.username = username
+			user.id = cur.fetchone()[0]
 			return user
 		else:
 			return None

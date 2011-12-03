@@ -195,10 +195,13 @@ project_num INT NOT NULL,
 packages VARCHAR(255)[],
 bad_tokens VARCHAR(255)[],
 bad_versions VARCHAR(255)[],
+paths TEXT[] NOT NULL,
 user_id INT REFERENCES users(id),
 last_crawl TIMESTAMP,
 UNIQUE (name)
 )""")
+
+# ALTER TABLE sf ADD COLUMN paths text[] not null DEFAULT '{/}';
 
 cur.execute("""CREATE TABLE sf_releases (
 sf_id INT NOT NULL REFERENCES sf(id),

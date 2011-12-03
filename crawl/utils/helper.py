@@ -36,7 +36,7 @@ def ftp_open_url(url, filename, last_crawl=None):
 		ftp.cwd(d)
 		date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
 	except ftplib.error_perm:
-		print "WARNING ftp MDTM fail: ", url
+		print "OSW_WARNING ftp MDTM fail: ", url
 		return None
 	finally:
 		ftp.close()
@@ -130,6 +130,8 @@ def ftp_open_dir(url):
   ftp.cwd(d)
   for fn in ftp.nlst():
     fn_only = fn.split("/")[-1]
+    if fn_only == "." or fn_only == "..":
+			continue
     try:
       date = ftp.sendcmd(" ".join(("MDTM",fn))).split()[1]
       files.append((False,fn_only,datetime.datetime.strptime(date,"%Y%m%d%H%M%S")))
@@ -145,7 +147,7 @@ def open_dir(url):
     else:
       return http_open_dir(url)
   except urllib2.URLError:
-    print "bad http",url
+    print "OSW_WARNING bad http",url
   except Exception, e:
     print e
   return []

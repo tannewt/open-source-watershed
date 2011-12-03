@@ -15,8 +15,11 @@ class Search:
     self.search = search
     con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
     cur = con.cursor()
+
+    if "%" not in search:
+      search = "%"+search+"%"
     
-    cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE name LIKE %s ORDER BY LENGTH(name) ASC, name",("%"+search+"%",))
+    cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE name LIKE %s ORDER BY LENGTH(name) ASC, name",(search,))
     self.results = []
     for row in cur:
       if basic:

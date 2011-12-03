@@ -17,40 +17,43 @@ NAME="sourceforge"
 
 source_id = upstream.source("sf", "generic sourceforge crawler")
 
-def get_files(project_id,last_crawl=None):
+def get_files(project_id, paths=["/"], last_crawl=None):
 	limit = 10
 	if last_crawl==None:
 		limit = 100
 	
-	fn = "files/sourceforge/%d-%s.rss"%(time.time(),project_id)
-	try:
-		ret = helper.open_url("http://sourceforge.net/api/file/index/project-id/%s/rss"%(project_id,),fn)
-	except httplib.BadStatusLine:
-		print "ERROR bad status"
-		return []
-	except urllib2.URLError:
-		print "ERROR UrlError"
-		return []
-	
-	if ret==None:
-		print " ERROR"
-		return []
-	
-	pattern_file = re.compile("<link>http://sourceforge.net/projects/.*%2F(\S*)/download</link>")
-	pattern_date = re.compile("<pubDate>(.*) [\+-][0-9]{4}</pubDate>")
-	
+	i = 0
 	files = []
-	fs = []
-	for line in open(fn):
-		tmp_fs = pattern_file.findall(line)
-		if len(tmp_fs)>0:
-			fs=tmp_fs
-		ds = pattern_date.findall(line)
-		if len(ds)>0:
-			d = datetime.datetime.strptime(ds[0],"%a, %d %b %Y %H:%M:%S")
-			for f in fs:
-				files.append((f,d))
-				fs = []
+	for path in paths:
+		fn = "files/sourceforge/%d-%s-%d.rss"%(time.time(),project_id,i)
+		try:
+			ret = helper.open_url("http://sourceforge.net/api/file/index/project-id/%s/rss?path=%s"%(project_id,path),fn)
+		except httplib.BadStatusLine:
+			print "ERROR bad status"
+			return []
+		except urllib2.URLError:
+			print "ERROR UrlError"
+			return []
+		
+		if ret==None:
+			print " ERROR"
+			return []
+		
+		pattern_file = re.compile("<link>http://sourceforge.net/projects/.*%2F(\S*)/download</link>")
+		pattern_date = re.compile("<pubDate>(.*) [\+-][0-9]{4}</pubDate>")
+		
+		fs = []
+		for line in open(fn):
+			tmp_fs = pattern_file.findall(line)
+			if len(tmp_fs)>0:
+				fs=tmp_fs
+			ds = pattern_date.findall(line)
+			if len(ds)>0:
+				d = datetime.datetime.strptime(ds[0],"%a, %d %b %Y %H:%M:%S")
+				for f in fs:
+					files.append((f,d))
+					fs = []
+	i += 1
 	return files
 
 def contains(s, parts):
@@ -59,10 +62,10 @@ def contains(s, parts):
 			return True
 	return False
 	
-def get_releases(project_num, packages, bad_tokens, bad_versions, last_crawl):
+def get_releases(project_num, packages, bad_tokens, bad_versions, paths, last_crawl):
 	rels = []
 	
-	files = get_files(project_num, last_crawl)
+	files = get_files(project_num, paths, last_crawl)
 	for f in files:
 		if contains(f[0],bad_tokens):
 			continue

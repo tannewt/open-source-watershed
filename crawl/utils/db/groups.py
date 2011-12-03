@@ -20,6 +20,12 @@ def list_groups(user_id=1):
 		result = cur.fetchall()
 	return result
 
+def has_group(name, user_id=1):
+	with cursor() as cur:
+		cur.execute("SELECT id,name FROM groups WHERE user_id = %s AND name = %s", (user_id,name))
+		rows = cur.rowcount
+	return rows > 0
+
 def create_group(name, user_id=1):
 	with cursor() as cur:
 		cur.execute("INSERT INTO groups (name, user_id) VALUES (%s, %s)", (name, user_id))
@@ -33,7 +39,7 @@ def delete_group(name, user_id=1):
 
 def get_group(name, user_id=1):
 	with cursor() as cur:
-		cur.execute("SELECT packages.name FROM group_packages, groups, packages WHERE packages.id = group_packages.package_id AND groups.name = %s AND groups.user_id = %s", (name,user_id))
+		cur.execute("SELECT packages.name FROM group_packages, groups, packages WHERE packages.id = group_packages.package_id AND groups.name = %s AND groups.user_id = %s AND groups.id = group_packages.group_id", (name,user_id))
 		result = map(lambda x: x[0], cur.fetchall())
 		result.sort()
 	return result
@@ -45,6 +51,18 @@ def add_to_group(pkg, name, user_id=1):
 			pkg = cur.fetchone()[0]
 		cur.execute("INSERT INTO group_packages (package_id, group_id) SELECT %s, id FROM groups WHERE name=%s AND user_id = %s", (pkg,name,user_id))
 	
-def remove_from_group(pkg_id, name, user_id=1):
+def remove_from_group(pkg, name, user_id=1):
 	with cursor() as cur:
-		cur.execute("DELETE FROM group_packages WHERE package_id = %s AND group_id = (SELECT id FROM groups WHERE name=%s AND user_id = %s)", (pkg_id,name,user_id))
+		if type(pkg)!=int:
+			cur.execute("SELECT id FROM packages WHERE name = %s",(pkg,))
+			pkg = cur.fetchone()[0]
+		cur.execute("DELETE FROM group_packages WHERE package_id = %s AND group_id = (SELECT id FROM groups WHERE name=%s AND user_id = %s)", (pkg,name,user_id))
+
+def in_group(pkg, name, user_id=1):
+	with cursor() as cur:
+		if type(pkg)!=int:
+			cur.execute("SELECT id FROM packages WHERE name = %s",(pkg,))
+			pkg = cur.fetchone()[0]
+		cur.execute("SELECT * FROM group_packages WHERE package_id = %s AND group_id = (SELECT id FROM groups WHERE name=%s AND user_id = %s)", (pkg,name,user_id))
+		rows = cur.rowcount
+	return rows > 0
