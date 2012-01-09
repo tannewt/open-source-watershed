@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import gentoo
 import subprocess
-from .utils.db import downstream
-from .utils.types import Repo
+from utils.db import downstream
+from utils.types import Repo
 
 distro_id = downstream.distro("funtoo", "", "A gentoo based source distribution.", "http://www.funtoo.org")
 STORAGE = "files/funtoo/portage/"

@@ -5,7 +5,7 @@ from psycopg2 import extensions
 from contextlib import contextmanager
 
 #open the file
-from .. import helper
+from utils import helper
 HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
 pool = pool.ThreadedConnectionPool(2,50,host=HOST, user=USER, password=PASSWORD, database=DATABASE)
 

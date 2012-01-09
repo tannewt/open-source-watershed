@@ -2,7 +2,7 @@
 import bz2
 import gzip
 import helper
-from .utils.types import DownstreamRelease
+from utils.types import DownstreamRelease
 
 def parse_packages(parse_version, filename, url, repo):
 	rels = []

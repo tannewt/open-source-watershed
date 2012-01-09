@@ -5,9 +5,9 @@ import os
 import urllib
 import bz2
 import sys
-from .utils import helper,deb
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper,deb
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("ubuntu", "", "A popular debian based binary distribution.", "http://www.ubuntu.com")
 

@@ -4,8 +4,8 @@ import datetime
 import cPickle as pickle
 import re
 import subprocess
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("gentoo", "", "A source based meta-distribution.", "http://www.gentoo.org")
 

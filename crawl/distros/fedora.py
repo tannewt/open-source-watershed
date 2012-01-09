@@ -3,9 +3,9 @@ import xml.etree.cElementTree as xml
 import datetime
 import gzip
 import time
-from .utils import helper
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("fedora", "", "A popular binary distribution by RedHat.", "http://www.fedoraproject.org")
 

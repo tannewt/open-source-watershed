@@ -1,5 +1,5 @@
 import MySQLdb as mysql
-from .utils import helper
+from utils import helper
 
 HOST, USER, PASSWORD, DATABASE = helper.mysql_settings()
 

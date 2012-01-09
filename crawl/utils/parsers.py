@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .types import UpstreamRelease
+from types import UpstreamRelease
 
 TESTS = [(None,"basic"),
 				 ("xine-ui-0.9.18.tar.gz",["xine-ui",0,"0.9.18",None,None]),

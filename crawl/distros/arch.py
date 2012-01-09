@@ -3,9 +3,9 @@ import subprocess
 import time
 import datetime
 import os
-from .utils import helper
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 MIRROR = "ftp.archlinux.org"
 HTTP_START_DIR = None

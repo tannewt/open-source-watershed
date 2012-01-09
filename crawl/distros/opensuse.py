@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from .utils import helper
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("opensuse", "", "Community version of Suse, a German binary distribution.", "http://www.opensuse.org")
 

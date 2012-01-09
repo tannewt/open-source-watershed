@@ -3,9 +3,9 @@ import urllib
 import ftplib
 import time
 import datetime
-from .utils import helper
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 MIRROR="slackware.osuosl.org"
 FTP_START_DIR="pub/slackware/"

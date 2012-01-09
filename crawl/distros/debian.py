@@ -5,9 +5,9 @@ import os
 import urllib
 import gzip
 import sys
-from .utils import helper,deb
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper,deb
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("debian", "", "An old binary distribution known for its stability.", "http://www.debian.org")
 

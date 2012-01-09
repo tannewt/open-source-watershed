@@ -164,9 +164,9 @@ def mysql_settings(comp="local"):
     comp = os.environ["WATERSHED_SERVER"]
   
   if comp=="local":
-    f = open("mysql_settings.txt")
+    f = open("/home/tannewt/mysql_settings.txt")
   else:
-    f = open("mysql_settings_"+comp+".txt")
+    f = open("/home/tannewt/mysql_settings_"+comp+".txt")
   settings = map(lambda x: x.strip(),f.readlines())
   f.close()
   return settings

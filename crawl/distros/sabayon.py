@@ -3,9 +3,9 @@ import sqlite3
 import datetime
 import time
 import subprocess
-from .utils import helper
-from .utils.db import downstream
-from .utils.types import Repo, DownstreamRelease
+from utils import helper
+from utils.db import downstream
+from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("sabayon", "", "A binary distribution derived from Gentoo.", "http://www.sabayonlinux.org")
 
