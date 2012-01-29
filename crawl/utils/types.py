@@ -15,7 +15,7 @@ class Release:
 	def __init__(self):
 		self.package = None
 		self.version = None
-		self.revision = 0
+		self.revision = "0"
 		self.released = None
 	
 	def __str__(self):

@@ -64,23 +64,18 @@ def add_releases(repo, rels, test=False, cache=None):
 	
 	total_new = 0
 	
-	if test:
-		for rel in rels:
-			with cursor() as cur:
-				cur.execute("SELECT id FROM dreleases WHERE package_id = %s AND version = %s AND revision = %s AND repo_id = %s",(rel.package, rel.version, rel.revision, repo.id))
-				if cur.fetchone()==None:
-					print "new", rel
-					total_new += 1
-	else:
-		for rel in rels:
-			with cursor() as cur:
-				try:
-					cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
-					if cache!=None:
-						cache.evict([(rel.package, repo.distro_id)])
-					total_new += 1
-				except psycopg2.IntegrityError:
-					pass
+	for rel in rels:
+		with cursor() as cur:
+			cur.execute("SELECT id FROM dreleases WHERE package_id = %s AND version = %s AND revision = %s AND repo_id = %s",(rel.package, rel.version, rel.revision, repo.id))
+			if cur.fetchone() != None:
+				continue
+			if test:
+				print "new", rel
+				continue
+			total_new += 1
+			cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
+			if cache != None:
+				cache.evict([(rel.package, repo.distro_id)])
 	return total_new
 
 def set_last_crawl(repo, last_crawl, test):
