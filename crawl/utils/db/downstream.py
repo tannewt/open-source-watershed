@@ -31,10 +31,10 @@ def distro(name, color=None, description=None, website=None):
 
 def repo(repo, test):
 	with cursor() as cur:
-		cur.execute("SELECT id, last_crawl FROM repos WHERE distro_id = %s AND codename = %s AND component = %s AND architecture = %s", (repo.distro_id, repo.codename, repo.component, repo.architecture))
+		cur.execute("SELECT id, last_crawl FROM repos WHERE distro_id = %s AND codename = %s AND component = %s AND architecture = %s", (repo.distro_id, str(repo.codename), str(repo.component), str(repo.architecture)))
 		row = cur.fetchone()
 		if row == None:
-			cur.execute("INSERT INTO repos (distro_id, codename, component, architecture) VALUES (%s, %s, %s, %s)", (repo.distro_id, repo.codename, repo.component, repo.architecture))
+			cur.execute("INSERT INTO repos (distro_id, codename, component, architecture) VALUES (%s, '%s', '%s', '%s')", (repo.distro_id, str(repo.codename), str(repo.component), str(repo.architecture)))
 			cur.execute("SELECT lastval()")
 			repo.id = cur.fetchone()[0]
 			if test:

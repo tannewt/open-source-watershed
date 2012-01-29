@@ -55,7 +55,7 @@ def crawl(mod):
 	i = 0
 	for repo in repos:
 		print str(i)+"/"+str(len(repos)),repo
-		s = time.clock()
+		s = time.time()
 		if not last:
 			repo.last_crawl = None
 		last_crawl, rels = mod.crawl_repo(repo)
@@ -63,7 +63,7 @@ def crawl(mod):
 		if total_new > 0:
 			cache.evict([(None, repo.distro_id)])
 		downstream.set_last_crawl(repo, last_crawl, test)
-		print "\t"+str(total_new),"new releases","\t\t",time.clock()-s,"secs"
+		print "\t"+str(total_new),"new releases","\t\t",round(time.time()-s,1),"secs"
 		i += 1
 
 if "--ignore-last" in sys.argv:
@@ -100,32 +100,33 @@ else:
 	upstream_targets = UPSTREAM.keys()
 	downstream_targets = DISTROS.keys()
 
-total_start = time.clock()
+total_start = time.time()
 stats = []
 for d in downstream_targets:
-	s = time.clock()
+	print "Crawling:",d
+	s = time.time()
 	try:
 		stats.append((d,crawl(DISTROS[d])))
 	except:
 		print "error from distro:",d
 		print traceback.format_exc()
 	gc.collect()
-	print time.clock() - s, "distro seconds"
+	print round(time.time() - s, 1), "distro seconds"
 
 for u in upstream_targets:
-	s = time.clock()
+	s = time.time()
 	try:
 		stats.append((u,UPSTREAM[u].crawl(test)))
 	except:
 		print "error from upstream:",u
 		print traceback.format_exc()
 	gc.collect()
-	print time.clock() - s, "upstream seconds"
+	print round(time.time() - s), "upstream seconds"
 
 cache = Cache()
 cache.evict([(None, None)])
 
-print time.clock()-total_start,"seconds total"
+print round((time.time()-total_start) / 60, 1),"minutes total"
 
 save_to = open("/var/www/crawl.oswatershed.org/htdocs/"+str(int(time.time()))+".pickle","w")
 pickle.dump(stats,save_to)

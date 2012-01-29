@@ -32,6 +32,8 @@ MONTHS = {"Jan":"Jan",
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos(test):
+	if not os.path.exists(STORAGE+"profiles/arch.list"):
+		update_portage()
 	repos = []
 	f = open(STORAGE+"profiles/arch.list")
 	arches = map(lambda s: s.strip(),f.readlines())
