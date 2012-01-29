@@ -246,11 +246,8 @@ cur.execute("GRANT INSERT, UPDATE, DELETE ON cache, cache_deps TO watershed_ro;"
 cur.execute("GRANT USAGE ON SCHEMA public TO watershed_ro;")
 cur.execute("GRANT SELECT, UPDATE ON cache_id_seq, cache_deps_id_seq TO watershed_ro;")
 
+cur.execute("CREATE EXTENSION pgcrypto;")
 con.commit()
 con.close()
-
-f = open("/usr/share/postgresql/contrib/pgcrypto.sql")
-subprocess.call(["psql",DATABASE], stdin=f)
-f.close()
 
 users.create("tannewt", "test", "scott.shawcroft@gmail.com")
