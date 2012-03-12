@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import gentoo
+import os
 import subprocess
 from utils.db import downstream
 from utils.types import Repo
@@ -11,6 +12,8 @@ CACHE_FN = "cache.pickle"
 # git clone git://github.com/funtoo/portage.git
 
 def get_repos(test):
+        if not os.path.exists(STORAGE+"profiles/arch.list"):
+		update_portage()
 	repos = []
 	print "funtoo repos"
 	f = open(STORAGE+"profiles/arch.list")

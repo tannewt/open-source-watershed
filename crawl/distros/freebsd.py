@@ -61,7 +61,7 @@ def crawl_repo(repo):
 				if "_" in ver:
 					ver, rev = ver.rsplit("_",1)
 				else:
-					rev = 0
+					rev = "0"
 				rel = DownstreamRelease()
 				rel.repo_id = repo.id
 				rel.package = pkg

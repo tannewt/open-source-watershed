@@ -138,14 +138,14 @@ def crawl_changelog(category,package,last_crawl=None):
 					version = version.replace("*"+package+"-","").replace(".ebuild","")
 					d = d[1:]
 					y = y[:-1]
-					revision = 0
+					revision = "0"
 					if "-" in version:
 						version, revision = version.rsplit("-",1)
 						try:
-							revision = int(revision[1:])
+							revision = str(int(revision[1:]))
 						except:
 							version = version+"_"+revision
-							revision = 0
+							revision = "0"
 					if len(m)>3:
 						released = datetime.datetime.strptime(" ".join((d,m,y)),"%d %B %Y")
 					else:
@@ -241,7 +241,7 @@ def crawl_repo(repo):
 					v_split = v.strip(p+"-").strip(".ebuild").rsplit("-r",1)
 					if len(v_split)==1:
 						version = v_split[0]
-						revision = 0
+						revision = "0"
 					else:
 						version,revision = v_split
 					

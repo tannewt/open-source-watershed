@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Django settings for oswatershed project.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -36,12 +36,12 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/home/tannewt/Code/watershed/site/static/'
+MEDIA_ROOT = '/home/tannewt/code/watershed/site/static/'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://static.oswatershed.org'
+MEDIA_URL = 'http://oswatershed.com/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -67,8 +67,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'oswatershed.urls'
 
 TEMPLATE_DIRS = (
-    "/var/www/django.oswatershed.org/templates",
-    "/home/tannewt/Code/watershed/site/templates/"
+    "/home/tannewt/code/open-source-watershed/site/templates/"
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -82,3 +81,5 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'oswatershed'
 )
+
+FORCE_SCRIPT_NAME="/"

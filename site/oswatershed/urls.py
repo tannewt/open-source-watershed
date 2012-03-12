@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url, include
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
