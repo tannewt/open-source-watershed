@@ -70,6 +70,8 @@ def flatten(d):
 		result = []
 		for key in d:
 			value = d[key]
+			if value == None:
+			  continue
 			if key=="date":
 				try:
 					date = datetime.datetime.strptime(value,"%d %B %Y")
