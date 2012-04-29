@@ -4,41 +4,18 @@ import gzip
 import helper
 from utils.types import DownstreamRelease
 
-def parse_packages(parse_version, filename, url, repo):
-	rels = []
-
-	last_modified = helper.open_url(url, filename, repo.last_crawl)
-
-	if last_modified==None:
-		return (repo.last_crawl, rels)
-	
-	extension = filename.rsplit(".",1)[1]
-	f = None
-	if extension=="bz2":
-		f = bz2.BZ2File(filename)
-	elif extension=="gz":
-		f = gzip.open(filename)
-	
+def parse_package_dict(f):
 	this_name = None
+	pkgs = []
 	pkg = {}
-
 	joins = []
 	for line in f:
 		line = line.strip("\n")
 		if line == "":
-			epoch, version, revision = parse_version(pkg["Version"])
-			
 			for join in joins:
 				pkg[join] = "".join(pkg[join])
 			joins = []
-			# name, version, revision, time, additional
-			rel = DownstreamRelease()
-			rel.repo_id = repo.id
-			rel.version = version
-			rel.package = pkg["Package"]
-			rel.revision = revision
-			rel.released = last_modified
-			rels.append(rel)
+			pkgs.append(pkg)
 			pkg = {}
 		elif line.startswith((" ","\t")):
 			try:
@@ -54,6 +31,34 @@ def parse_packages(parse_version, filename, url, repo):
 			except:
 				print
 				print "ERROR: bad package line:",line
-				return None
+				return []
+	return pkgs
+
+def parse_packages(parse_version, filename, url, repo):
+	rels = []
+
+	last_modified = helper.open_url(url, filename, repo.last_crawl)
+
+	if last_modified==None:
+		return (repo.last_crawl, rels)
+	
+	extension = filename.rsplit(".",1)[1]
+	f = None
+	if extension=="bz2":
+		f = bz2.BZ2File(filename)
+	elif extension=="gz":
+		f = gzip.open(filename)
+	
+	for pkg in parse_package_dict(f):
+			epoch, version, revision = parse_version(pkg["Version"])
+
+			# name, version, revision, time, additional
+			rel = DownstreamRelease()
+			rel.repo_id = repo.id
+			rel.version = version
+			rel.package = pkg["Package"]
+			rel.revision = revision
+			rel.released = last_modified
+			rels.append(rel)
 	
 	return (last_modified, rels)
