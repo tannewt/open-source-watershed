@@ -10,6 +10,7 @@ from utils.types import Repo, DownstreamRelease
 distro_id = downstream.distro("gentoo", "", "A source based meta-distribution.", "http://www.gentoo.org")
 
 MIRROR = "rsync.namerica.gentoo.org::gentoo-portage"
+PORTAGE = "/usr/portage/"
 STORAGE = "files/gentoo/"
 CACHE_FN = "cache.pickle"
 
@@ -32,10 +33,10 @@ MONTHS = {"Jan":"Jan",
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos(test):
-	if not os.path.exists(STORAGE+"profiles/arch.list"):
+	if not os.path.exists(PORTAGE+"profiles/arch.list"):
 		update_portage()
 	repos = []
-	f = open(STORAGE+"profiles/arch.list")
+	f = open(PORTAGE+"profiles/arch.list")
 	arches = map(lambda s: s.strip(),f.readlines())
 	arches = arches[:arches.index("")]
 	f.close()
@@ -115,7 +116,7 @@ def parse(f):
 	return pkg
 
 def crawl_changelog(category,package,last_crawl=None):
-	fn = STORAGE+category+"/"+package+"/ChangeLog"
+	fn = PORTAGE+category+"/"+package+"/ChangeLog"
 	try:
 		last = os.stat(fn).st_mtime
 	except:
@@ -163,18 +164,6 @@ def crawl_changelog(category,package,last_crawl=None):
 	return rels
 
 def update_portage():
-	# rsync up
-	print "rsync",
-	try:
-		p = subprocess.Popen(("/usr/bin/rsync","-rt",MIRROR,STORAGE),stdout=open("/dev/null","w"))
-		x = p.wait()
-	except OSError, e:
-		print e
-		x=-1
-	
-	if x != 0:
-		print "ERROR: rsync failed: %s"%x
-		return False
 	return True
 
 # return a list of [name, version, revision, epoch, time, extra]
@@ -209,18 +198,18 @@ def crawl_repo(repo):
 		return (repo.last_crawl,[])
 	
 	pkgs = {"unknown":{"unknown":[]},"last_crawl":repo.last_crawl}
-	dirs = os.listdir(STORAGE)
-	f = open(STORAGE+"profiles/categories")
+	dirs = os.listdir(PORTAGE)
+	f = open(PORTAGE+"profiles/categories")
 	dirs = map(lambda s: s.strip(),f.readlines())
 	dirs = filter(lambda x: x!="virtual", dirs)
 	f.close()
 	for d in dirs:
-		packages = os.listdir(STORAGE+d+"/")
+		packages = os.listdir(PORTAGE+d+"/")
 		for p in filter(lambda x: x!="metadata.xml",packages):
 			# crawl change log
 			pkgs["unknown"]["unknown"] += crawl_changelog(d,p,repo.last_crawl)
-			for v in filter(lambda x: x.startswith(p+"-"), os.listdir(STORAGE+d+"/"+p+"/")):
-				fn = STORAGE+d+"/"+p+"/"+v
+			for v in filter(lambda x: x.startswith(p+"-"), os.listdir(PORTAGE+d+"/"+p+"/")):
+				fn = PORTAGE+d+"/"+p+"/"+v
 				last2 = os.stat(fn).st_mtime
 				last2 = datetime.datetime.fromtimestamp(last2)
 				
