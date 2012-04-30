@@ -16,7 +16,7 @@ FTP_START_DIR = HTTP_START_DIR
 NAMESPACE = "{http://linux.duke.edu/metadata/common}"
 REPO_NAMESPACE = "{http://linux.duke.edu/metadata/repo}"
 
-ARCHES = ["i386", "ppc", "ppc64", "x86_64"]
+ARCHES = ["i386", "x86_64"]
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos(test):
