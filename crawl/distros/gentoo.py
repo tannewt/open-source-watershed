@@ -15,7 +15,7 @@ STORAGE = "files/gentoo/"
 CACHE_FN = "cache.pickle"
 
 FUNCTION_PATTERN = re.compile("^[a-z_]+[ \t]*\(\)")
-VARIABLE_PATTERN = re.compile("^[A-Z]+=")
+VARIABLE_PATTERN = re.compile("^([A-Z]+|[ \t]*KEYWORDS)=")
 
 MONTHS = {"Jan":"Jan",
 					"Feb":"Feb",
@@ -60,7 +60,7 @@ def get_repos(test):
 	repos.append(repo)
 	return repos
 
-def parse(f):
+def parse(f, debug = False):
 	pkg = {}
 	this_key = "unknown"
 	variable = False
@@ -83,7 +83,8 @@ def parse(f):
 					this_key = key
 					pkg[key] = [val[1]]
 				elif line.count("\"")==2:
-					pkg[key] = val[1]
+					if key not in pkg or len(pkg[key]) < len(val[1]):
+						pkg[key] = val[1]
 				else:
 					pkg[key] = val[0]
 			except:
@@ -210,6 +211,9 @@ def crawl_repo(repo):
 			pkgs["unknown"]["unknown"] += crawl_changelog(d,p,repo.last_crawl)
 			for v in filter(lambda x: x.startswith(p+"-"), os.listdir(PORTAGE+d+"/"+p+"/")):
 				fn = PORTAGE+d+"/"+p+"/"+v
+				# Its convention to have 9999 in the version of ebuilds that pull directly from the projects vcs. Those aren't releases so we skip them.
+				if "9999" in v:
+					continue
 				last2 = os.stat(fn).st_mtime
 				last2 = datetime.datetime.fromtimestamp(last2)
 				
@@ -238,7 +242,7 @@ def crawl_repo(repo):
 					
 					first = True
 					if not pkg.has_key("KEYWORDS"):
-						print "WARNING: %s has no keywords."%(d+"/"+v)
+						print "WARNING: %s has no keywords."%(d+"/"+p+"/"+v)
 						continue
 					
 					for kw in "".join(pkg["KEYWORDS"]).split(" "):
