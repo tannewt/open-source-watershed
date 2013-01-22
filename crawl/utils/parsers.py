@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from types import UpstreamRelease
+from utils.types import UpstreamRelease
 
 TESTS = [(None,"basic"),
 				 ("xine-ui-0.9.18.tar.gz",["xine-ui",0,"0.9.18",None,None]),
@@ -12,8 +12,10 @@ TESTS = [(None,"basic"),
 				 ("httpd-2.1.3-alpha.tar.gz",["httpd",0,"2.1.3-alpha",None,None]),
 				 (None,"mixed filename"),
 				 ("webmin-1.080-minimal.tar.gz",["webmin-minimal",0,"1.080",None,None]),
+				 ("webmin-1.080-minimal.tar.xz",["webmin-minimal",0,"1.080",None,None]),
 				 (None,"end src"),
-				 ("xmovie-1.9.8-src.tar.bz2",["xmovie",0,"1.9.8",None,None])]
+				 ("xmovie-1.9.8-src.tar.bz2",["xmovie",0,"1.9.8",None,None]),
+				 ("source-highlight-2.4.tar.gz", ["source-highlight", 0, "2.4",None,None])]
 
 # text only version strings
 VER_TEXT = ["alpha","beta","BETA"]
@@ -38,6 +40,8 @@ def parse_filename(fn,sep="-",legacy=False):
 		trimmed = fn[:-8]
 	elif fn.endswith(".tgz"):
 		trimmed = fn[:-4]
+	elif fn.endswith(".tar.xz"):
+		trimmed = fn[:-7]
 	else:
 		return None
 	
@@ -46,13 +50,14 @@ def parse_filename(fn,sep="-",legacy=False):
 	pkg = []
 	ver = []
 	past_ver = False
-	for bit in trimmed.split(sep):
+	bits = trimmed.split(sep)
+	for i, bit in enumerate(bits):
 		if not has_alpha(bit):
 			past_ver = True
 			ver.append(bit)
 		elif past_ver and (has_num(bit) or bit in VER_TEXT):
 			ver.append(bit)
-		elif bit not in IGNORE:
+		elif bit not in IGNORE or (i + 1 < len(bits) and bits[i+1] == "highlight"):
 			pkg.append(bit)
 	
 	if len(ver)==0:
