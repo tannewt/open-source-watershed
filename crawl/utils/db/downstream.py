@@ -69,10 +69,10 @@ def add_releases(repo, rels, test=False, cache=None):
 			cur.execute("SELECT id FROM dreleases WHERE package_id = %s AND version = %s AND revision = %s AND repo_id = %s",(rel.package, rel.version, rel.revision, repo.id))
 			if cur.fetchone() != None:
 				continue
+			total_new += 1
 			if test:
 				print "new", rel
 				continue
-			total_new += 1
 			cur.execute("INSERT INTO dreleases (package_id, version, revision, released, repo_id) VALUES (%s, %s, %s, %s, %s)",(rel.package, rel.version, rel.revision, rel.released, repo.id))
 			if cache != None:
 				cache.evict([(rel.package, repo.distro_id)])
