@@ -89,6 +89,10 @@ def crawl_repo(repo):
 					pkg[key].append(line)
 			
 			version, revision = pkg["VERSION"].rsplit("-",1)
+			# Move the epoch to the revision.
+			if ":" in version:
+			  revision = version[:version.index(":")+1] + revision
+			  version = version[version.index(":")+1:]
 			if " " in pkg["BUILDDATE"]:
 				try:
 					released = datetime.datetime.strptime(pkg["BUILDDATE"],"%a %b %d %H:%M:%S %Y")
