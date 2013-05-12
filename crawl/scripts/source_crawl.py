@@ -10,19 +10,19 @@ sys.path.append(os.getcwd())
 from utils import helper,deb
 from utils.db import core
 from utils.db import cursor
-MIRROR = "ubuntu.osuosl.org"
+MIRROR = "debian.osuosl.org"
 
 FTP_START_DIR = "pub/ubuntu/dists/"
 
-HTTP_START_DIR = "ubuntu/dists/"
+HTTP_START_DIR = "debian/dists/"
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
 with cursor() as cur:
 	total_bin = 0
-	for comp in ["main","multiverse","restricted","universe"]:
-		url = "http://" + MIRROR + "/" + HTTP_START_DIR + "precise/" + comp + "/source/Sources.bz2"
-		filename = "files/ubuntu/Sources-precise-" + comp + "-" + str(time.time()) + ".bz2"
+	for comp in ["contrib", "main", "non-free"]:
+		url = "http://" + MIRROR + "/" + HTTP_START_DIR + "unstable/" + comp + "/source/Sources.bz2"
+		filename = "files/debian/Sources-unstable-" + comp + "-" + str(time.time()) + ".bz2"
 
 		info = helper.open_url(url, filename)
 		f = bz2.BZ2File(filename)
@@ -47,5 +47,5 @@ with cursor() as cur:
 					cur.execute("update package_info set homepage=%s where package_id=%s", (p["Homepage"], row[0]))
 			for binary in binaries:
 				package_src = core.package(binary)
-				cur.execute("INSERT INTO links (package_tgt, package_src, distro_src) VALUES (%s,%s,(SELECT id FROM distros WHERE name=%s))",(package_tgt,package_src,"ubuntu"))
+				cur.execute("INSERT INTO links (package_tgt, package_src, distro_src) VALUES (%s,%s,(SELECT id FROM distros WHERE name=%s))",(package_tgt,package_src,"debian"))
 print total_bin, "binaries"
