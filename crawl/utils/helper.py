@@ -105,8 +105,16 @@ def http_open_dir(url):
     if match:
       d = match.groupdict()
       is_dir = d["dir"]=="[DIR]" or (d["dir"]==None and d["name"][-1]=="/")
-        
-      files.append((is_dir,d["name"],datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")))
+      release_time = None
+      try:
+        release_time = datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")
+      except:
+        try:
+          release_time = datetime.datetime.strptime(d["modified"],"%Y-%m-%d %H:%M")
+	except:
+	  print "unsupported date format:", d["modified"]
+      if release_time:
+        files.append((is_dir,d["name"],release_time))
   f.close()
   return files
 
@@ -116,7 +124,6 @@ def ftp_open_dir(url):
   files = []
   def process_line(line):
     line = line.split()
-    print line
     is_dir = line[0][0]=="d"
     if ":" in line[-2]:
       time = line[-2]
