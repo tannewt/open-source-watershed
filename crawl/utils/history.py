@@ -32,12 +32,17 @@ class PackageHistory:
 				sid = result[0]
 			
 			# find the root of the uptree
+			sources = [sid]
 			while True:
 				cur.execute("SELECT package_tgt FROM links WHERE package_src = %s",(sid,))
 				row = cur.fetchone()
 				if row==None:
 					break
 				sid = row[0]
+				# Detect cycles in the graph.
+				if sid in sources:
+					raise LinkCycleError(str(sources))
+				sources.append(sid)
 			
 			cur.execute("SELECT name, description FROM packages LEFT OUTER JOIN package_info ON (packages.id = package_info.package_id) WHERE packages.id = %s",(sid,))
 			sname, self.description = cur.fetchone()
