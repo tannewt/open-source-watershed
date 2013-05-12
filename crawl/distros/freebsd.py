@@ -10,7 +10,7 @@ from utils.types import Repo, DownstreamRelease
 
 CRAWL_DIR = "ftp://ftp.freebsd.org/pub/FreeBSD/ports/"
 
-ARCHES = ["amd64", "i386", "ia64", "sparc64"]
+ARCHES = ["amd64", "arm", "i386", "ia64", "powerpc", "sparc64", "sunv4"]
 
 distro_id = downstream.distro("freebsd", "", "A fixed release binary BSD distribution.", "http://www.freebsd.org")
 
@@ -28,7 +28,10 @@ def get_repos(test):
 				repo.distro_id = distro_id
 				repo.component = pkg
 				repo.architecture = arch
-				repo.codename = int(version)
+				try:
+				  repo.codename = int(version)
+				except:
+				  continue
 				repo.branch = branch
 				repos.append(repo)
 				downstream.repo(repo, test)
