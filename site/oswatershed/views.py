@@ -11,6 +11,7 @@ from utils.stats import DataStats, PackageStats, DistroRanks
 from utils.crawlhistory import CrawlHistory
 from utils.search import Search
 from utils.errors import *
+from utils.db import core
 from utils.db import groups
 
 def index(request):
@@ -149,3 +150,38 @@ def distro(request, distro):
 			"zero": 0
 		}
 	)
+
+def sitemap(request, sm):
+	s = DataStats()
+	pkgs_per_sitemap = 10000
+	response = HttpResponse()
+	if sm == "index":
+	  response.write('<?xml version="1.0" encoding="UTF-8"?>')
+	  response.write('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+	  for i in xrange(0, (s.package_count / pkgs_per_sitemap) + 1):
+	    response.write('<sitemap><loc>http://oswatershed.org/sitemap_%d.xml</loc></sitemap>' % i)
+	  response.write('</sitemapindex>')
+	else:
+	  try:
+	    sm_index = int(sm)
+	  except:
+	    return HttpResponse(status=404)
+	  if sm_index > s.package_count / pkgs_per_sitemap:
+	    return HttpResponse(status=404)
+	  response.write('<?xml version="1.0" encoding="UTF-8"?>')
+	  response.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+	  if sm_index == 0:
+	    response.write('<url><loc>http://oswatershed.org</loc><changefreq>daily</changefreq><priority>1.0</priority></url>')
+	    ds = core.get_all_distros()
+	    for d in ds:
+	      response.write('<url><loc>http://oswatershed.org/distro/%s</loc><changefreq>daily</changefreq><priority>0.8</priority></url>' % d)
+	  ps = core.get_all_package_names(pkgs_per_sitemap, sm_index * pkgs_per_sitemap)
+	  for p in ps:
+	    response.write('<url><loc>http://oswatershed.org/pkg/%s</loc></url>' % p)
+	  response.write('</urlset>')
+	return response
+
+def robots(request):
+	response = HttpResponse()
+	response.write("Sitemap: http://oswatershed.org/sitemap_index.xml")
+	return response

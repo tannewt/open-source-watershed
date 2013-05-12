@@ -55,3 +55,11 @@ def get_all_distros():
 		for row in cur:
 			distros.append(row[0])
 	return distros
+
+def get_all_package_names(limit=10000, offset=0):
+	with cursor() as cur:
+		cur.execute("SELECT name FROM packages ORDER BY name LIMIT %s OFFSET %s", (limit, offset))
+		pkgs = []
+		for row in cur:
+			pkgs.append(row[0])
+	return pkgs

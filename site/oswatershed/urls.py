@@ -13,6 +13,8 @@ urlpatterns = patterns('',
 		(r'^search2/(?P<search>[^/]+)/?$', 'oswatershed.views.search2'),
 		(r'^search/(?P<search>[^/]+)/?$', 'oswatershed.views.search'),
 		(r'^group/(?P<group>[^/]+)/?$', 'oswatershed.views.pkg_set'),
+		(r'^sitemap_(?P<sm>[a-z0-9]*).xml$', 'oswatershed.views.sitemap'),
+		(r'^robots.txt$', 'oswatershed.views.robots'),
 		(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': 'http://static.oswatershed.org/favicon.ico'}),
 
 
