@@ -81,3 +81,5 @@ INSTALLED_APPS = (
 )
 
 FORCE_SCRIPT_NAME="/"
+ALLOWED_HOSTS = ["api.oswatershed.org", "api.oswatershed.com"]
+
