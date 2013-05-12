@@ -6,8 +6,8 @@ import psycopg2 as db
 
 import cPickle as pickle
 
-from utils.db import cursor
 sys.path.append(os.getcwd())
+from utils.db import cursor
 from utils import helper
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
