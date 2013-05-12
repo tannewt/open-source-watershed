@@ -9,8 +9,8 @@ MIRROR = "download.opensuse.org"
 HTTP_START_DIR = ""
 FTP_START_DIR = None
 COMPONENTS = ["non-oss","oss"]
-CURRENT = "11.3"
-FUTURE = "11.4"
+CURRENT = "12.2"
+FUTURE = "12.3"
 
 def to_num(s):
 	if "-" in s:
@@ -67,8 +67,9 @@ def crawl_repo(repo):
 		urls = []
 		urls.append("http://" + MIRROR + "/distribution/" + repo.codename + "/repo/" + repo.component + "/suse/" + repo.architecture + "/")
 		if repo.component=="oss":
-			urls.append("http://" + MIRROR + "/update/" + repo.codename + "/rpm/" + repo.architecture + "/")
-			urls.append("http://" + MIRROR + "/update/" + repo.codename + "-test/rpm/" + repo.architecture + "/")
+			urls.append("http://" + MIRROR + "/update/" + repo.codename + "/" + repo.architecture + "/")
+			urls.append("http://" + MIRROR + "/update/" + repo.codename + "-test/" + repo.architecture + "/")
+			urls.append("http://" + MIRROR + "/update/" + repo.codename + "-non-oss/" + repo.architecture + "/")
 	
 	pkg_lines = []
 	for url in urls:
