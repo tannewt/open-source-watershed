@@ -39,19 +39,19 @@ class CrawlHistory:
 		cached = False
 		if package == None and distro == None:
 			key = "/upstream/latest"
-			query = "SELECT packages.name, ureleases.version, MIN(ureleases.released) FROM packages, ureleases WHERE packages.id = ureleases.package_id GROUP BY packages.name, ureleases.version HAVING MIN(ureleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(ureleases.released) DESC, packages.name ASC"
+			query = "SELECT packages.name, ureleases.version, MIN(ureleases.released) FROM packages, ureleases WHERE packages.id = ureleases.package_id GROUP BY packages.name, ureleases.version HAVING MIN(ureleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(ureleases.released) DESC, packages.name ASC LIMIT 100"
 			query_args = []
 		elif package == None and distro != None:
 			key = "/distro/%s/latest"%distro
-			query = "SELECT packages.name, dreleases.version, dreleases.revision, MIN(dreleases.released) FROM packages, dreleases, repos, distros WHERE packages.id = dreleases.package_id AND repos.id = dreleases.repo_id AND distros.id = repos.distro_id AND distros.name = %s GROUP BY packages.name, dreleases.version, dreleases.revision HAVING MIN(dreleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(dreleases.released) DESC, packages.name ASC"
+			query = "SELECT packages.name, dreleases.version, dreleases.revision, MIN(dreleases.released) FROM packages, dreleases, repos, distros WHERE packages.id = dreleases.package_id AND repos.id = dreleases.repo_id AND distros.id = repos.distro_id AND distros.name = %s GROUP BY packages.name, dreleases.version, dreleases.revision HAVING MIN(dreleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(dreleases.released) DESC, packages.name ASC LIMIT 100"
 			query_args = (distro,)
 		elif package != None and distro == None:
 			key = "/pkg/%s/latest"%package
-			query = "SELECT packages.name, ureleases.version, MIN(ureleases.released) FROM packages, ureleases WHERE packages.id = ureleases.package_id AND packages.name = %s GROUP BY packages.name, ureleases.version HAVING MIN(ureleases.released) >= current_timestamp - interval '1 day'ORDER BY MIN(ureleases.released) DESC"
+			query = "SELECT packages.name, ureleases.version, MIN(ureleases.released) FROM packages, ureleases WHERE packages.id = ureleases.package_id AND packages.name = %s GROUP BY packages.name, ureleases.version HAVING MIN(ureleases.released) >= current_timestamp - interval '1 day'ORDER BY MIN(ureleases.released) DESC LIMIT 100"
 			query_args = (package,)
 		else:
 			key = "/distro/%s/pkg/%s/latest"%(distro,package)
-			query = "SELECT packages.name, dreleases.version, dreleases.revision, MIN(dreleases.released) FROM packages, dreleases, repos, distros WHERE packages.id = dreleases.package_id AND repos.id = dreleases.repo_id AND distros.id = repos.distro_id AND distros.name = %s AND packages.name = %s GROUP BY packages.name, dreleases.version, dreleases.revision HAVING MIN(dreleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(dreleases.released) DESC"
+			query = "SELECT packages.name, dreleases.version, dreleases.revision, MIN(dreleases.released) FROM packages, dreleases, repos, distros WHERE packages.id = dreleases.package_id AND repos.id = dreleases.repo_id AND distros.id = repos.distro_id AND distros.name = %s AND packages.name = %s GROUP BY packages.name, dreleases.version, dreleases.revision HAVING MIN(dreleases.released) >= current_timestamp - interval '1 day' ORDER BY MIN(dreleases.released) DESC LIMIT 100"
 			query_args = (distro,package)
 		
 		now = datetime.datetime.now()
