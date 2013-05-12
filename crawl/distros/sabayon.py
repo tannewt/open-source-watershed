@@ -9,7 +9,7 @@ from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("sabayon", "", "A binary distribution derived from Gentoo.", "http://www.sabayonlinux.org")
 
-MIRROR = "mirror.internode.on.net"
+MIRROR = "http://mirror.umd.edu/sabayonlinux"
 HTTP_START_DIR = "pub/SabayonLinux"
 FTP_START_DIR = "pub/sabayonlinux"
 
@@ -17,7 +17,7 @@ VERSIONS = ["4", "5"]
 CURRENT = "5"
 FUTURE = ""
 
-ARCHES = ["amd64", "x86"]
+ARCHES = ["amd64", "x86", "armel", "armv7l"]
 
 # return a list of ["ubuntu", branch, codename, component, arch, None, None]
 def get_repos(test):
@@ -42,7 +42,7 @@ def get_repos(test):
 # return a list of [name, version, revision, epoch, time, extra]
 def crawl_repo(repo):
 	fn = "".join(("files/sabayon/packages-",repo.codename,"-",repo.architecture,"-",str(time.time()),".db"))
-	url = "".join(("ftp://",MIRROR,"/",FTP_START_DIR,"/entropy/standard/sabayonlinux.org/database/", repo.architecture, "/", repo.codename, "/packages.db.bz2"))
+	url = "".join((MIRROR,"/entropy/standard/sabayonlinux.org/database/", repo.architecture, "/", repo.codename, "/packages.db.bz2"))
 	
 	#print "open url"
 	t = helper.open_url(url,fn+".bz2", repo.last_crawl)
@@ -75,8 +75,8 @@ def crawl_repo(repo):
 				revision = str(gentoo_revision[1:]) + "." + str(revision)
 			rel = DownstreamRelease()
 			rel.package = name
-			rel.version = version
-			rel.revision = revision
+			rel.version = str(version)
+			rel.revision = str(revision)
 			rel.released = dt
 			rels.append(rel)
 	return t, rels
