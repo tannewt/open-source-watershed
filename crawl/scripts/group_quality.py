@@ -4,16 +4,15 @@ import os
 sys.path.append(os.getcwd())
 
 from utils import history
+from utils.db import groups
 
 if len(sys.argv)<2:
-  print sys.argv[0],"<filename>"
+  print sys.argv[0],"<group name>"
 
 if len(sys.argv)>2:
   num_bugs = int(sys.argv[2])
 else:
   num_bugs = None
-
-f = open(sys.argv[1])
 
 total = 0
 fake_upstream = 0
@@ -23,7 +22,7 @@ ALL_DISTROS = set(['sabayon', 'fedora', 'gentoo', 'funtoo', 'opensuse', 'slackwa
 
 BUGS = map(lambda x: [], [0] * 10)
 
-for pkg in f:
+for pkg in groups.get_group(sys.argv[1]):
   total += 1
   pkg = pkg.strip()
   hist = history.PackageHistory(pkg)
@@ -44,7 +43,7 @@ for pkg in f:
   
   if num_bugs == None or num_bugs == bugs:
     print pkg, ups, missing
-  BUGS[bugs].append(pkg)
+  #BUGS[bugs].append(pkg)
 print
 print fake_upstream,"/",total,"with approx upstream"
 print missing_distro,"/",total,"missing from a distro"
