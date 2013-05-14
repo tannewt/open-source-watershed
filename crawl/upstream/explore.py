@@ -18,6 +18,7 @@ def contains(s, parts):
 	return False
 
 def explore(url, depth, good, bad, fn_remove, badv, dead, last_crawl=None):
+	print url, last_crawl
 	pkgs = []
 	info = helper.open_dir(url)
 	

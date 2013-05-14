@@ -67,6 +67,7 @@ def http_open_url(url, filename, last_crawl=None):
     request.add_header('If-Modified-Since', last_crawl)
   opener = urllib2.build_opener(DefaultErrorHandler())
   datastream = opener.open(request)
+  
   if datastream.status == 404:
     print datastream.status,#url,
     return None
@@ -88,52 +89,33 @@ def open_url(url, filename, last_crawl=None):
 		return http_open_url(url, filename, last_crawl)
 	elif url.startswith("ftp://"):
 		return ftp_open_url(url, filename, last_crawl)
-	else:
-		print "unknown protocol:", url
 
 def http_open_dir(url):
-  patterns = ['(<tr><td valign=\"top\">)?(<(a|A)[^>]*>)?(<(img|IMG) [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>)?(</(A|a)>)?( |</td><td>)?<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>[^<>]* [0-9][0-9]:[0-9][0-9])',
-              '<tr><td class="n"><a href="[^"]*">(?P<name>[^<]*)</a></td><td class="m">(?P<modified>.* [0-9][0-9]:[0-9][0-9](:[0-9][0-9])?)</td><td class="s">.*</td><td class="t">(?P<dir>.*)</td></tr>',
-	      '<tr><td valign="top">&nbsp;</td><td><a[^>]*>(?P<name>[^<]*)</a></td><td align="right">(?P<modified>.* [0-9][0-9]:[0-9][0-9])',
-	      '<NextMarker>(?P<marker>[^<]+)</NextMarker>',
-	      '<Key>(?P<name>[^<]*)</Key>.*?<LastModified>(?P<modified>[0-9]{4}-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-6][0-9]:[0-6][0-9])\.[0-9]*Z</LastModified>']
-  patterns = [re.compile(x) for x in patterns]
-  original_url = url
-  files = []
-  while url:
-    filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))
-    if open_url(url, filename)==None:
-      return None
-    url = None
+  filename = "".join(("files/helper/", str(time.time()), "-", url.rsplit("/",1)[1]))
+  if open_url(url, filename)==None:
+    return None
   
-    f = open(filename)
-    s = f.read()
-    for p in patterns:
-      num_matches = 0
-      for match in p.finditer(s):
-        d = match.groupdict()
-	if "marker" in d:
-	  url = original_url + "?marker=" + d["marker"]
-	  continue
-        is_dir = ("dir" in d and (d["dir"]=="[DIR]" or d["dir"] == "Directory" or (d["dir"]==None and d["name"][-1]=="/"))) or d["name"][-1]=="/"
-	# 2012-06-08T13:35:39.149Z
-        date_formats = ["%d-%b-%Y %H:%M", "%Y-%m-%d %H:%M", "%Y-%b-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"]
-        release_time = None
-        for date_format in date_formats:
-          try:
-            release_time = datetime.datetime.strptime(d["modified"], date_format)
-	    break
-          except:
-            pass
-        if release_time:
-          files.append((is_dir,d["name"],release_time))
-        else:
-          print "unsupported date format:", d["modified"]
-        num_matches += 1
-      if num_matches > 0:
-        #print "matched pattern:", p.pattern
-        break
-    f.close()
+  pattern = '(<tr><td valign=\"top\">)?(<(img|IMG) [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>)?( |</td><td>)?<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>.* [0-9][0-9]:[0-9][0-9]).*'
+  pattern = re.compile(pattern)
+
+  f = open(filename)
+  files = []
+  for line in f:
+    match = pattern.match(line)
+    if match:
+      d = match.groupdict()
+      is_dir = d["dir"]=="[DIR]" or (d["dir"]==None and d["name"][-1]=="/")
+      release_time = None
+      try:
+        release_time = datetime.datetime.strptime(d["modified"],"%d-%b-%Y %H:%M")
+      except:
+        try:
+          release_time = datetime.datetime.strptime(d["modified"],"%Y-%m-%d %H:%M")
+	except:
+	  print "unsupported date format:", d["modified"]
+      if release_time:
+        files.append((is_dir,d["name"],release_time))
+  f.close()
   return files
 
 def ftp_open_dir(url):
@@ -172,7 +154,7 @@ def open_dir(url):
   except urllib2.URLError:
     print "bad http",url
   except Exception, e:
-    print "exception", e
+    print e
   return []
 
 def find_match(s, res):

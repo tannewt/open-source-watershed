@@ -104,8 +104,6 @@ def search(request, search):
 	for name,description in search.results:
 		if len(name)>35:
 			name = name[:32]+"..."
-		if description != None and len(description)>64:
-			description = description[:64] + "..."
 		line = [name, description]
 		results.append(line)
 	return render_to_response('search.html',

@@ -27,7 +27,7 @@ def get_files(project_id, paths=["/"], last_crawl=None):
 	for path in paths:
 		fn = "files/sourceforge/%d-%s-%d.rss"%(time.time(),project_id,i)
 		try:
-			ret = helper.open_url("http://sourceforge.net/api/file/index/project-id/%s/mtime/desc/limit/%d/rss?path=%s"%(project_id,limit,path),fn)
+			ret = helper.open_url("http://sourceforge.net/api/file/index/project-id/%s/rss?path=%s"%(project_id,path),fn)
 		except httplib.BadStatusLine:
 			print "ERROR bad status"
 			return []
