@@ -1,11 +1,13 @@
 {% extends "includes/section.html" %}
 
-{% block title %}{{ name }}{% endblock %}
+{% block title %}{{ name }} <a href="http://oswatershed.org/pkg/{{ name }}/rss.xml"><img src="http://static.oswatershed.org/feedicon.png"/></a>{% endblock %}
 
 {% block content%}
+  <div id="description">
   {% if description %}
-    {{ description }}
+    {{ description|safe }}
   {% else %}
     No description.
   {% endif %}
+  </div>
 {% endblock %}

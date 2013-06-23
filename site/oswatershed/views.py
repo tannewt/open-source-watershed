@@ -3,6 +3,7 @@
 import os
 import datetime
 
+from django.contrib.syndication.views import Feed
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
@@ -102,10 +103,6 @@ def search(request, search):
 	
 	results = []
 	for name,description in search.results:
-		if len(name)>35:
-			name = name[:32]+"..."
-		if description != None and len(description)>64:
-			description = description[:64] + "..."
 		line = [name, description]
 		results.append(line)
 	return render_to_response('search.html',
@@ -156,13 +153,13 @@ def distro(request, distro):
 def sitemap(request, sm):
 	s = DataStats()
 	pkgs_per_sitemap = 10000
-	response = HttpResponse()
+	response = []
 	if sm == "index":
-	  response.write('<?xml version="1.0" encoding="UTF-8"?>')
-	  response.write('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+	  response.append('<?xml version="1.0" encoding="UTF-8"?>')
+	  response.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
 	  for i in xrange(0, (s.package_count / pkgs_per_sitemap) + 1):
-	    response.write('<sitemap><loc>http://oswatershed.org/sitemap_%d.xml</loc></sitemap>' % i)
-	  response.write('</sitemapindex>')
+	    response.append('<sitemap><loc>http://oswatershed.org/sitemap_%d.xml</loc></sitemap>' % i)
+	  response.append('</sitemapindex>')
 	else:
 	  try:
 	    sm_index = int(sm)
@@ -170,20 +167,72 @@ def sitemap(request, sm):
 	    return HttpResponse(status=404)
 	  if sm_index > s.package_count / pkgs_per_sitemap:
 	    return HttpResponse(status=404)
-	  response.write('<?xml version="1.0" encoding="UTF-8"?>')
-	  response.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+	  response.append('<?xml version="1.0" encoding="UTF-8"?>')
+	  response.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+	  response.append('<!-- test -->')
 	  if sm_index == 0:
-	    response.write('<url><loc>http://oswatershed.org</loc><changefreq>daily</changefreq><priority>1.0</priority></url>')
+	    response.append('<url><loc>http://oswatershed.org</loc><changefreq>daily</changefreq><priority>1.0</priority></url>')
 	    ds = core.get_all_distros()
 	    for d in ds:
-	      response.write('<url><loc>http://oswatershed.org/distro/%s</loc><changefreq>daily</changefreq><priority>0.8</priority></url>' % d)
+	      response.append('<url><loc>http://oswatershed.org/distro/%s</loc><changefreq>daily</changefreq><priority>0.8</priority></url>' % d)
 	  ps = core.get_all_package_names(pkgs_per_sitemap, sm_index * pkgs_per_sitemap)
 	  for p in ps:
-	    response.write('<url><loc>http://oswatershed.org/pkg/%s</loc></url>' % p)
-	  response.write('</urlset>')
-	return response
+	    response.append('<url><loc>http://oswatershed.org/pkg/%s</loc></url>' % p)
+	  response.append('</urlset>')
+	response = "".join(response)
+	r = HttpResponse(response)
+	r["Content-Length"] = len(response)
+	return r
 
 def robots(request):
-	response = HttpResponse()
-	response.write("Sitemap: http://oswatershed.org/sitemap_index.xml")
-	return response
+	return HttpResponse("Sitemap: http://oswatershed.org/sitemap_index.xml")
+
+class PackageFeed(Feed):
+    author_name = "Open Source Watershed"
+    author_email = "oswatershed@googlegroups.com"
+    author_link = "http://oswatershed.org"
+    def get_object(self, request, pkg):
+        return PackageHistory(pkg)
+
+    def title(self, obj):
+        return "OSWatershed: %s" % obj.name
+
+    def link(self, obj):
+        return "http://oswatershed.org/pkg/%s" % obj.name
+
+    def feed_url(self, obj):
+        return "http://oswatershed.org/pkg/%s/rss.xml" % obj.name
+
+    def description(self, obj):
+        if obj.ish:
+	    return "Approximate release history of %s" % obj.name
+	else:
+	    return "Release history of %s" % obj.name
+
+    def categories(self, obj):
+        cats = ['linux', 'software', 'oswatershed', obj.name]
+	if not obj.ish:
+	    cats.append('upstream')
+	return cats
+
+    def items(self, obj):
+        items = []
+        for date in obj.timeline:
+	  items.append((date, obj.name, obj.timeline[date]))
+	items.reverse()
+        return items
+
+    def item_link(self, item):
+        return "http://oswatershed.org/pkg/%s" % item[1]
+
+    def item_pubdate(self, item):
+        return item[0]
+
+    def item_title(self, item):
+        return item[2]
+
+    def item_description(self, item):
+        return "%s - %s %s" % item
+
+    def item_guid(self, item):
+        return " ".join(item[1:])
