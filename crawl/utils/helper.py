@@ -68,7 +68,7 @@ def http_open_url(url, filename, last_crawl=None):
   opener = urllib2.build_opener(DefaultErrorHandler())
   datastream = opener.open(request)
   if datastream.status == 404:
-    print datastream.status,#url,
+    print datastream.status, url,
     return None
   elif datastream.status:
     print datastream.status,#last_crawl,
@@ -93,7 +93,7 @@ def open_url(url, filename, last_crawl=None):
 
 def http_open_dir(url):
   patterns = ['(<tr><td valign=\"top\">)?(<(a|A)[^>]*>)?(<(img|IMG) [^>]*(ALT|alt)="(?P<dir>[^"]*)"[^>]*>)?(</(A|a)>)?( |</td><td>)?<(A|a)[^>]*>(?P<name>[^<]*)</(A|a)> *(</td><td align=\"right\">)?(?P<modified>[^<>]* [0-9][0-9]:[0-9][0-9])',
-              '<tr><td class="n"><a href="[^"]*">(?P<name>[^<]*)</a></td><td class="m">(?P<modified>.* [0-9][0-9]:[0-9][0-9](:[0-9][0-9])?)</td><td class="s">.*</td><td class="t">(?P<dir>.*)</td></tr>',
+              '<tr><td class="n"><a href="[^"]*">(?P<name>[^<]*)</a>.*</td><td class="m">(?P<modified>.* [0-9][0-9]:[0-9][0-9](:[0-9][0-9])?)</td><td class="s">.*</td><td class="t">(?P<dir>.*)</td></tr>',
 	      '<tr><td valign="top">&nbsp;</td><td><a[^>]*>(?P<name>[^<]*)</a></td><td align="right">(?P<modified>.* [0-9][0-9]:[0-9][0-9])',
 	      '<NextMarker>(?P<marker>[^<]+)</NextMarker>',
 	      '<Key>(?P<name>[^<]*)</Key>.*?<LastModified>(?P<modified>[0-9]{4}-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-6][0-9]:[0-6][0-9])\.[0-9]*Z</LastModified>']
@@ -133,6 +133,9 @@ def http_open_dir(url):
       if num_matches > 0:
         #print "matched pattern:", p.pattern
         break
+      else:
+        #print "missed pattern:", p.pattern
+	pass
     f.close()
   return files
 
