@@ -1,6 +1,6 @@
-import MySQLdb as mysql
 import sys
 import os
+import psycopg2 as db
 
 sys.path.append(os.getcwd())
 
@@ -20,17 +20,17 @@ else:
 
 HOST, USER, PASSWORD, DB = helper.mysql_settings()
 
-con = mysql.connect(host=HOST,user=USER,passwd=PASSWORD,db=DB)
+con = db.connect(host=HOST,user=USER,password=PASSWORD,database=DB)
 cur = con.cursor()
-q = "SELECT releases.version, releases.revision, releases.released, distros.name FROM repos, distros, releases, packages WHERE repos.id=releases.repo_id AND repos.distro_id=distros.id AND releases.package_id=packages.id AND packages.name=%s"
+q = "SELECT dreleases.version, dreleases.revision, dreleases.released, distros.name FROM repos, distros, dreleases, packages WHERE repos.id=dreleases.repo_id AND repos.distro_id=distros.id AND dreleases.package_id=packages.id AND packages.name=%s"
 
 args = [pkg]
 
 if days:
-  q += " AND releases.released > (NOW() - INTERVAL %s DAY)"
+  q += " AND dreleases.released > (NOW() - INTERVAL %s DAY)"
   args.append(days)
 
-q += " ORDER BY releases.version ASC, releases.released ASC"
+q += " ORDER BY dreleases.version ASC, dreleases.released ASC"
 cur.execute(q,args)
 
 print q%args
