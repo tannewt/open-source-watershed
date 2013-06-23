@@ -15,8 +15,8 @@ We found {{ results|length }} results for your search for "{{ search }}":
   </tr>
 {% for name, description in results %}
   <tr>
-    <td><a href="/pkg/{{ name }}">{{ name|highlight:search }}</a></td>
-    <td>{% if description %}{{ description }}{% else %}No description.{% endif %}</td>
+    <td><a href="/pkg/{{ name|truncatechars:35 }}">{{ name|highlight:search }}</a></td>
+    <td>{{ description|default_if_none:"No description."|striptags|truncatechars:64}}</td>
   </tr>
 {% endfor %}
 </table>
