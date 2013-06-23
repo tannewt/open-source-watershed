@@ -8,42 +8,49 @@ from utils import helper
 from utils.db import downstream
 from utils.types import Repo, DownstreamRelease
 
-CRAWL_DIR = "ftp://ftp.freebsd.org/pub/FreeBSD/ports/"
+CRAWL_DIR = "http://ftp.freebsd.org/pub/FreeBSD/ports/"
 
-ARCHES = ["amd64", "arm", "i386", "ia64", "powerpc", "sparc64", "sunv4"]
+ARCHES = ["amd64", "arm", "i386", "ia64", "powerpc", "sparc64", "sun4v"]
 
 distro_id = downstream.distro("freebsd", "", "A fixed release binary BSD distribution.", "http://www.freebsd.org")
 
 def get_repos(test):
 	repos = []
-	next_version = None
-	for arch in ARCHES:
+	current_version = None
+	for arch in ARCHES[0:1]:
 		directory = helper.open_dir(CRAWL_DIR + arch + "/")
+		if directory == None:
+		  print arch, "skipped"
+		  continue
 		for is_dir, filename, mod_time in directory:
 			if filename.count("-")==2:
 				pkg, version, branch = filename.split("-")
-				if branch=="release":
-					continue
 				repo = Repo()
 				repo.distro_id = distro_id
 				repo.component = pkg
 				repo.architecture = arch
-				try:
-				  repo.codename = int(version)
-				except:
-				  continue
+				print branch
+				if branch == "stable" or branch == "current":
+				  try:
+				    repo.codename = int(version)
+				  except:
+				    continue
+				elif branch == "release":
+				  try:
+				    repo.codename = float(version)
+				  except:
+				    continue
 				repo.branch = branch
 				repos.append(repo)
 				downstream.repo(repo, test)
-				if branch=="current" and (next_version == None or repo.codename > next_version):
-					next_version = repo.codename
+				if branch=="current" and (current_version == None or repo.codename > current_version):
+					current_version = repo.codename
 	
 	for repo in repos:
-		if repo.codename==next_version:
-			downstream.add_branch(repo, "future", test)
-		elif repo.codename==next_version-1:
+		print repo.codename
+		if repo.codename >= current_version:
 			downstream.add_branch(repo, "current", test)
-		elif repo.codename==next_version-2:
+		elif repo.codename >= current_version-1 and repo.codename < current_version:
 			downstream.add_branch(repo, "lts", test)
 		else:
 			downstream.add_branch(repo, "past", test)
