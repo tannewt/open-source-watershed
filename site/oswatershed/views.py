@@ -98,6 +98,7 @@ def search2(request, search):
 	)
 
 def search(request, search):
+	search = request.GET.get('q', search)
 	search = Search(search, basic=True)
 	s = DataStats()
 	
