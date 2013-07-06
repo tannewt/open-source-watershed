@@ -1,0 +1,9 @@
+{% extends "includes/section.html" %}
+
+{% load osfilters %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block content%}
+<img src="http://static.oswatershed.org/gen/{{ name }}.png"/>
+{% endblock %}

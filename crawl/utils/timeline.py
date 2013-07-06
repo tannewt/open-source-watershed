@@ -363,7 +363,7 @@ class ConnectedTimeline(StepTimeline):
 				result = []
 				if date.start!=None and type(date.start)==datetime:
 					start = bisect.bisect_left(self._dates,date.start)
-					if date.start > self._dates[0]:
+					if len(self._dates) > 0 and date.start > self._dates[0]:
 						result.append((date.start, self[date.start]))
 				else:
 					start = date.start

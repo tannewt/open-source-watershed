@@ -5,6 +5,7 @@
 {% block sidebar %}{% endblock %}
 
 {% block contentblock %}
+{% include "includes/distro_info.html" %}
 {% for branch, codename, snapshot in data %}
 	{% include "includes/distro_snapshot.html" %}
 {% endfor %}

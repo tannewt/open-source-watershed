@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import colorsys
 import sys
 import os
 sys.path.append(os.getcwd())
@@ -47,6 +48,28 @@ def _get_dash(branch):
 		dash = goocanvas.LineDash([10.0,10.0])
 	return dash
 
+def _get_color(branch, color):
+	if color == '':
+		color = '#000000'
+	color = color[1:]
+	r = int(color[:2], 16) / 255.0
+        g = int(color[2:4], 16) / 255.0
+        b = int(color[4:], 16) / 255.0
+        h, l, s = colorsys.rgb_to_hls(r, g, b)
+        if branch=="future":
+                l = 0.8
+        elif branch=="experimental":
+                l = 0.9
+        elif branch=="lts":
+                s = 0
+		l = 0.8
+        elif branch=="past":
+                s = 0
+		l = 0.9
+	l = min(1.0, l)
+	r, g, b = colorsys.hls_to_rgb(h, l, s)
+        return "#%02x%02x%02x" % (int(r * 255), int(g * 255), int(b * 255))
+
 def _process_distro_tag(d, upstream):
 	if d.count(":")==2:
 		name, branch, codename = d.split(":")
@@ -83,13 +106,18 @@ def get_lag_graph(downstream, upstream, fn="output.png", width=500, height=300, 
 	for d in downstream:
 		distro, branch, key = _process_distro_tag(d, upstream)
 		
-		dash = _get_dash(branch)
-		
+		#dash = _get_dash(branch)
+		color = _get_color(branch, distro.color)
+		print branch, color
+
 		timeline = distro.get_lag_timeline()
-		m = max(timeline[crawl_start:now].values())
+                subtimeline = timeline[crawl_start:now]
+		if len(subtimeline.values()) == 0:
+			continue
+		m = max(subtimeline.values())
 		if max_y < m:
 			max_y = m
-		graph.add(key,timeline,[],distro.color,dash)
+		graph.add(key,timeline,[],color,None)
 	
 	graph.set_x_bounds(crawl_start,now)
 	graph.set_y_bounds(timedelta(),max_y)

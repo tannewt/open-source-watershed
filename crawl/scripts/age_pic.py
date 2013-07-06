@@ -6,13 +6,13 @@ import cairo
 try:
 	import goocanvas
 except:
-	print "ack headless"
 	import utils.headless as goocanvas
 from datetime import timedelta, datetime
 
 from utils import chart
 from utils import render
 from utils.history import *
+from utils.db import groups
 from age_v_time import DISTRO_COLORS
 
 upstream = []
@@ -73,6 +73,13 @@ if "--u" in sys.argv[1:]:
 			upstream.append(sys.argv[i])
 		else:
 			break
+
+if "--ug" in sys.argv[1:]:
+        for i in range(sys.argv.index("--ug")+1,len(sys.argv)):
+                if not sys.argv[i].startswith("--"):
+                        upstream.extend(groups.get_group(sys.argv[i]))
+                else:
+                        break
 
 if "--d" in sys.argv[1:]:
 	for i in range(sys.argv.index("--d")+1,len(sys.argv)):

@@ -76,6 +76,7 @@ class Axis (Group):
 			index = p.find_child(item)
 			p.remove_child(index)
 		
+		spread = self._end - self._start
 		if type(self._start)==datetime.datetime:
 			# draw lines per year
 			year = datetime.datetime(self._start.year+1,1,1)
@@ -112,31 +113,33 @@ class Axis (Group):
 					else:
 						month = month.replace(month=month.month+1)
 					continue
-					
-				line = polyline_new_line(self,0,0,0,0)
-				c = self.coord(month)
-				text = Text(text=str(month.month))
-				self.add_child(text,-1)
-				if self._orientation==self.HORIZONTAL:
-					points= Points([(c,-3), (c,3)])
-					text.props.anchor = gtk.ANCHOR_NORTH
-					text.props.x = c
-					text.props.y = 4
-				else:
-					points = Points([(-3,c), (3,c)])
-					text.props.anchor = gtk.ANCHOR_EAST
-					text.props.x = -4
-					text.props.y = c
-				line.props.points = points
-				self._grid.append(line)
-				self._grid.append(text)
+				# time per pixel
+				if spread / self._length > datetime.timedelta(weeks=4):	
+					line = polyline_new_line(self,0,0,0,0)
+					c = self.coord(month)
+					text = Text(text=str(month.month))
+					self.add_child(text,-1)
+					if self._orientation==self.HORIZONTAL:
+						points= Points([(c,-3), (c,3)])
+						text.props.anchor = gtk.ANCHOR_NORTH
+						text.props.x = c
+						text.props.y = 4
+					else:
+						points = Points([(-3,c), (3,c)])
+						text.props.anchor = gtk.ANCHOR_EAST
+						text.props.x = -4
+						text.props.y = c
+					line.props.points = points
+					self._grid.append(line)
+					self._grid.append(text)
 				if month.month==12:
 					month = month.replace(year=month.year+1,month=1)
 				else:
 					month = month.replace(month=month.month+1)
 		elif type(self._start)==datetime.timedelta:
-			spread = self._end - self._start
-			if spread<datetime.timedelta(weeks=4):
+                        #print self._length / (spread.days / 7), "pixels per week"
+			ppw = self._length / (spread.days / 7)
+			if ppw > 10:
 				one_day = datetime.timedelta(days=1)
 				# draw lines per day
 				day = datetime.timedelta(days=self._start.days+1)
@@ -153,7 +156,7 @@ class Axis (Group):
 					day += one_day
 			
 			# draw lines per week
-			if spread<datetime.timedelta(weeks=60):
+			if ppw > 5:
 				one_week = datetime.timedelta(weeks=1)
 				# draw lines per day
 				week = datetime.timedelta(weeks=(self._start.days/7)+1)
@@ -176,25 +179,26 @@ class Axis (Group):
 			month = datetime.timedelta(weeks=i*4)
 			self._set_units("months")
 			while month<self._end:
-				#print "draw month",month
-				line = polyline_new_line(self,0,0,0,0)
-				c = self.coord(month)
+				if (i % 10 == 0 and ppw > 0 and ppw <= 5) or (i % 50 == 0 and ppw == 0) or ppw > 5:
+					#print "draw month",month
+					line = polyline_new_line(self,0,0,0,0)
+					c = self.coord(month)
 				
-				text = Text(text=str(i))
-				self.add_child(text,-1)
-				if self._orientation==self.HORIZONTAL:
-					points= Points([(c,5), (c,-5)])
-					text.props.anchor = gtk.ANCHOR_NORTH
-					text.props.x = c
-					text.props.y = 6
-				else:
-					points = Points([(-5,c), (5,c)])
-					text.props.anchor = gtk.ANCHOR_EAST
-					text.props.x = -6
-					text.props.y = c
-				line.props.points = points
-				self._grid.append(line)
-				self._grid.append(text)
+					text = Text(text=str(i))
+					self.add_child(text,-1)
+					if self._orientation==self.HORIZONTAL:
+						points= Points([(c,5), (c,-5)])
+						text.props.anchor = gtk.ANCHOR_NORTH
+						text.props.x = c
+						text.props.y = 6
+					else:
+						points = Points([(-5,c), (5,c)])
+						text.props.anchor = gtk.ANCHOR_EAST
+						text.props.x = -6
+						text.props.y = c
+					line.props.points = points
+					self._grid.append(line)
+					self._grid.append(text)
 				i += 1
 				month += one_month
 		elif type(self._start)==float:
