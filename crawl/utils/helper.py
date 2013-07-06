@@ -19,6 +19,13 @@ class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
         res.status = None
       return res
 
+    def https_response(self, req, res):
+      try:
+	res.status += 0
+      except:
+        res.status = None
+      return res
+
 def ftp_open_url(url, filename, last_crawl=None):
 	tokens = url.split("/")
 	host = tokens[2]
@@ -68,10 +75,10 @@ def http_open_url(url, filename, last_crawl=None):
   opener = urllib2.build_opener(DefaultErrorHandler())
   datastream = opener.open(request)
   if datastream.status == 404:
-    print datastream.status, url,
+    print datastream.status, url
     return None
   elif datastream.status:
-    print datastream.status,#last_crawl,
+    print datastream.status,#last_crawl
     return None
   else:
     out = open(filename, "w")
