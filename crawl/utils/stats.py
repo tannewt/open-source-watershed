@@ -161,3 +161,6 @@ if __name__=="__main__":
 	
 	dr = DistroRanks("future")
 	print dr
+
+	dr = DistroRanks("experimental")
+	print dr

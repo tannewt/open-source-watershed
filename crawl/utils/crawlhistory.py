@@ -82,7 +82,6 @@ class CrawlHistory:
 			tmp.append(row)
 		
 		self.releases = tmp
-		print tmp
 		cache.put(key,tmp,[(package_id,distro_id)])
 	
 	def __str__(self):

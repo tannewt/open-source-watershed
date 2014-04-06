@@ -58,6 +58,8 @@ class PackageHistory:
 				for sid in explore:
 					cur.execute("SELECT package_src FROM links WHERE package_tgt = %s",(sid,))
 					for row in cur:
+                                                if row[0] in aliases:
+                                                        continue
 						aliases.append(row[0])
 						tmp.append(row[0])
 				explore = tmp
@@ -77,19 +79,19 @@ class PackageHistory:
 								distro_aliases[row[0]].append(alias)
 			self.aliases = distro_aliases
 			if VERBOSE:
-				print self.aliases
+				print "distro aliases", self.aliases
 			
 			self.ish = False
 			#print "query upstream"
 			if not force_approx:
-				q = "SELECT version, MIN(released) FROM ureleases WHERE ("+ " OR ".join(("package_id=%s",)*len(aliases)) + ") GROUP BY version ORDER BY MIN(released), version"
+				q = "SELECT version, MIN(released) FROM ureleases WHERE package_id in ("+ ", ".join(("%s",)*len(aliases)) + ") GROUP BY version ORDER BY MIN(released), version"
 				cur.execute(q,aliases)
 			if cur.rowcount == 0 or force_approx:
 				if VERBOSE:
 					print "falling back to approximate upstream"
 				self.ish = True
-				q = "SELECT dreleases.version, MIN(dreleases.released) FROM dreleases, packages WHERE dreleases.package_id = packages.id AND packages.name=%s AND dreleases.version!='9999' GROUP BY dreleases.version ORDER BY MIN(dreleases.released), dreleases.version"
-				cur.execute(q,(self.name,))
+				q = "SELECT dreleases.version, MIN(dreleases.released) FROM dreleases WHERE package_id in ("+ ", ".join(("%s",)*len(aliases)) + ") AND dreleases.version!='9999' GROUP BY dreleases.version ORDER BY MIN(dreleases.released), dreleases.version"
+				cur.execute(q,aliases)
 			
 			data = []
 			if VERBOSE:
@@ -318,12 +320,12 @@ class DistroHistory:
 					print "downstream", date, version
 				
 				if VERBOSE:
-					print greatest_downstream, version
+					print "greatest downstream before:",greatest_downstream, version
 				if greatest_downstream != "0":
 					age[date] = versions.compute_lag(date, greatest_downstream)
 				greatest_downstream = versions.max(greatest_downstream,version)
 				if VERBOSE:
-					print greatest_downstream
+					print "greatest downstream after:",greatest_downstream
 				age[date+ms] = versions.compute_lag(date, greatest_downstream)
 				d+=1
 		#print
@@ -368,10 +370,10 @@ class DistroHistory:
 				version = downstream[d]
 				date = downstream.keys()[d]
 				if VERBOSE:
-					print greatest_downstream, version
+					print "greatest downstream before:", greatest_downstream, version
 				greatest_downstream = versions.max(greatest_downstream,version)
 				if VERBOSE:
-					print greatest_downstream
+					print "greatest downstream after:", greatest_downstream
 				age[date+ms] = versions.compute_obsoletions(date, greatest_downstream)
 				d+=1
 		#print
@@ -427,7 +429,7 @@ if __name__=="__main__":
 	if len(sys.argv)<2:
 		print sys.argv[0],"<package>","[distro]","[branch]"
 		sys.exit(1)
-	#VERBOSE = True
+	VERBOSE = True
 	p = sys.argv[1]
 	d = None
 	b = "current"
@@ -446,5 +448,12 @@ if __name__=="__main__":
 
 	if d != None:
 		d = DistroHistory(d,[p],b)
-		print d.get_lag_timeline()
-		print d.get_obsoletion_count_timeline()
+		print "Distro releases:"
+		print d.get_pkg(p.name)
+		print
+		print "Lag:"
+		print d.get_lag_timeline()[-3:]
+		print
+		print "Obsolete:"
+		print d.get_obsoletion_count_timeline()[-3:]
+		print
