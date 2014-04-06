@@ -2,7 +2,7 @@ import time
 import datetime
 import os
 import urllib
-import bz2
+import gzip
 import sys
 
 sys.path.append(os.getcwd())
@@ -21,11 +21,11 @@ HOST, USER, PASSWORD, DB = helper.mysql_settings()
 with cursor() as cur:
 	total_bin = 0
 	for comp in ["contrib", "main", "non-free"]:
-		url = "http://" + MIRROR + "/" + HTTP_START_DIR + "unstable/" + comp + "/source/Sources.bz2"
-		filename = "files/debian/Sources-unstable-" + comp + "-" + str(time.time()) + ".bz2"
+		url = "http://" + MIRROR + "/" + HTTP_START_DIR + "unstable/" + comp + "/source/Sources.gz"
+		filename = "files/debian/Sources-unstable-" + comp + "-" + str(time.time()) + ".gz"
 
 		info = helper.open_url(url, filename)
-		f = bz2.BZ2File(filename)
+		f = gzip.GzipFile(filename)
 		pkgs = deb.parse_package_dict(f)
 
 		for p in pkgs:
