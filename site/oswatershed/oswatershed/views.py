@@ -71,6 +71,7 @@ def pkg(request, pkg):
 		{"stats": s,
 		"pkg_stats":filter(lambda x: x!=None, map(lambda x: ps.for_distro(*x),STAT_DISTROS)),
 		"name" : pkg,
+                "escaped_name" : pkg.replace(".", '\\\\.'),
 		"description" : ps.hist.description,
 		"history" : history,
 		"approx" : ps.hist.ish,
@@ -130,7 +131,10 @@ def distro(request, distro):
 	now = datetime.datetime.now()
 	s = DataStats()
 	data = []
-	for branch in ["future", "current", "past"]:
+        branches = ["future", "current", "past"]
+        if distro == "debian":
+          branches.append("experimental")
+	for branch in branches:
 		try:
 			h = DistroHistory(distro, packages, branch, now=now)
 		except UnknownDistroError:

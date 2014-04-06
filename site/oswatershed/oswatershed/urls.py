@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 from oswatershed.views import PackageFeed
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin

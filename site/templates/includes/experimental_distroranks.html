@@ -2,7 +2,7 @@
 
 {% load osfilters %}
 
-{% block title %}Current Releases{% endblock %}
+{% block title %}Experimental Releases{% endblock %}
 
 {% block content%}
 <table style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; border: none; width: 100%; border-spacing: 0px;">
@@ -14,10 +14,10 @@
     <th style="font-weight: normal; ">Avg # New Rels</th>
     <th style="font-weight: normal; ">Avg Lag</th>
   </tr>
-  {% for distro in current_distros %}
+  {% for distro in experimental_distros %}
   <tr>
     <th>{{ forloop.counter }}</th>
-    <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong><a href="/distro/{{ distro.name }}#Current">{{ distro.name }}</a></strong></td>
+    <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong><a href="/distro/{{ distro.name }}#Future">{{ distro.name }}</a></strong></td>
 		<td>{{ distro.codename }}</td>
 		<td>{{ distro.obs|percent }}</td>
 		<td>{{ distro.count|floatformat:2 }}</td>
