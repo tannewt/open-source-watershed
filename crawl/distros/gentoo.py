@@ -123,7 +123,7 @@ def crawl_changelog(category,package,last_crawl=None):
 	except:
 		print "WARNING: missing %s"%fn
 		return []
-	last = datetime.datetime.fromtimestamp(last)
+	last = datetime.datetime.utcfromtimestamp(last)
 	rels = []
 	# check last crawl
 	if last_crawl==None or last > last_crawl:
@@ -178,7 +178,7 @@ def crawl_repo(repo):
 	
 	if last:
 		last = last.st_mtime
-		last = datetime.datetime.fromtimestamp(last)
+		last = datetime.datetime.utcfromtimestamp(last)
 		# check to make sure the cache is reasonably new
 		if datetime.datetime.now()-last<datetime.timedelta(hours=1):
 			#load the cache and return the desired subset
@@ -215,7 +215,7 @@ def crawl_repo(repo):
 				if "9999" in v:
 					continue
 				last2 = os.stat(fn).st_mtime
-				last2 = datetime.datetime.fromtimestamp(last2)
+				last2 = datetime.datetime.utcfromtimestamp(last2)
 				
 				if pkgs["last_crawl"]==None or last2 > pkgs["last_crawl"]:
 					pkgs["last_crawl"] = last2

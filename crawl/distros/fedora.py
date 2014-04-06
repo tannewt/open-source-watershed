@@ -133,7 +133,7 @@ def crawl_repo(repo):
 			rel_time = e.find(NAMESPACE + "time").attrib["file"]
 			version = v["ver"]
 			revision = v["rel"]
-			rel_time = datetime.datetime.fromtimestamp(float(rel_time))
+			rel_time = datetime.datetime.utcfromtimestamp(float(rel_time))
 			rel = DownstreamRelease()
 			rel.repo_id = repo.id
 			rel.version = version

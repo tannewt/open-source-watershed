@@ -67,7 +67,7 @@ def crawl_repo(repo):
 	
 	rels = []
 	for name, version, revision, branch, date in c:
-		dt = datetime.datetime.fromtimestamp(float(date))
+		dt = datetime.datetime.utcfromtimestamp(float(date))
 		if repo.last_crawl==None or repo.last_crawl<dt:
 			#print version
 			if "-" in version and "-" == version[-3]:

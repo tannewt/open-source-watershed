@@ -69,7 +69,7 @@ def crawl_repo(repo):
 			
 			if last:
 				last = last.st_mtime
-				last = datetime.datetime.fromtimestamp(last)
+				last = datetime.datetime.utcfromtimestamp(last)
 			
 			# ignore if its not new
 			if last and repo.last_crawl!=None and last<repo.last_crawl:
@@ -100,7 +100,7 @@ def crawl_repo(repo):
 					#print "ERROR: cannot parse",pkg["BUILDDATE"]
 					pass
 			else:
-				released = datetime.datetime.fromtimestamp(long(pkg["BUILDDATE"]))
+				released = datetime.datetime.utcfromtimestamp(long(pkg["BUILDDATE"]))
 			
 			rel = DownstreamRelease()
 			rel.repo_id = repo.id
