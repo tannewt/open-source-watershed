@@ -29,7 +29,7 @@ def get_repos(test):
 			downstream.repo(repo, test)
 			downstream.add_branch(repo, "current", test)
 	
-	for comp in ["testing"]:
+	for comp in ["testing","community-testing"]:
 		for a in ARCHES:
 			repo = Repo()
 			repo.distro_id = distro_id
