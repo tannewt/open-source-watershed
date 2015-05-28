@@ -19,12 +19,14 @@ CN_SQUEEZE="squeeze"
 CN_WHEEZY="wheezy"
 CN_EXPERIMENTAL="experimental"
 CN_JESSIE="jessie"
+CN_STRETCH="stretch"
 
 CODENAMES = [
 	CN_LENNY,
 	CN_SQUEEZE,
 	CN_WHEEZY,
 	CN_JESSIE,
+        CN_STRETCH,
 	CN_SID,
 	CN_EXPERIMENTAL]
 
@@ -34,8 +36,9 @@ BRANCHES = {
 	CN_SARGE : "past",
 	CN_SID : "experimental",
 	CN_SQUEEZE : "lts",
-	CN_WHEEZY : "current",
-	CN_JESSIE : "future",
+	CN_WHEEZY : "lts",
+	CN_JESSIE : "current",
+        CN_STRETCH : "future",
 	CN_EXPERIMENTAL : "experimental"}
 
 MIRROR = "debian.osuosl.org"

@@ -24,4 +24,6 @@ elif sys.argv[1]=="delete":
 	groups.delete_group(sys.argv[2])
 elif sys.argv[1]=="add_to":
 	groups.add_to_group(sys.argv[3], sys.argv[2])
+elif sys.argv[1]=="remove_from":
+        groups.remove_from_group(sys.argv[3], sys.argv[2])
 print "done"

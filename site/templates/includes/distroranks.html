@@ -19,7 +19,7 @@
     <th>{{ forloop.counter }}</th>
     <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong>{{ distro.name }}</strong></td>
 		<td>{{ distro.codename }}</td>
-		<td>{{ distro.obs|percent }}</td>
+		<td>{{ distro.latest|percent }}</td>
 		<td>{{ distro.count|floatformat:2 }}</td>
     <td>{{ distro.lag|prettydelta:True }}</td>
   </tr>

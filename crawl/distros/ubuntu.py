@@ -27,6 +27,9 @@ CN_QUANTAL="quantal"
 CN_RARING="raring"
 CN_SAUCY="saucy"
 CN_TRUSTY="trusty"
+CN_UTOPIC="utopic"
+CN_VIVID="vivid"
+CN_WILY="wily"
 
 CODENAMES = [
 	CN_HARDY,
@@ -37,9 +40,12 @@ CODENAMES = [
 	CN_QUANTAL,
 	CN_RARING,
 	CN_SAUCY,
-	CN_TRUSTY]
+	CN_TRUSTY,
+        CN_UTOPIC,
+        CN_VIVID,
+        CN_WILY]
 
-LTS = [CN_DAPPER, CN_HARDY, CN_LUCID, CN_PRECISE]
+LTS = [CN_DAPPER, CN_HARDY, CN_LUCID, CN_PRECISE, CN_TRUSTY]
 
 ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
 	CN_FEISTY : ["amd64", "i386", "powerpc", "sparc"],
@@ -56,7 +62,10 @@ ARCHES = {CN_DAPPER : ["amd64", "i386", "powerpc", "sparc"],
 	CN_QUANTAL : ["amd64", "i386"],
 	CN_RARING : ["amd64", "i386"],
 	CN_SAUCY : ["amd64", "i386"],
-	CN_TRUSTY: ["amd64", "i386"]}
+	CN_TRUSTY: ["amd64", "i386"],
+        CN_UTOPIC: ["amd64", "i386"],
+        CN_VIVID: ["amd64", "i386"],
+        CN_WILY: ["amd64", "i386"]}
 
 MIRROR = "ubuntu.osuosl.org"
 

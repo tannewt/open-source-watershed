@@ -7,7 +7,7 @@ from utils import helper
 from utils.db import downstream
 from utils.types import Repo, DownstreamRelease
 
-MIRROR = "ftp.archlinux.org"
+MIRROR = "ftp.osuosl.org/pub/archlinux"
 HTTP_START_DIR = None
 FTP_START_DIR = None
 

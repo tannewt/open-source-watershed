@@ -40,6 +40,8 @@ def get_repos(test):
 				    repo.codename = float(version)
 				  except:
 				    continue
+                                if repo.codename == None:
+                                  continue
 				repo.branch = branch
 				repos.append(repo)
 				downstream.repo(repo, test)

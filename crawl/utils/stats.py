@@ -30,6 +30,7 @@ class DistroRanks:
 			self.distros, = cache.get("/distro_ranks/"+self.branch)
 	
 	def update(self, cache=None):
+                print "updating", self.branch
 		if cache == None:
 			cache = Cache()
 		
@@ -45,6 +46,7 @@ class DistroRanks:
 			results.append({"name":distro.name,
 											"codename":distro.codename,
 											"obs":current_obs,
+                                                                                        "latest": 1.0 - current_obs,
 											"count":current_obs_count,
 											"lag":current_lag})
 		
@@ -157,10 +159,16 @@ if __name__=="__main__":
 	print ps.for_distro("opensuse","current")
 	
 	dr = DistroRanks()
+        print "current"
 	print dr
+        print
 	
 	dr = DistroRanks("future")
+        print "future"
 	print dr
+        print
 
 	dr = DistroRanks("experimental")
+        print "experimental"
 	print dr
+        print

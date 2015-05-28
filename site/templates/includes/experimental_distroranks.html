@@ -10,8 +10,8 @@
     <th style="font-weight: normal; ">Rank</th>
 		<th style="font-weight: normal; ">Distro</th>
     <th style="font-weight: normal; ">Codename</th>
-    <th style="font-weight: normal; ">% Obsolete</th>
-    <th style="font-weight: normal; ">Avg # New Rels</th>
+    <th style="font-weight: normal; ">% Latest</th>
+    <th style="font-weight: normal; ">Avg # Newer Rels</th>
     <th style="font-weight: normal; ">Avg Lag</th>
   </tr>
   {% for distro in experimental_distros %}
@@ -19,7 +19,7 @@
     <th>{{ forloop.counter }}</th>
     <td><img src="http://static.oswatershed.org/{{ distro.name }}.png" />	<strong><a href="/distro/{{ distro.name }}#Future">{{ distro.name }}</a></strong></td>
 		<td>{{ distro.codename }}</td>
-		<td>{{ distro.obs|percent }}</td>
+		<td>{{ distro.latest|percent }}</td>
 		<td>{{ distro.count|floatformat:2 }}</td>
     <td>{{ distro.lag|prettydelta:True }}</td>
   </tr>

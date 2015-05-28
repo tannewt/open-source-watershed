@@ -45,6 +45,9 @@ def add_to_group(pkg, name, user_id=1):
 			pkg = cur.fetchone()[0]
 		cur.execute("INSERT INTO group_packages (package_id, group_id) SELECT %s, id FROM groups WHERE name=%s AND user_id = %s", (pkg,name,user_id))
 	
-def remove_from_group(pkg_id, name, user_id=1):
+def remove_from_group(pkg, name, user_id=1):
 	with cursor() as cur:
-		cur.execute("DELETE FROM group_packages WHERE package_id = %s AND group_id = (SELECT id FROM groups WHERE name=%s AND user_id = %s)", (pkg_id,name,user_id))
+            if type(pkg)!=int:
+                cur.execute("SELECT id FROM packages WHERE name = %s",(pkg,))
+                pkg = cur.fetchone()[0]
+	    cur.execute("DELETE FROM group_packages WHERE package_id = %s AND group_id = (SELECT id FROM groups WHERE name=%s AND user_id = %s)", (pkg,name,user_id))

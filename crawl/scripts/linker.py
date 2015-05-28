@@ -18,15 +18,15 @@ cur = con.cursor()
 BY_HAND_LINK_ID = 5
 
 if cmd == "list":
-	cur.execute("SELECT p1.name, p2.name FROM packages AS p1, packages AS p2, links WHERE p1.id = links.package_tgt AND p2.id = links.package_src ORDER BY p1.name, p2.name")
-	for p1, p2 in cur:
-		print p1,"<--",p2
+	cur.execute("SELECT p1.name, p2.name, distros.name FROM packages AS p1, packages AS p2, links, distros WHERE p1.id = links.package_tgt AND p2.id = links.package_src AND distros.id = links.distro_src ORDER BY p1.name, p2.name")
+	for p1, p2, d in cur:
+		print p1,"<--",p2,d
 elif cmd == "link":
 	cur.execute("INSERT INTO links (package_tgt, package_src, distro_src) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM packages WHERE name=%s),(SELECT id FROM distros WHERE name=%s))",(sys.argv[2],sys.argv[3],sys.argv[4]))
 elif cmd == "hard_unlink":
 	cur.execute("INSERT INTO unlinks (package_id, distro_id) VALUES ((SELECT id FROM packages WHERE name=%s),(SELECT id FROM distros WHERE name=%s))",(sys.argv[2],sys.argv[3]))
 elif cmd == "unlink":
-	pass
+        cur.execute("DELETE FROM links WHERE package_tgt = (SELECT id FROM packages WHERE name=%s) AND package_src = (SELECT id FROM packages WHERE name=%s) AND distro_src = (SELECT id FROM distros WHERE name=%s)",(sys.argv[2],sys.argv[3],sys.argv[4]))
 else:
 	print "list -- lists all handmade links"
 	print "link <p1> <p2> -- link p1 and p2 by hand"

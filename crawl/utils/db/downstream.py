@@ -30,6 +30,8 @@ def distro(name, color=None, description=None, website=None):
 	return i
 
 def repo(repo, test):
+	if test:
+	    print "new repo", repo
 	with cursor() as cur:
 		cur.execute("SELECT id, last_crawl FROM repos WHERE distro_id = %s AND codename = %s AND component = %s AND architecture = %s", (repo.distro_id, str(repo.codename), str(repo.component), str(repo.architecture)))
 		row = cur.fetchone()
@@ -37,12 +39,12 @@ def repo(repo, test):
 			cur.execute("INSERT INTO repos (distro_id, codename, component, architecture) VALUES (%s, %s, %s, %s)", (repo.distro_id, str(repo.codename), str(repo.component), str(repo.architecture)))
 			cur.execute("SELECT lastval()")
 			repo.id = cur.fetchone()[0]
-			if test:
-				print "new repo, id:",repo.id,"-",repo
 		else:
 			repo.id, repo.last_crawl = row
 
 def add_branch(repo, branch, test):
+        if test:
+            print "add branch", branch, "for repo", repo
 	with cursor() as cur:
 		cur.execute("SELECT id FROM branches WHERE repo_id = %s AND branch = %s", (repo.id, branch))
 		row = cur.fetchone()
@@ -51,8 +53,6 @@ def add_branch(repo, branch, test):
 			cur.execute("INSERT INTO branches (repo_id, branch, start) VALUES (%s, %s, NOW())", (repo.id, branch))
 			cur.execute("SELECT lastval()")
 			i = cur.fetchone()[0]
-			if test:
-				print "new branch, id:", i, "-", branch
 
 def add_releases(repo, rels, test=False, cache=None):
 	pkgs = {}
