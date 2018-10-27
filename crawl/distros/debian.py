@@ -11,34 +11,43 @@ from utils.types import Repo, DownstreamRelease
 
 distro_id = downstream.distro("debian", "", "An old binary distribution known for its stability.", "http://www.debian.org")
 
+CN_SARGE="sarge"
 CN_ETCH="etch"
 CN_LENNY="lenny"
-CN_SARGE="sarge"
-CN_SID="sid"
 CN_SQUEEZE="squeeze"
 CN_WHEEZY="wheezy"
-CN_EXPERIMENTAL="experimental"
 CN_JESSIE="jessie"
 CN_STRETCH="stretch"
+CN_BUSTER="buster"
+CN_BULLSEYE="bullseye"
+CN_BOOKWORM="bookworm"
+CN_SID="sid"
+CN_EXPERIMENTAL="experimental"
 
 CODENAMES = [
 	CN_LENNY,
 	CN_SQUEEZE,
 	CN_WHEEZY,
 	CN_JESSIE,
-        CN_STRETCH,
+	CN_STRETCH,
+	CN_BUSTER,
+	CN_BULLSEYE,
+	CN_BOOKWORM,
 	CN_SID,
 	CN_EXPERIMENTAL]
 
 BRANCHES = {
+	CN_SARGE : "past",
 	CN_ETCH : "past",
 	CN_LENNY : "past",
-	CN_SARGE : "past",
+	CN_SQUEEZE : "past",
+	CN_WHEEZY : "past",
+	CN_JESSIE : "lts",
+	CN_STRETCH : "current",
+	CN_BUSTER : "future",
+	CN_BULLSEYE : "future",
+	CN_BOOKWORM : "future",
 	CN_SID : "experimental",
-	CN_SQUEEZE : "lts",
-	CN_WHEEZY : "lts",
-	CN_JESSIE : "current",
-        CN_STRETCH : "future",
 	CN_EXPERIMENTAL : "experimental"}
 
 MIRROR = "debian.osuosl.org"
@@ -76,7 +85,7 @@ def get_repos(test):
 					components=line.split(' ')[1:]
 			
 			if not architectures:
-				architectures = "alpha amd64 arm armel hppa i386 ia64 kfreebsd-i386 kfreebsd-amd64 mips mipsel powerpc s390 sparc".split(' ')
+				architectures = "alpha amd64 arm armel armhf arm64 hppa hurd-i386 i386 ia64 kfreebsd-i386 kfreebsd-amd64 mips mips64el mipsel powerpc ppc64el s390 s390x sparc".split(' ')
 			
 			#print components,architectures
 			if not architectures or not components:
